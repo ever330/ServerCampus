@@ -2,6 +2,6 @@
 {
     public class ResCreateAccount
     {
-        public bool Result { get; set; }
+        public ErrorCode Result { get; set; }
     }
 }

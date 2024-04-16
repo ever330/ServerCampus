@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             loginBtn = new Button();
-            idTextBox = new TextBox();
+            emailTextBox = new TextBox();
             pwTextBox = new TextBox();
             emailLabel = new Label();
             passwordLabel = new Label();
@@ -39,7 +39,7 @@
             // 
             // loginBtn
             // 
-            loginBtn.Location = new Point(122, 126);
+            loginBtn.Location = new Point(147, 126);
             loginBtn.Name = "loginBtn";
             loginBtn.Size = new Size(75, 23);
             loginBtn.TabIndex = 0;
@@ -47,17 +47,18 @@
             loginBtn.UseVisualStyleBackColor = true;
             loginBtn.Click += loginBtn_Click;
             // 
-            // idTextBox
+            // emailTextBox
             // 
-            idTextBox.Location = new Point(147, 48);
-            idTextBox.Name = "idTextBox";
-            idTextBox.Size = new Size(171, 23);
-            idTextBox.TabIndex = 1;
+            emailTextBox.Location = new Point(147, 48);
+            emailTextBox.Name = "emailTextBox";
+            emailTextBox.Size = new Size(171, 23);
+            emailTextBox.TabIndex = 1;
             // 
             // pwTextBox
             // 
             pwTextBox.Location = new Point(147, 87);
             pwTextBox.Name = "pwTextBox";
+            pwTextBox.PasswordChar = '*';
             pwTextBox.Size = new Size(171, 23);
             pwTextBox.TabIndex = 2;
             // 
@@ -81,7 +82,7 @@
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new Point(87, 164);
+            richTextBox1.Location = new Point(71, 155);
             richTextBox1.Name = "richTextBox1";
             richTextBox1.Size = new Size(259, 119);
             richTextBox1.TabIndex = 6;
@@ -89,8 +90,8 @@
             // 
             // toCreateAccountFormBtn
             // 
-            toCreateAccountFormBtn.Location = new Point(239, 126);
-            toCreateAccountFormBtn.Margin = new Padding(2, 2, 2, 2);
+            toCreateAccountFormBtn.Location = new Point(240, 126);
+            toCreateAccountFormBtn.Margin = new Padding(2);
             toCreateAccountFormBtn.Name = "toCreateAccountFormBtn";
             toCreateAccountFormBtn.Size = new Size(78, 23);
             toCreateAccountFormBtn.TabIndex = 7;
@@ -108,7 +109,7 @@
             Controls.Add(passwordLabel);
             Controls.Add(emailLabel);
             Controls.Add(pwTextBox);
-            Controls.Add(idTextBox);
+            Controls.Add(emailTextBox);
             Controls.Add(loginBtn);
             Name = "Form1";
             Text = "Form1";
@@ -120,7 +121,7 @@
         #endregion
 
         private Button loginBtn;
-        private TextBox idTextBox;
+        private TextBox emailTextBox;
         private TextBox pwTextBox;
         private Label emailLabel;
         private Label passwordLabel;

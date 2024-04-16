@@ -63,7 +63,7 @@
             emailTextBox.Location = new Point(138, 43);
             emailTextBox.Margin = new Padding(2);
             emailTextBox.Name = "emailTextBox";
-            emailTextBox.Size = new Size(106, 23);
+            emailTextBox.Size = new Size(155, 23);
             emailTextBox.TabIndex = 2;
             // 
             // passwordTextBox
@@ -71,7 +71,8 @@
             passwordTextBox.Location = new Point(138, 73);
             passwordTextBox.Margin = new Padding(2);
             passwordTextBox.Name = "passwordTextBox";
-            passwordTextBox.Size = new Size(106, 23);
+            passwordTextBox.PasswordChar = '*';
+            passwordTextBox.Size = new Size(155, 23);
             passwordTextBox.TabIndex = 3;
             // 
             // passwordCheckTextBox
@@ -79,7 +80,8 @@
             passwordCheckTextBox.Location = new Point(138, 103);
             passwordCheckTextBox.Margin = new Padding(2);
             passwordCheckTextBox.Name = "passwordCheckTextBox";
-            passwordCheckTextBox.Size = new Size(106, 23);
+            passwordCheckTextBox.PasswordChar = '*';
+            passwordCheckTextBox.Size = new Size(155, 23);
             passwordCheckTextBox.TabIndex = 5;
             // 
             // passwordCheckLabel
@@ -94,7 +96,7 @@
             // 
             // emailCheckBtn
             // 
-            emailCheckBtn.Location = new Point(261, 42);
+            emailCheckBtn.Location = new Point(297, 41);
             emailCheckBtn.Margin = new Padding(2);
             emailCheckBtn.Name = "emailCheckBtn";
             emailCheckBtn.Size = new Size(90, 24);
@@ -105,7 +107,7 @@
             // 
             // createAccountBtn
             // 
-            createAccountBtn.Location = new Point(164, 137);
+            createAccountBtn.Location = new Point(175, 140);
             createAccountBtn.Margin = new Padding(2);
             createAccountBtn.Name = "createAccountBtn";
             createAccountBtn.Size = new Size(78, 25);

@@ -1,6 +1,6 @@
-﻿namespace HiveServer.Models
+﻿namespace APIServer.Models
 {
-    public class ResCheckEmail
+    public class ResLoginToAPI
     {
         public ErrorCode Result { get; set; }
     }

@@ -30,13 +30,8 @@ namespace HiveServer.Controllers
 
             ResCreateAccount res = new ResCreateAccount
             {
-                Result = true
+                Result = result
             };
-
-            if (result == ErrorCode.CreateAccountError)
-            {
-                res.Result = false;
-            }
 
             _logger.ZLogDebug($"계정 생성 : {model.Email}");
 

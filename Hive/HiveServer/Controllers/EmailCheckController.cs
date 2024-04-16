@@ -28,7 +28,7 @@ namespace HiveServer.Controllers
 
             ResCheckEmail res = new ResCheckEmail
             {
-                Result = _accountDB.EmailCheck(model.Email).Result.Item2
+                Result = _accountDB.EmailCheck(model.Email).Result.Item1
             };
 
             return res;

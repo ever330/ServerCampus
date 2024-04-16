@@ -58,7 +58,7 @@ namespace Omok
 
             ResCheckEmail res = await response.Content.ReadFromJsonAsync<ResCheckEmail>();
 
-            if (res.Result)
+            if (res.Result == ErrorCode.None)
             {
                 MessageBox.Show("사용 가능한 이메일입니다.");
             }
@@ -107,7 +107,7 @@ namespace Omok
 
             ResCreateAccount res = await response.Content.ReadFromJsonAsync<ResCreateAccount>();
 
-            if (res.Result)
+            if (res.Result == ErrorCode.None)
             {
                 MessageBox.Show("계정이 생성되었습니다.");
                 this.Close();

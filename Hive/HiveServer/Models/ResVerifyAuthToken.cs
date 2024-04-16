@@ -1,6 +1,6 @@
 ﻿namespace HiveServer.Models
 {
-    public class ResCheckEmail
+    public class ResVerifyAuthToken
     {
         public ErrorCode Result { get; set; }
     }

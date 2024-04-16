@@ -5,17 +5,26 @@ namespace HiveServer
 {
     public class Security
     {
-        private static int s_saltSize = 16;
-        private static int s_authTokentSize = 32;
+        private const int SaltSize = 16;
+        private const int AuthTokentSize = 32;
+        private const string AllowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-        public static string GetRandomSalt() 
+        public static string GetRandomSalt()
         {
-            byte[] newSaltBuffer = new byte[s_saltSize];
-            Random random = new Random();
+            char[] chars = new char[SaltSize];
+            byte[] randomBytes = new byte[SaltSize];
 
-            random.NextBytes(newSaltBuffer);
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomBytes);
+            }
 
-            return Encoding.Default.GetString(newSaltBuffer);
+            for (int i = 0; i < SaltSize; i++)
+            {
+                chars[i] = AllowedChars[randomBytes[i] % AllowedChars.Length];
+            }
+
+            return new string(chars);
         }
 
         public static string Hasing(string password, string salt)
@@ -37,18 +46,17 @@ namespace HiveServer
 
         public static string CreateAuthToken()
         {
-            const string allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            char[] chars = new char[s_authTokentSize];
-            byte[] randomBytes = new byte[s_authTokentSize];
+            char[] chars = new char[AuthTokentSize];
+            byte[] randomBytes = new byte[AuthTokentSize];
 
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(randomBytes);
             }
 
-            for (int i = 0; i < s_authTokentSize; i++)
+            for (int i = 0; i < AuthTokentSize; i++)
             {
-                chars[i] = allowedChars[randomBytes[i] % allowedChars.Length];
+                chars[i] = AllowedChars[randomBytes[i] % AllowedChars.Length];
             }
 
             return new string(chars);

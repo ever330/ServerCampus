@@ -1,4 +1,10 @@
-﻿namespace APIServer
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Omok
 {
     public enum ErrorCode
     {
@@ -7,10 +13,7 @@
         CreateAccountError = 1000,
         LoginError = 1001,
         EmailCheckError = 1002,
-        VerifyTokenError = 1003,
 
         AccountNOTExist = 1100,
-
-        CreateGameDataError = 1200,
     }
 }

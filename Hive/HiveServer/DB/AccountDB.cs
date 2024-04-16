@@ -64,13 +64,19 @@ namespace HiveServer.DB
         {
             var userInfo = await _queryFactory.Query("hiveusers").Select().Where(new
             {
-                Email = email,
-                Password = password
+                Email = email
             }).FirstOrDefaultAsync();
 
             if (userInfo == null)
             {
                 return ErrorCode.AccountNOTExist;
+            }
+
+            string encryptPassword = Security.Hasing(password, userInfo.salt);
+
+            if (encryptPassword != userInfo.password)
+            {
+                return ErrorCode.LoginError;
             }
 
             return ErrorCode.None;

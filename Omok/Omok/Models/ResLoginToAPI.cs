@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Omok.Model
+namespace Omok.Models
 {
-    public class ResCreateAccount
+    public class ResLoginToAPI
     {
         public ErrorCode Result { get; set; }
     }

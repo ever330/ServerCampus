@@ -8,6 +8,6 @@ namespace Omok.Model
 {
     public class ResCheckEmail
     {
-        public bool Result { get; set; }
+        public ErrorCode Result { get; set; }
     }
 }

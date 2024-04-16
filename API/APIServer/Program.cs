@@ -1,25 +1,35 @@
 using APIServer.DB;
+using StackExchange.Redis;
 using System;
 using ZLogger;
+using ZLogger.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+IConfiguration configuration = builder.Configuration;
+
 // Add services to the container.
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddTransient<IOmokDB, OmokDB>();
+builder.Services.AddTransient<IRedisDB, RedisDB>();
 
 builder.Services.AddLogging();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddZLoggerConsole();
 
-IConfiguration configuration = builder.Configuration;
+builder.Logging.AddZLoggerFile("APIServerLog.log");
+builder.Logging.AddZLoggerRollingFile(options =>
+{
+    options.FilePathSelector = (timestamp, sequenceNumber) => $"logs/{timestamp.ToLocalTime():yyyy-MM-dd}_{sequenceNumber:000}.log";
 
-builder.Services.AddTransient<IAccountDB, AccountDB>();
+    options.RollingInterval = RollingInterval.Day;
 
-builder.Services.AddControllers();
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+    options.RollingSizeKB = 1024;
+});
 
 var app = builder.Build();
 

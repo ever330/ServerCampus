@@ -1,8 +1,8 @@
 ﻿namespace HiveServer.Models
 {
-    public class ReqCreateAccount
+    public class ReqVerifyAuthToken
     {
         public string Email { get; set; }
-        public string Password { get; set; }
+        public string AuthToken { get; set; }
     }
 }
