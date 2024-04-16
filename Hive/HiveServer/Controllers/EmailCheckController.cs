@@ -9,38 +9,29 @@ namespace HiveServer.Controllers
     [ApiController]
     public class EmailCheckController : ControllerBase
     {
-        private readonly ILogger<EmailCheckController> logger;
+        private readonly ILogger<EmailCheckController> _logger;
 
-        private readonly IAccountDB accountDB;
+        private readonly IAccountDB _accountDB;
 
 
         public EmailCheckController(ILogger<EmailCheckController> logger, IAccountDB accountDB)
         {
-            this.logger = logger;
-            this.accountDB = accountDB;
+            this._logger = logger;
+            this._accountDB = accountDB;
         }
 
         [HttpPost]
         [Route("check")]
-        public IActionResult Check([FromBody] ReqCheckEmail model)
+        public async Task<ResCheckEmail> Check([FromBody] ReqCheckEmail model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            Tuple<ErrorCode, bool> result = accountDB.EmailCheck(model.Email).Result;
-
-            if (result.Item1 == ErrorCode.EmailCheckError)
-                return BadRequest();
+            Tuple<ErrorCode, bool> result = await _accountDB.EmailCheck(model.Email);
 
             ResCheckEmail res = new ResCheckEmail
             {
-                Result = accountDB.EmailCheck(model.Email).Result.Item2
+                Result = _accountDB.EmailCheck(model.Email).Result.Item2
             };
 
-
-            return Ok(res);
+            return res;
         }
     }
 }

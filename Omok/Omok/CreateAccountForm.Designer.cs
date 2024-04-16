@@ -41,56 +41,63 @@
             // emailLabel
             // 
             emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(109, 75);
+            emailLabel.Location = new Point(76, 45);
+            emailLabel.Margin = new Padding(2, 0, 2, 0);
             emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(82, 25);
+            emailLabel.Size = new Size(54, 15);
             emailLabel.TabIndex = 0;
             emailLabel.Text = "이메일 : ";
             // 
             // passwordLabel
             // 
             passwordLabel.AutoSize = true;
-            passwordLabel.Location = new Point(91, 125);
+            passwordLabel.Location = new Point(64, 75);
+            passwordLabel.Margin = new Padding(2, 0, 2, 0);
             passwordLabel.Name = "passwordLabel";
-            passwordLabel.Size = new Size(100, 25);
+            passwordLabel.Size = new Size(66, 15);
             passwordLabel.TabIndex = 1;
             passwordLabel.Text = "비밀번호 : ";
             // 
             // emailTextBox
             // 
-            emailTextBox.Location = new Point(197, 72);
+            emailTextBox.Location = new Point(138, 43);
+            emailTextBox.Margin = new Padding(2);
             emailTextBox.Name = "emailTextBox";
-            emailTextBox.Size = new Size(150, 31);
+            emailTextBox.Size = new Size(106, 23);
             emailTextBox.TabIndex = 2;
             // 
             // passwordTextBox
             // 
-            passwordTextBox.Location = new Point(197, 122);
+            passwordTextBox.Location = new Point(138, 73);
+            passwordTextBox.Margin = new Padding(2);
             passwordTextBox.Name = "passwordTextBox";
-            passwordTextBox.Size = new Size(150, 31);
+            passwordTextBox.Size = new Size(106, 23);
             passwordTextBox.TabIndex = 3;
             // 
             // passwordCheckTextBox
             // 
-            passwordCheckTextBox.Location = new Point(197, 171);
+            passwordCheckTextBox.Location = new Point(138, 103);
+            passwordCheckTextBox.Margin = new Padding(2);
             passwordCheckTextBox.Name = "passwordCheckTextBox";
-            passwordCheckTextBox.Size = new Size(150, 31);
+            passwordCheckTextBox.Size = new Size(106, 23);
             passwordCheckTextBox.TabIndex = 5;
             // 
             // passwordCheckLabel
             // 
             passwordCheckLabel.AutoSize = true;
-            passwordCheckLabel.Location = new Point(49, 174);
+            passwordCheckLabel.Location = new Point(34, 104);
+            passwordCheckLabel.Margin = new Padding(2, 0, 2, 0);
             passwordCheckLabel.Name = "passwordCheckLabel";
-            passwordCheckLabel.Size = new Size(142, 25);
+            passwordCheckLabel.Size = new Size(94, 15);
             passwordCheckLabel.TabIndex = 4;
             passwordCheckLabel.Text = "비밀번호 확인 : ";
             // 
             // emailCheckBtn
             // 
-            emailCheckBtn.Location = new Point(373, 70);
+            emailCheckBtn.Location = new Point(261, 42);
+            emailCheckBtn.Margin = new Padding(2);
             emailCheckBtn.Name = "emailCheckBtn";
-            emailCheckBtn.Size = new Size(128, 34);
+            emailCheckBtn.Size = new Size(90, 24);
             emailCheckBtn.TabIndex = 6;
             emailCheckBtn.Text = "이메일 확인";
             emailCheckBtn.UseVisualStyleBackColor = true;
@@ -98,18 +105,20 @@
             // 
             // createAccountBtn
             // 
-            createAccountBtn.Location = new Point(235, 229);
+            createAccountBtn.Location = new Point(164, 137);
+            createAccountBtn.Margin = new Padding(2);
             createAccountBtn.Name = "createAccountBtn";
-            createAccountBtn.Size = new Size(112, 34);
+            createAccountBtn.Size = new Size(78, 25);
             createAccountBtn.TabIndex = 7;
             createAccountBtn.Text = "계정 생성";
             createAccountBtn.UseVisualStyleBackColor = true;
+            createAccountBtn.Click += createAccountBtn_Click;
             // 
             // CreateAccountForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(592, 322);
+            ClientSize = new Size(414, 193);
             Controls.Add(createAccountBtn);
             Controls.Add(emailCheckBtn);
             Controls.Add(passwordCheckTextBox);
@@ -118,9 +127,9 @@
             Controls.Add(emailTextBox);
             Controls.Add(passwordLabel);
             Controls.Add(emailLabel);
+            Margin = new Padding(2);
             Name = "CreateAccountForm";
             Text = "CreateAccount";
-            FormClosing += CreateFormClosing;
             ResumeLayout(false);
             PerformLayout();
         }

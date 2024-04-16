@@ -2,6 +2,8 @@
 using HiveServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using ZLogger;
 
 namespace HiveServer.Controllers
 {
@@ -9,37 +11,36 @@ namespace HiveServer.Controllers
     [ApiController]
     public class CreateAccountController : ControllerBase
     {
-        private readonly ILogger<CreateAccountController> logger;
+        private readonly ILogger<CreateAccountController> _logger;
 
-        private readonly IAccountDB accountDB;
+        private readonly IAccountDB _accountDB;
 
 
         public CreateAccountController(ILogger<CreateAccountController> logger, IAccountDB accountDB)
         {
-            this.logger = logger;
-            this.accountDB = accountDB;
+            this._logger = logger;
+            this._accountDB = accountDB;
         }
 
         [HttpPost]
         [Route("create")]
-        public IActionResult Create([FromBody] ReqCreateAccount model)
+        public async Task<ResCreateAccount> Create([FromBody] ReqCreateAccount model)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (accountDB.CreateAccount(model.Email, model.Password).Result == ErrorCode.CreateAccountError)
-            {
-                return BadRequest();
-            }
+            var result = await _accountDB.CreateAccount(model.Email, model.Password);
 
             ResCreateAccount res = new ResCreateAccount
             {
                 Result = true
             };
 
-            return Ok(res);
+            if (result == ErrorCode.CreateAccountError)
+            {
+                res.Result = false;
+            }
+
+            _logger.ZLogDebug($"계정 생성 : {model.Email}");
+
+            return res;
         }
     }
 }

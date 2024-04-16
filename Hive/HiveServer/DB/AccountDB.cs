@@ -12,32 +12,39 @@ namespace HiveServer.DB
 
     public class AccountDB : IAccountDB
     {
-        private MySqlConnection connection;
-        private MySqlCompiler compiler;
-        private QueryFactory queryFactory;
+        private IConfiguration _config;
+        private MySqlConnection _connection;
+        private MySqlCompiler _compiler;
+        private QueryFactory _queryFactory;
 
-        public AccountDB()
+        public AccountDB(IConfiguration config)
         {
-            connection = new MySqlConnection("Server=localhost;Port=3306;Database=accountDB;Uid=root;Pwd=1234");
-            compiler = new MySqlCompiler();
+            _config = config;
 
-            connection.Open();
-            queryFactory = new QueryFactory(connection, compiler);
+            _connection = new MySqlConnection(_config.GetConnectionString("AccountDB"));
+            _compiler = new MySqlCompiler();
+
+            _connection.Open();
+            _queryFactory = new QueryFactory(_connection, _compiler);
         }
 
         public void Dispose()
         {
-            connection.Close();
+            _connection.Close();
         }
 
         public async Task<ErrorCode> CreateAccount(string email, string password)
         {
             try
             {
-                var count = await queryFactory.Query("hiveusers").InsertAsync(new
+                string salt = Security.GetRandomSalt();
+                string encryptPassword = Security.Hasing(password, salt);
+
+                var count = await _queryFactory.Query("hiveusers").InsertAsync(new
                 {
                     Email = email,
-                    Password = password
+                    Password = encryptPassword,
+                    Salt = salt
                 });
 
                 if (count != 1)
@@ -55,46 +62,36 @@ namespace HiveServer.DB
 
         public async Task<ErrorCode> AccountLogin(string email, string password)
         {
-            try
+            var userInfo = await _queryFactory.Query("hiveusers").Select().Where(new
             {
-                var userInfo = await queryFactory.Query("hiveusers").Select().Where(new
-                {
-                    Email = email,
-                    Password = password
-                }).FirstAsync<ReqCreateAccount>();
+                Email = email,
+                Password = password
+            }).FirstOrDefaultAsync();
 
-                if (userInfo == null)
-                {
-                    return ErrorCode.AccountNOTExist;
-                }
-
-                return ErrorCode.None;
-            }
-            catch
+            if (userInfo == null)
             {
-                return ErrorCode.LoginAccountError;
+                return ErrorCode.AccountNOTExist;
             }
+
+            return ErrorCode.None;
         }
 
         public async Task<Tuple<ErrorCode, bool>> EmailCheck(string email)
         {
-            try
-            {
-                var userInfo = await queryFactory.Query("hiveusers").Select().Where(new
-                {
-                    Email = email
-                }).FirstAsync<ReqCreateAccount>();
+            var userInfo = await _queryFactory.Query("hiveusers")
+                                  .Select()
+                                  .Where(new { Email = email })
+                                  .FirstOrDefaultAsync();
 
-                if (userInfo != null)
-                {
-                    return new Tuple<ErrorCode, bool>(ErrorCode.EmailCheckError, false);
-                }
-
-                return new Tuple<ErrorCode, bool>(ErrorCode.None, true);
-            }
-            catch
+            if (userInfo != null)
             {
+                // 요소가 존재하는 경우의 처리
                 return new Tuple<ErrorCode, bool>(ErrorCode.EmailCheckError, false);
+            }
+            else
+            {
+                // 요소가 존재하지 않는 경우의 처리
+                return new Tuple<ErrorCode, bool>(ErrorCode.None, true);
             }
         }
     }

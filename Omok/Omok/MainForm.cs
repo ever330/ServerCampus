@@ -1,21 +1,21 @@
 using System.Text.Json;
 using System.Text;
-using Microsoft.VisualBasic.ApplicationServices;
 using System.Web;
-using Omok.Model;
-using Newtonsoft.Json;
 using System.Net.Http.Json;
+using Microsoft.VisualBasic.ApplicationServices;
+using Newtonsoft.Json;
+using Omok.Model;
 
 namespace Omok
 {
     public partial class Form1 : Form
     {
-        private CreateAccountForm createAccountForm;
+        private CreateAccountForm _createAccountForm;
 
         public Form1()
         {
             InitializeComponent();
-            createAccountForm = new CreateAccountForm(this);
+            _createAccountForm = new CreateAccountForm(this);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -30,7 +30,7 @@ namespace Omok
 
         }
 
-        private async Task CreateAccount(string userId, string password)
+        async Task CreateAccount(string userId, string password)
         {
             var client = new HttpClient();
 
@@ -54,8 +54,7 @@ namespace Omok
 
         private void toCreateAccountFormBtn_Click(object sender, EventArgs e)
         {
-            createAccountForm.ShowDialog();
-            this.Enabled = false;
+            _createAccountForm.ShowDialog();
         }
     }
 }

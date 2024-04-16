@@ -39,10 +39,9 @@
             // 
             // loginBtn
             // 
-            loginBtn.Location = new Point(174, 210);
-            loginBtn.Margin = new Padding(4, 5, 4, 5);
+            loginBtn.Location = new Point(122, 126);
             loginBtn.Name = "loginBtn";
-            loginBtn.Size = new Size(107, 38);
+            loginBtn.Size = new Size(75, 23);
             loginBtn.TabIndex = 0;
             loginBtn.Text = "로그인";
             loginBtn.UseVisualStyleBackColor = true;
@@ -50,54 +49,50 @@
             // 
             // idTextBox
             // 
-            idTextBox.Location = new Point(210, 80);
-            idTextBox.Margin = new Padding(4, 5, 4, 5);
+            idTextBox.Location = new Point(147, 48);
             idTextBox.Name = "idTextBox";
-            idTextBox.Size = new Size(243, 31);
+            idTextBox.Size = new Size(171, 23);
             idTextBox.TabIndex = 1;
             // 
             // pwTextBox
             // 
-            pwTextBox.Location = new Point(210, 145);
-            pwTextBox.Margin = new Padding(4, 5, 4, 5);
+            pwTextBox.Location = new Point(147, 87);
             pwTextBox.Name = "pwTextBox";
-            pwTextBox.Size = new Size(243, 31);
+            pwTextBox.Size = new Size(171, 23);
             pwTextBox.TabIndex = 2;
             // 
             // emailLabel
             // 
             emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(120, 80);
-            emailLabel.Margin = new Padding(4, 0, 4, 0);
+            emailLabel.Location = new Point(84, 48);
             emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(82, 25);
+            emailLabel.Size = new Size(54, 15);
             emailLabel.TabIndex = 3;
             emailLabel.Text = "이메일 : ";
             // 
             // passwordLabel
             // 
             passwordLabel.AutoSize = true;
-            passwordLabel.Location = new Point(102, 145);
-            passwordLabel.Margin = new Padding(4, 0, 4, 0);
+            passwordLabel.Location = new Point(71, 87);
             passwordLabel.Name = "passwordLabel";
-            passwordLabel.Size = new Size(100, 25);
+            passwordLabel.Size = new Size(66, 15);
             passwordLabel.TabIndex = 4;
             passwordLabel.Text = "비밀번호 : ";
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new Point(124, 273);
-            richTextBox1.Margin = new Padding(4, 5, 4, 5);
+            richTextBox1.Location = new Point(87, 164);
             richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(368, 196);
+            richTextBox1.Size = new Size(259, 119);
             richTextBox1.TabIndex = 6;
             richTextBox1.Text = "";
             // 
             // toCreateAccountFormBtn
             // 
-            toCreateAccountFormBtn.Location = new Point(341, 210);
+            toCreateAccountFormBtn.Location = new Point(239, 126);
+            toCreateAccountFormBtn.Margin = new Padding(2, 2, 2, 2);
             toCreateAccountFormBtn.Name = "toCreateAccountFormBtn";
-            toCreateAccountFormBtn.Size = new Size(112, 34);
+            toCreateAccountFormBtn.Size = new Size(78, 23);
             toCreateAccountFormBtn.TabIndex = 7;
             toCreateAccountFormBtn.Text = "회원가입";
             toCreateAccountFormBtn.UseVisualStyleBackColor = true;
@@ -105,9 +100,9 @@
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(606, 505);
+            ClientSize = new Size(424, 303);
             Controls.Add(toCreateAccountFormBtn);
             Controls.Add(richTextBox1);
             Controls.Add(passwordLabel);
@@ -115,7 +110,6 @@
             Controls.Add(pwTextBox);
             Controls.Add(idTextBox);
             Controls.Add(loginBtn);
-            Margin = new Padding(4, 5, 4, 5);
             Name = "Form1";
             Text = "Form1";
             Load += Form1_Load;

@@ -10,33 +10,33 @@
 
     public class OmokDB : IOmokDB
     {
-        private MySqlConnection connection;
-        private MySqlCompiler compiler;
-        private QueryFactory queryFactory;
+        private MySqlConnection _connection;
+        private MySqlCompiler _compiler;
+        private QueryFactory _queryFactory;
 
         public OmokDB()
         {
-            connection = new MySqlConnection("Server=localhost;Port=3306;Database=omokDB;Uid=root;Pwd=1234");
-            compiler = new MySqlCompiler();
+            _connection = new MySqlConnection("Server=localhost;Port=3306;Database=omokDB;Uid=root;Pwd=1234");
+            _compiler = new MySqlCompiler();
 
-            connection.Open();
-            queryFactory = new QueryFactory(connection, compiler);
+            _connection.Open();
+            _queryFactory = new QueryFactory(_connection, _compiler);
         }
 
         public void Dispose()
         {
-            connection.Close();
+            _connection.Close();
         }
 
         public async Task<ErrorCode> CreateUserGameData(string email)
         {
             try
             {
-                var count = await queryFactory.Query("usergamedata").InsertAsync(new
+                var count = await _queryFactory.Query("usergamedata").InsertAsync(new
                 {
                     Email = email,
                     Level = 1,
-                    exp = 0,
+                    Exp = 0,
                     WinCount = 0,
                     LoseCount = 0
                 }) ;
