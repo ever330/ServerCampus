@@ -10,13 +10,16 @@
 
     public class OmokDB : IOmokDB
     {
+        private IConfiguration _config;
         private MySqlConnection _connection;
         private MySqlCompiler _compiler;
         private QueryFactory _queryFactory;
 
-        public OmokDB()
+        public OmokDB(IConfiguration config)
         {
-            _connection = new MySqlConnection("Server=localhost;Port=3306;Database=omokDB;Uid=root;Pwd=1234");
+            _config = config;
+
+            _connection = new MySqlConnection(_config.GetConnectionString("OmokDB"));
             _compiler = new MySqlCompiler();
 
             _connection.Open();
@@ -52,6 +55,30 @@
             {
                 return ErrorCode.CreateGameDataError;
             }
+        }
+
+        public async Task<Tuple<ErrorCode, UserGameData>> GetUserGameData(string email)
+        {
+            var userInfo = await _queryFactory.Query("usergamedata").Select().Where(new
+            {
+                Email = email
+            }).FirstOrDefaultAsync();
+
+            UserGameData userGameData = new UserGameData
+            {
+                Level = userInfo.Level,
+                Exp = userInfo.Exp,
+                WinCount = userInfo.WinCount,
+                LoseCount = userInfo.LoseCount
+            };
+
+            if (userInfo == null)
+            {
+                return new Tuple<ErrorCode, UserGameData>(ErrorCode.UserDataNotExist, userGameData);
+            }
+
+
+            return new Tuple<ErrorCode, UserGameData>(ErrorCode.None, userGameData);
         }
     }
 }

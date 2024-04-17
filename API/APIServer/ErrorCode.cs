@@ -9,7 +9,8 @@
         EmailCheckError = 1002,
         VerifyTokenError = 1003,
 
-        AccountNOTExist = 1100,
+        AccountNotExist = 1100,
+        UserDataNotExist = 1101,
 
         CreateGameDataError = 1200,
     }

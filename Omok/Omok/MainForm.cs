@@ -15,13 +15,16 @@ namespace Omok
     public partial class Form1 : Form
     {
         private CreateAccountForm _createAccountForm;
+        private InGameForm _inGameForm;
+
         private string _myEmail;
         private string _myAuthToken;
 
         public Form1()
         {
             InitializeComponent();
-            _createAccountForm = new CreateAccountForm(this);
+            _createAccountForm = new CreateAccountForm();
+            _inGameForm = new InGameForm();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -128,6 +131,8 @@ namespace Omok
             if (res.Result == ErrorCode.None)
             {
                 richTextBox1.Text += "API서버 로그인이 완료되었습니다.\n";
+                _inGameForm.ShowDialog();
+                _inGameForm.SetInGameData(_myEmail, res.GameData);
             }
         }
     }

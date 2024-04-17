@@ -46,13 +46,37 @@ namespace APIServer.Controllers
 
             ResLoginToAPI resLogin = new ResLoginToAPI
             {
-                Result = res.Result,
+                Result = res.Result
             };
+
 
             if (res.Result == ErrorCode.None)
             {
                 _logger.ZLogInformation($"{model.Email} : 토큰 유효");
                 _redisDB.SetAuthToken(model.Email, model.AuthToken);
+                Tuple<ErrorCode, UserGameData> getUserData = await _omokDB.GetUserGameData(model.Email);
+
+                if (getUserData.Item1 == ErrorCode.UserDataNotExist)
+                {
+                    await _omokDB.CreateUserGameData(model.Email);
+                    resLogin.GameData = new UserGameData
+                    {
+                        Level = 1,
+                        Exp = 0,
+                        WinCount = 0,
+                        LoseCount = 0
+                    };
+                }
+                else
+                {
+                    resLogin.GameData = new UserGameData
+                    {
+                        Level = getUserData.Item2.Level,
+                        Exp = getUserData.Item2.Exp,
+                        WinCount = getUserData.Item2.WinCount,
+                        LoseCount = getUserData.Item2.LoseCount
+                    };
+                }
             }
             else
             {

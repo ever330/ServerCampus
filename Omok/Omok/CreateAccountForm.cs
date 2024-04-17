@@ -18,12 +18,9 @@ namespace Omok
 {
     public partial class CreateAccountForm : Form
     {
-        private Form1 _mainForm;
-
-        public CreateAccountForm(Form1 form)
+        public CreateAccountForm()
         {
             InitializeComponent();
-            _mainForm = form;
         }
 
         private async void emailCheckBtn_Click(object sender, EventArgs e)

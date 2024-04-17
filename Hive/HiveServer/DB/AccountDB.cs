@@ -69,12 +69,12 @@ namespace HiveServer.DB
 
             if (userInfo == null)
             {
-                return ErrorCode.AccountNOTExist;
+                return ErrorCode.AccountNotExist;
             }
 
-            string encryptPassword = Security.Hasing(password, userInfo.salt);
+            string encryptPassword = Security.Hasing(password, userInfo.Salt);
 
-            if (encryptPassword != userInfo.password)
+            if (encryptPassword != userInfo.Password)
             {
                 return ErrorCode.LoginError;
             }
