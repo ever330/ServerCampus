@@ -131,8 +131,8 @@ namespace Omok
             if (res.Result == ErrorCode.None)
             {
                 richTextBox1.Text += "API서버 로그인이 완료되었습니다.\n";
-                _inGameForm.ShowDialog();
                 _inGameForm.SetInGameData(_myEmail, res.GameData);
+                _inGameForm.ShowDialog();
             }
         }
     }

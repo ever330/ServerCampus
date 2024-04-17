@@ -38,9 +38,12 @@ namespace Omok
         public void RefreshUserData()
         {
             levelTextBox.Text = _myLevel + $"({_myExp})";
-
-            float winningRate = _myWinCount / (_myWinCount + _myLoseCount);
-            winningRateTextBox.Text = winningRate + $"W:{_myWinCount}/L:{_myLoseCount}";
+            float winningRate = 0;
+            if (_myWinCount != 0)
+            {
+                winningRate = _myWinCount / (_myWinCount + _myLoseCount);
+            }
+            winningRateTextBox.Text = winningRate + $"(W:{_myWinCount}/L:{_myLoseCount})";
         }
     }
 }

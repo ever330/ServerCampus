@@ -64,21 +64,21 @@
                 Email = email
             }).FirstOrDefaultAsync();
 
-            UserGameData userGameData = new UserGameData
+            UserGameData userData = new UserGameData
             {
+                Email = email,
                 Level = userInfo.Level,
                 Exp = userInfo.Exp,
                 WinCount = userInfo.WinCount,
                 LoseCount = userInfo.LoseCount
             };
 
-            if (userInfo == null)
+            if (userInfo == null || userInfo.Level == 0)
             {
-                return new Tuple<ErrorCode, UserGameData>(ErrorCode.UserDataNotExist, userGameData);
+                return new Tuple<ErrorCode, UserGameData>(ErrorCode.UserDataNotExist, userInfo);
             }
 
-
-            return new Tuple<ErrorCode, UserGameData>(ErrorCode.None, userGameData);
+            return new Tuple<ErrorCode, UserGameData>(ErrorCode.None, userData);
         }
     }
 }
