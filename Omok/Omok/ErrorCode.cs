@@ -16,8 +16,11 @@ namespace Omok
         VerifyTokenError = 1003,
 
         AccountNotExist = 1100,
-        UserDataNotExist = 1101,
+        AccountAlreadyExist = 1101,
+        SetTokenError = 1102,
 
-        CreateGameDataError = 1200,
+        UserDataNotExist = 1200,
+        CreateUserDataError = 1201,
+        GetUserDataError = 1202,
     }
 }

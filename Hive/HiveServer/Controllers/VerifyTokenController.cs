@@ -1,4 +1,4 @@
-﻿using HiveServer.DB;
+﻿using HiveServer.Repository;
 using HiveServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,18 +23,18 @@ namespace HiveServer.Controllers
 
         [HttpPost]
         [Route("verify")]
-        public async Task<ResVerifyAuthToken> Verify([FromBody] ReqVerifyAuthToken model)
+        public async Task<ResVerifyAuthToken> Verify([FromBody] ReqVerifyAuthToken request)
         {
-            bool result =  await _redisDB.VerifyToken(model.Email, model.AuthToken);
+            ErrorCode result =  await _redisDB.VerifyToken(request.Email, request.AuthToken);
 
-            ResVerifyAuthToken res = new ResVerifyAuthToken();
-            if (result)
+            ResVerifyAuthToken res = new ResVerifyAuthToken
             {
-                res.Result = ErrorCode.None;
-            }
-            else
+                Result = result
+            };
+
+            if (result != ErrorCode.None)
             {
-                res.Result = ErrorCode.VerifyTokenError;
+                _logger.ZLogError($"{0} : 토큰 검증 에러 발생", request.Email);
             }
 
             return res;

@@ -23,48 +23,6 @@ namespace Omok
             InitializeComponent();
         }
 
-        private async void emailCheckBtn_Click(object sender, EventArgs e)
-        {
-            bool valid = Regex.IsMatch(emailTextBox.Text, @"[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?");
-
-            if (valid)
-            {
-                await CheckEmail(emailTextBox.Text);
-            }
-            else
-            {
-                MessageBox.Show("이메일 형식이 잘못되었습니다.");
-            }
-        }
-
-        private async Task CheckEmail(string email)
-        {
-            var client = new HttpClient();
-
-            var model = new ReqCheckEmail
-            {
-                Email = email
-            };
-
-            var response = await client.PostAsJsonAsync("https://localhost:44349/api/EmailCheck/check", model);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                MessageBox.Show("오류가 발생하였습니다. 상태 코드: " + response.StatusCode);
-            }
-
-            ResCheckEmail res = await response.Content.ReadFromJsonAsync<ResCheckEmail>();
-
-            if (res.Result == ErrorCode.None)
-            {
-                MessageBox.Show("사용 가능한 이메일입니다.");
-            }
-            else
-            {
-                MessageBox.Show("사용 불가능한 이메일입니다.");
-            }
-        }
-
         private async void createAccountBtn_Click(object sender, EventArgs e)
         {
             if (passwordTextBox.Text == passwordCheckTextBox.Text)
@@ -73,7 +31,7 @@ namespace Omok
             }
             else
             {
-                MessageBox.Show("비밀번호가 일치하지 않습니다.");
+                MessageBox.Show("비밀번호를 확인해주세요.");
             }
         }
 
@@ -93,21 +51,31 @@ namespace Omok
                 encryptPassword = hash.ToString();
             }
 
-            var model = new ReqCreateAccount
+            var request = new ReqCreateAccount
             {
                 Email = email,
                 Password = encryptPassword
             };
 
-            var response = await client.PostAsJsonAsync("https://localhost:44349/api/CreateAccount/create", model);
+            var response = await client.PostAsJsonAsync("http://localhost:5229/api/CreateAccount/create", request);
 
 
-            ResCreateAccount res = await response.Content.ReadFromJsonAsync<ResCreateAccount>();
+            ResCreateAccount? res = await response.Content.ReadFromJsonAsync<ResCreateAccount>();
+
+            if (res == null)
+            {
+                MessageBox.Show("계정 생성에 실패하였습니다.");
+                return;
+            }
 
             if (res.Result == ErrorCode.None)
             {
                 MessageBox.Show("계정이 생성되었습니다.");
                 this.Close();
+            }
+            else if (res.Result == ErrorCode.AccountAlreadyExist)
+            {
+                MessageBox.Show("이미 존재하는 계정입니다.");
             }
             else
             {

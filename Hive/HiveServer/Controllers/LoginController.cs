@@ -1,4 +1,4 @@
-﻿using HiveServer.DB;
+﻿using HiveServer.Repository;
 using HiveServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +25,9 @@ namespace HiveServer.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<ResLoginToHive> Login([FromBody] ReqLoginToHive model)
+        public async Task<ResLoginToHive> Login([FromBody] ReqLoginToHive request)
         {
-            var result = await _accountDB.AccountLogin(model.Email, model.Password);
+            var result = await _accountDB.AccountLogin(request.Email, request.Password);
 
             ResLoginToHive res = new ResLoginToHive
             {
@@ -36,14 +36,17 @@ namespace HiveServer.Controllers
 
             if (res.Result == ErrorCode.None)
             {
-                _logger.ZLogDebug($"로그인 성공 : {model.Email}");
+                _logger.ZLogInformation($"로그인 성공 : {request.Email}");
+
                 string authToken = Security.CreateAuthToken();
                 res.AuthToken = authToken;
-                _redisDB.SetAuthToken(model.Email, authToken);
+
+                res.Result = _redisDB.SetAuthToken(request.Email, authToken);
             }
             else
             {
-                _logger.ZLogDebug($"로그인 실패 : {model.Email}");
+                _logger.ZLogError($"로그인 실패 : {request.Email}, {res.Result}");
+
                 res.AuthToken = "";
             }
 

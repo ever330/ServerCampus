@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace HiveServer.Models
+namespace APIServer.Models
 {
-    public class ReqLoginToHive
+    public class ReqLoginToAPI
     {
         [Required]
         [Length(1, 50)]
@@ -10,6 +10,6 @@ namespace HiveServer.Models
         public string Email { get; set; } = null!;
         [Required]
         [Length(1, 50)]
-        public string Password { get; set; } = null!;
+        public string AuthToken { get; set; } = null!;
     }
 }

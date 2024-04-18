@@ -1,4 +1,4 @@
-﻿namespace APIServer.DB
+﻿namespace APIServer.Repository
 {
     using APIServer.Models;
     using Dapper;
@@ -8,14 +8,14 @@
     using SqlKata.Execution;
     using System.Reflection;
 
-    public class OmokDB : IOmokDB
+    public class GameDB : IGameDB
     {
         private IConfiguration _config;
         private MySqlConnection _connection;
         private MySqlCompiler _compiler;
         private QueryFactory _queryFactory;
 
-        public OmokDB(IConfiguration config)
+        public GameDB(IConfiguration config)
         {
             _config = config;
 
@@ -46,39 +46,36 @@
 
                 if (count != 1)
                 {
-                    return ErrorCode.CreateGameDataError;
+                    return ErrorCode.CreateUserDataError;
                 }
 
                 return ErrorCode.None;
             }
             catch
             {
-                return ErrorCode.CreateGameDataError;
+                return ErrorCode.CreateUserDataError;
             }
         }
 
-        public async Task<Tuple<ErrorCode, UserGameData>> GetUserGameData(string email)
+        public async Task<Tuple<ErrorCode, UserGameData?>> GetUserGameData(string email)
         {
-            var userInfo = await _queryFactory.Query("usergamedata").Select().Where(new
+            try
             {
-                Email = email
-            }).FirstOrDefaultAsync();
+                var userData = await _queryFactory.Query("usergamedata").Select().Where(new
+                {
+                    Email = email
+                }).FirstOrDefaultAsync<UserGameData>();
 
-            UserGameData userData = new UserGameData
-            {
-                Email = email,
-                Level = userInfo.Level,
-                Exp = userInfo.Exp,
-                WinCount = userInfo.WinCount,
-                LoseCount = userInfo.LoseCount
-            };
-
-            if (userInfo == null || userInfo.Level == 0)
-            {
-                return new Tuple<ErrorCode, UserGameData>(ErrorCode.UserDataNotExist, userInfo);
+                if (userData == null || userData.Level == 0)
+                {
+                    return new Tuple<ErrorCode, UserGameData?>(ErrorCode.UserDataNotExist, userData);
+                }
+                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.None, userData);
             }
-
-            return new Tuple<ErrorCode, UserGameData>(ErrorCode.None, userData);
+            catch
+            {
+                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.GetUserDataError, null);
+            }
         }
     }
 }

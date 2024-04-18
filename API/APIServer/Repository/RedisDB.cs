@@ -1,13 +1,7 @@
-﻿using System;
+﻿using APIServer.Models;
 using CloudStructures.Structures;
-using MySqlConnector;
-using SqlKata.Compilers;
-using SqlKata.Execution;
-using HiveServer.Models;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using StackExchange.Redis;
 
-namespace HiveServer.DB
+namespace APIServer.Repository
 {
     public class RedisDB : IRedisDB
     {
@@ -36,22 +30,6 @@ namespace HiveServer.DB
             var defaultExpiry = TimeSpan.FromDays(1);
             _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
             _redis.SetAsync(newUser).Wait();
-        }
-
-        public async Task<bool> VerifyToken(string email, string authToken)
-        {
-            var defaultExpiry = TimeSpan.FromDays(1);
-            _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
-            var result = await _redis.GetAsync();
-
-            if (authToken == result.Value.AuthToken)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
         }
     }
 }

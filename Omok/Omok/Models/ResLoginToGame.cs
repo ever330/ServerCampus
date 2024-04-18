@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Omok.Models
 {
-    public class ResLoginToAPI
+    public class ResLoginToGame
     {
         public ErrorCode Result { get; set; }
-        public UserGameData GameData { get; set; }
+        public UserGameData? GameData { get; set; }
     }
 }

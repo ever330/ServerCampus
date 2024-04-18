@@ -1,4 +1,4 @@
-﻿namespace APIServer.DB
+﻿namespace APIServer.Repository
 {
     public interface IRedisDB : IDisposable
     {

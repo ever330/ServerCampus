@@ -1,4 +1,4 @@
-﻿using HiveServer.DB;
+﻿using HiveServer.Repository;
 using HiveServer.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,16 +24,23 @@ namespace HiveServer.Controllers
 
         [HttpPost]
         [Route("create")]
-        public async Task<ResCreateAccount> Create([FromBody] ReqCreateAccount model)
+        public async Task<ResCreateAccount> Create([FromBody] ReqCreateAccount request)
         {
-            var result = await _accountDB.CreateAccount(model.Email, model.Password);
+            var result = await _accountDB.CreateAccount(request.Email, request.Password);
 
             ResCreateAccount res = new ResCreateAccount
             {
                 Result = result
             };
 
-            _logger.ZLogDebug($"계정 생성 : {model.Email}");
+            if (result == ErrorCode.None)
+            {
+                _logger.ZLogInformation($"{request.Email} 계정 생성");
+            }
+            else
+            {
+                _logger.ZLogInformation($"{request.Email} 계정 실패 : {result}");
+            }
 
             return res;
         }

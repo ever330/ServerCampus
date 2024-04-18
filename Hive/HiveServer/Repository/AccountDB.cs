@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting.Server;
 
-namespace HiveServer.DB
+namespace HiveServer.Repository
 {
     using HiveServer.Models;
     using Dapper;
@@ -49,7 +49,7 @@ namespace HiveServer.DB
 
                 if (count != 1)
                 {
-                    return ErrorCode.CreateAccountError;
+                    return ErrorCode.AccountAlreadyExist;
                 }
 
                 return ErrorCode.None;
@@ -65,7 +65,7 @@ namespace HiveServer.DB
             var userInfo = await _queryFactory.Query("hiveusers").Select().Where(new
             {
                 Email = email
-            }).FirstOrDefaultAsync();
+            }).FirstOrDefaultAsync<AccountInfo>();
 
             if (userInfo == null)
             {
@@ -80,25 +80,6 @@ namespace HiveServer.DB
             }
 
             return ErrorCode.None;
-        }
-
-        public async Task<Tuple<ErrorCode, bool>> EmailCheck(string email)
-        {
-            var userInfo = await _queryFactory.Query("hiveusers")
-                                  .Select()
-                                  .Where(new { Email = email })
-                                  .FirstOrDefaultAsync();
-
-            if (userInfo != null)
-            {
-                // 요소가 존재하는 경우의 처리
-                return new Tuple<ErrorCode, bool>(ErrorCode.EmailCheckError, false);
-            }
-            else
-            {
-                // 요소가 존재하지 않는 경우의 처리
-                return new Tuple<ErrorCode, bool>(ErrorCode.None, true);
-            }
         }
     }
 }

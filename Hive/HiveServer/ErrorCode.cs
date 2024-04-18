@@ -10,8 +10,7 @@
         VerifyTokenError = 1003,
 
         AccountNotExist = 1100,
-        UserDataNotExist = 1101,
-
-        CreateGameDataError = 1200,
+        AccountAlreadyExist = 1101,
+        SetTokenError = 1102
     }
 }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Omok.Models
 {
-    public class ReqLoginToAPI
+    public class ReqLoginToGame
     {
-        public string Email { get; set; }
-        public string AuthToken { get; set; }
+        public string Email { get; set; } = null!;
+        public string AuthToken { get; set; } = null!;
     }
 }

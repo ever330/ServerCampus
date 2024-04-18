@@ -2,7 +2,7 @@
 {
     public class RedisUserInfo
     {
-        public string Email { get; set; }
-        public string AuthToken { get; set; }
+        public string Email { get; set; } = null!;
+        public string AuthToken { get; set; } = null!;
     }
 }
