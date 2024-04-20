@@ -15,7 +15,6 @@ namespace HiveServer.Controllers
 
         private readonly IAccountDB _accountDB;
 
-
         public CreateAccountController(ILogger<CreateAccountController> logger, IAccountDB accountDB)
         {
             this._logger = logger;

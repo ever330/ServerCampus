@@ -9,7 +9,7 @@ namespace HiveServer.Models
         [RegularExpression("^[a-zA-Z0-9_\\.-]+@([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$")]
         public string Email { get; set; } = null!;
         [Required]
-        [Length(1, 50)]
+        [Length(1, 100)]
         public string Password { get; set; } = null!;
     }
 }

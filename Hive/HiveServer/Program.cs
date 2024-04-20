@@ -11,7 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddTransient<IAccountDB, AccountDB>();
-builder.Services.AddTransient<IRedisDB, RedisDB>();
+builder.Services.AddSingleton<IRedisDB, RedisDB>();
 
 builder.Services.AddLogging();
 

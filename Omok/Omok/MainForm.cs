@@ -88,6 +88,7 @@ namespace Omok
             else
             {
                 richTextBox1.Text += "Hive 로그인 오류가 발생하였습니다. 상태 코드: " + response.StatusCode + "\n";
+                return;
             }
 
             ResLoginToHive? res = await response.Content.ReadFromJsonAsync<ResLoginToHive>();
@@ -127,7 +128,7 @@ namespace Omok
                 AuthToken = _myAuthToken
             };
 
-            var response = await client.PostAsJsonAsync("https://localhost:44363/api/Login/login", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Login/login", request);
 
             if (response.IsSuccessStatusCode)
             {

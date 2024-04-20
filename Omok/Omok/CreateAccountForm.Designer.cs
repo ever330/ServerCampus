@@ -34,7 +34,6 @@
             passwordTextBox = new TextBox();
             passwordCheckTextBox = new TextBox();
             passwordCheckLabel = new Label();
-            emailCheckBtn = new Button();
             createAccountBtn = new Button();
             SuspendLayout();
             // 
@@ -94,17 +93,6 @@
             passwordCheckLabel.TabIndex = 4;
             passwordCheckLabel.Text = "비밀번호 확인 : ";
             // 
-            // emailCheckBtn
-            // 
-            emailCheckBtn.Location = new Point(297, 41);
-            emailCheckBtn.Margin = new Padding(2);
-            emailCheckBtn.Name = "emailCheckBtn";
-            emailCheckBtn.Size = new Size(90, 24);
-            emailCheckBtn.TabIndex = 6;
-            emailCheckBtn.Text = "이메일 확인";
-            emailCheckBtn.UseVisualStyleBackColor = true;
-            emailCheckBtn.Click += emailCheckBtn_Click;
-            // 
             // createAccountBtn
             // 
             createAccountBtn.Location = new Point(175, 140);
@@ -122,7 +110,6 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(414, 193);
             Controls.Add(createAccountBtn);
-            Controls.Add(emailCheckBtn);
             Controls.Add(passwordCheckTextBox);
             Controls.Add(passwordCheckLabel);
             Controls.Add(passwordTextBox);
@@ -144,7 +131,6 @@
         private TextBox passwordTextBox;
         private TextBox passwordCheckTextBox;
         private Label passwordCheckLabel;
-        private Button emailCheckBtn;
         private Button createAccountBtn;
     }
 }

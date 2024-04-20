@@ -19,7 +19,7 @@
         {
             _config = config;
 
-            _connection = new MySqlConnection(_config.GetConnectionString("OmokDB"));
+            _connection = new MySqlConnection(_config.GetConnectionString("GameDB"));
             _compiler = new MySqlCompiler();
 
             _connection.Open();

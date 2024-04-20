@@ -52,5 +52,35 @@ namespace HiveServer.Controllers
 
             return res;
         }
+
+        [HttpPost]
+        [Route("logintest")]
+        public async Task<ResLoginToHive> Login([FromBody] string Email, string Password)
+        {
+            var result = await _accountDB.AccountLogin(Email, Password);
+
+            ResLoginToHive res = new ResLoginToHive
+            {
+                Result = result
+            };
+
+            if (res.Result == ErrorCode.None)
+            {
+                _logger.ZLogInformation($"로그인 성공 : {Email}");
+
+                string authToken = Security.CreateAuthToken();
+                res.AuthToken = authToken;
+
+                res.Result = _redisDB.SetAuthToken(Email, authToken);
+            }
+            else
+            {
+                _logger.ZLogError($"로그인 실패 : {Email}, {res.Result}");
+
+                res.AuthToken = "";
+            }
+
+            return res;
+        }
     }
 }
