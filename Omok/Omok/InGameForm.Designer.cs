@@ -28,76 +28,129 @@
         /// </summary>
         private void InitializeComponent()
         {
+            emailTextLabel = new Label();
+            levelTextLabel = new Label();
+            WinLoseTextLabel = new Label();
+            attendanceBtn = new Button();
+            moneyTextLabel = new Label();
+            moneyLabel = new Label();
             emailLabel = new Label();
-            emailTextBox = new TextBox();
             levelLabel = new Label();
-            levelTextBox = new TextBox();
-            WinLoseLabel = new Label();
-            winningRateTextBox = new TextBox();
+            winLoseLabel = new Label();
+            mailboxBtn = new Button();
             SuspendLayout();
+            // 
+            // emailTextLabel
+            // 
+            emailTextLabel.AutoSize = true;
+            emailTextLabel.Location = new Point(20, 5);
+            emailTextLabel.Margin = new Padding(2, 0, 2, 0);
+            emailTextLabel.Name = "emailTextLabel";
+            emailTextLabel.Size = new Size(54, 15);
+            emailTextLabel.TabIndex = 0;
+            emailTextLabel.Text = "이메일 : ";
+            // 
+            // levelTextLabel
+            // 
+            levelTextLabel.AutoSize = true;
+            levelTextLabel.Location = new Point(240, 5);
+            levelTextLabel.Margin = new Padding(2, 0, 2, 0);
+            levelTextLabel.Name = "levelTextLabel";
+            levelTextLabel.Size = new Size(86, 15);
+            levelTextLabel.TabIndex = 2;
+            levelTextLabel.Text = "레벨(경험치) : ";
+            // 
+            // WinLoseTextLabel
+            // 
+            WinLoseTextLabel.AutoSize = true;
+            WinLoseTextLabel.Location = new Point(396, 5);
+            WinLoseTextLabel.Margin = new Padding(2, 0, 2, 0);
+            WinLoseTextLabel.Name = "WinLoseTextLabel";
+            WinLoseTextLabel.Size = new Size(42, 15);
+            WinLoseTextLabel.TabIndex = 4;
+            WinLoseTextLabel.Text = "승률 : ";
+            // 
+            // attendanceBtn
+            // 
+            attendanceBtn.Location = new Point(473, 235);
+            attendanceBtn.Name = "attendanceBtn";
+            attendanceBtn.Size = new Size(75, 23);
+            attendanceBtn.TabIndex = 6;
+            attendanceBtn.Text = "출석체크";
+            attendanceBtn.UseVisualStyleBackColor = true;
+            attendanceBtn.Click += attendanceBtn_Click;
+            // 
+            // moneyTextLabel
+            // 
+            moneyTextLabel.AutoSize = true;
+            moneyTextLabel.Location = new Point(20, 239);
+            moneyTextLabel.Name = "moneyTextLabel";
+            moneyTextLabel.Size = new Size(70, 15);
+            moneyTextLabel.TabIndex = 7;
+            moneyTextLabel.Text = "보유 머니 : ";
+            // 
+            // moneyLabel
+            // 
+            moneyLabel.AutoSize = true;
+            moneyLabel.Location = new Point(81, 239);
+            moneyLabel.Name = "moneyLabel";
+            moneyLabel.Size = new Size(14, 15);
+            moneyLabel.TabIndex = 8;
+            moneyLabel.Text = "0";
             // 
             // emailLabel
             // 
             emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(28, 9);
+            emailLabel.Location = new Point(79, 5);
             emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(82, 25);
-            emailLabel.TabIndex = 0;
-            emailLabel.Text = "이메일 : ";
-            // 
-            // emailTextBox
-            // 
-            emailTextBox.Location = new Point(116, 6);
-            emailTextBox.Name = "emailTextBox";
-            emailTextBox.ReadOnly = true;
-            emailTextBox.Size = new Size(209, 31);
-            emailTextBox.TabIndex = 1;
+            emailLabel.Size = new Size(36, 15);
+            emailLabel.TabIndex = 9;
+            emailLabel.Text = "email";
             // 
             // levelLabel
             // 
             levelLabel.AutoSize = true;
-            levelLabel.Location = new Point(343, 9);
+            levelLabel.Location = new Point(331, 5);
             levelLabel.Name = "levelLabel";
-            levelLabel.Size = new Size(128, 25);
-            levelLabel.TabIndex = 2;
-            levelLabel.Text = "레벨(경험치) : ";
+            levelLabel.Size = new Size(29, 15);
+            levelLabel.TabIndex = 10;
+            levelLabel.Text = "0(0)";
             // 
-            // levelTextBox
+            // winLoseLabel
             // 
-            levelTextBox.Location = new Point(477, 6);
-            levelTextBox.Name = "levelTextBox";
-            levelTextBox.ReadOnly = true;
-            levelTextBox.Size = new Size(77, 31);
-            levelTextBox.TabIndex = 3;
+            winLoseLabel.AutoSize = true;
+            winLoseLabel.Location = new Point(443, 5);
+            winLoseLabel.Name = "winLoseLabel";
+            winLoseLabel.Size = new Size(24, 15);
+            winLoseLabel.TabIndex = 11;
+            winLoseLabel.Text = "0%";
             // 
-            // WinLoseLabel
+            // mailboxBtn
             // 
-            WinLoseLabel.AutoSize = true;
-            WinLoseLabel.Location = new Point(565, 9);
-            WinLoseLabel.Name = "WinLoseLabel";
-            WinLoseLabel.Size = new Size(64, 25);
-            WinLoseLabel.TabIndex = 4;
-            WinLoseLabel.Text = "승률 : ";
-            // 
-            // winningRateTextBox
-            // 
-            winningRateTextBox.Location = new Point(635, 6);
-            winningRateTextBox.Name = "winningRateTextBox";
-            winningRateTextBox.ReadOnly = true;
-            winningRateTextBox.Size = new Size(150, 31);
-            winningRateTextBox.TabIndex = 5;
+            mailboxBtn.Location = new Point(392, 235);
+            mailboxBtn.Name = "mailboxBtn";
+            mailboxBtn.Size = new Size(75, 23);
+            mailboxBtn.TabIndex = 12;
+            mailboxBtn.Text = "우편함";
+            mailboxBtn.UseVisualStyleBackColor = true;
+            mailboxBtn.Click += mailboxBtn_Click;
             // 
             // InGameForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(winningRateTextBox);
-            Controls.Add(WinLoseLabel);
-            Controls.Add(levelTextBox);
+            ClientSize = new Size(560, 270);
+            Controls.Add(mailboxBtn);
+            Controls.Add(winLoseLabel);
             Controls.Add(levelLabel);
-            Controls.Add(emailTextBox);
             Controls.Add(emailLabel);
+            Controls.Add(moneyLabel);
+            Controls.Add(moneyTextLabel);
+            Controls.Add(attendanceBtn);
+            Controls.Add(WinLoseTextLabel);
+            Controls.Add(levelTextLabel);
+            Controls.Add(emailTextLabel);
+            Margin = new Padding(2);
             Name = "InGameForm";
             Text = "InGameForm";
             ResumeLayout(false);
@@ -106,11 +159,15 @@
 
         #endregion
 
+        private Label emailTextLabel;
+        private Label levelTextLabel;
+        private Label WinLoseTextLabel;
+        private Button attendanceBtn;
+        private Label moneyTextLabel;
+        private Label moneyLabel;
         private Label emailLabel;
-        private TextBox emailTextBox;
         private Label levelLabel;
-        private TextBox levelTextBox;
-        private Label WinLoseLabel;
-        private TextBox winningRateTextBox;
+        private Label winLoseLabel;
+        private Button mailboxBtn;
     }
 }

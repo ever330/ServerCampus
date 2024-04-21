@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ZLogger;
 using System.Reflection;
+using APIServer.Models.DAO;
 
 namespace APIServer.Controllers
 {
@@ -45,13 +46,18 @@ namespace APIServer.Controllers
 
             var checkRes = await CheckUserData(request.Email);
 
-            resLogin.Result = checkRes.Item1;
-            resLogin.GameData = checkRes.Item2;
-
-            if (resLogin.Result != ErrorCode.None)
+            if (resLogin.Result != ErrorCode.None || checkRes.Item2 == null)
             {
                 _logger.ZLogError($"{request.Email} : 유저 데이터 생성 실패");
+                return resLogin;
             }
+
+            resLogin.Result = checkRes.Item1;
+            resLogin.Level = checkRes.Item2.Level;
+            resLogin.Exp = checkRes.Item2.Exp;
+            resLogin.WinCount = checkRes.Item2.WinCount;
+            resLogin.LoseCount = checkRes.Item2.LoseCount;
+            resLogin.Money = checkRes.Item2.Money;
 
             return resLogin;
         }

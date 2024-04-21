@@ -1,4 +1,4 @@
-﻿using APIServer.Models;
+﻿using APIServer.Models.DAO;
 using CloudStructures.Structures;
 
 namespace APIServer.Repository
@@ -19,17 +19,51 @@ namespace APIServer.Repository
             _connection.GetConnection().Close();
         }
 
-        public void SetAuthToken(string email, string authToken)
+        public ErrorCode SetAuthToken(string email, string authToken)
         {
-            RedisUserInfo newUser = new RedisUserInfo
+            try
             {
-                Email = email,
-                AuthToken = authToken
-            };
+                RedisUserInfo newUser = new RedisUserInfo
+                {
+                    Email = email,
+                    AuthToken = authToken
+                };
+
+                var defaultExpiry = TimeSpan.FromDays(1);
+                _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
+                _redis.SetAsync(newUser).Wait();
+
+                return ErrorCode.None;
+            }
+            catch
+            {
+                return ErrorCode.SetGameServerTokenError;
+            }
+        }
+
+        public async Task<ErrorCode> CheckAuthToken(string email, string authToken)
+        {
 
             var defaultExpiry = TimeSpan.FromDays(1);
             _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
-            _redis.SetAsync(newUser).Wait();
+
+            try
+            {
+                var result = await _redis.GetAsync();
+
+                if (authToken == result.Value.AuthToken)
+                {
+                    return ErrorCode.None;
+                }
+                else
+                {
+                    return ErrorCode.CheckTokenError;
+                }
+            }
+            catch
+            {
+                return ErrorCode.CheckTokenError;
+            }
         }
     }
 }

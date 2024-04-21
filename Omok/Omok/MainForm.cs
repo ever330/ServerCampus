@@ -141,7 +141,7 @@ namespace Omok
 
             ResLoginToGame? res = await response.Content.ReadFromJsonAsync<ResLoginToGame>();
 
-            if (res == null || res.GameData == null)
+            if (res == null || res.Level == 0)
             {
                 MessageBox.Show("게임서버 로그인 실패. 상태 코드 : " + response.StatusCode);
                 return;
@@ -150,7 +150,7 @@ namespace Omok
             if (res.Result == ErrorCode.None)
             {
                 richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
-                _inGameForm.SetInGameData(_myEmail, res.GameData);
+                _inGameForm.SetInGameData(_myEmail, _myAuthToken, res.Level, res.Exp, res.WinCount, res.LoseCount, res.Money);
                 _inGameForm.ShowDialog();
             }
         }

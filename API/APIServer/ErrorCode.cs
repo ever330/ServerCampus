@@ -11,6 +11,12 @@
 
         UserDataNotExist = 1200,
         CreateUserDataError = 1201,
-        GetUserDataError = 1202,
+        SetGameServerTokenError =  1202,
+        GetUserDataError = 1203,
+        CheckTokenError = 1204,
+        AttendanceError = 1205,
+        AttendanceAlready = 1206,
+        PostMailError = 1207,
+        GetMailError = 1208,
     }
 }

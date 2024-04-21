@@ -2,13 +2,13 @@
 
 namespace HiveServer.Repository
 {
-    using HiveServer.Models;
     using Dapper;
     using MySqlConnector;
     using SqlKata;
     using SqlKata.Compilers;
     using SqlKata.Execution;
     using System.Reflection;
+    using HiveServer.Models.DAO;
 
     public class AccountDB : IAccountDB
     {
@@ -40,11 +40,11 @@ namespace HiveServer.Repository
                 string salt = Security.GetRandomSalt();
                 string encryptPassword = Security.Hasing(password, salt);
 
-                var count = await _queryFactory.Query("hiveusers").InsertAsync(new
+                var count = await _queryFactory.Query("hive_users").InsertAsync(new
                 {
-                    Email = email,
-                    Password = encryptPassword,
-                    Salt = salt
+                    email = email,
+                    password = encryptPassword,
+                    salt = salt
                 });
 
                 if (count != 1)
@@ -62,7 +62,7 @@ namespace HiveServer.Repository
 
         public async Task<ErrorCode> AccountLogin(string email, string password)
         {
-            var userInfo = await _queryFactory.Query("hiveusers").Select().Where(new
+            var userInfo = await _queryFactory.Query("hive_users").Select().Where(new
             {
                 Email = email
             }).FirstOrDefaultAsync<AccountInfo>();
