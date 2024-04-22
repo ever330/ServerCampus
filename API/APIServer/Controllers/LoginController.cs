@@ -28,7 +28,7 @@ namespace APIServer.Controllers
         [Route("login")]
         public async Task<ResLoginToGame> Login([FromBody] ReqLoginToAPI request)
         {
-            var res = await TryVerifyToken(request.Email, request.AuthToken);
+            var res = await TryVerifyToken(request.Id, request.AuthToken);
 
             ResLoginToGame resLogin = new ResLoginToGame
             {
@@ -37,18 +37,18 @@ namespace APIServer.Controllers
 
             if (res == ErrorCode.VerifyTokenError)
             {
-                _logger.ZLogError($"{request.Email} : 토큰 검증 실패");
+                _logger.ZLogError($"{request.Id} : 토큰 검증 실패");
                 return resLogin;
             }
 
-            _logger.ZLogInformation($"{request.Email} : 토큰 유효");
-            _redisDB.SetAuthToken(request.Email, request.AuthToken);
+            _logger.ZLogInformation($"{request.Id} : 토큰 유효");
+            _redisDB.SetAuthToken(request.Id, request.AuthToken);
 
-            var checkRes = await CheckUserData(request.Email);
+            var checkRes = await CheckUserData(request.Id);
 
             if (resLogin.Result != ErrorCode.None || checkRes.Item2 == null)
             {
-                _logger.ZLogError($"{request.Email} : 유저 데이터 생성 실패");
+                _logger.ZLogError($"{request.Id} : 유저 데이터 생성 실패");
                 return resLogin;
             }
 
@@ -62,11 +62,11 @@ namespace APIServer.Controllers
             return resLogin;
         }
 
-        private async Task<ErrorCode> TryVerifyToken(string email, string token)
+        private async Task<ErrorCode> TryVerifyToken(string id, string token)
         {
             var request = new ReqVerifyAuthToken
             {
-                Email = email,
+                Id = id,
                 AuthToken = token,
             };
 

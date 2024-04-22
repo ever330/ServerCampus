@@ -19,18 +19,18 @@ namespace APIServer.Repository
             _connection.GetConnection().Close();
         }
 
-        public ErrorCode SetAuthToken(string email, string authToken)
+        public ErrorCode SetAuthToken(string id, string authToken)
         {
             try
             {
                 RedisUserInfo newUser = new RedisUserInfo
                 {
-                    Email = email,
+                    Id = id,
                     AuthToken = authToken
                 };
 
                 var defaultExpiry = TimeSpan.FromDays(1);
-                _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
+                _redis = new RedisString<RedisUserInfo>(_connection, "UID" + id, defaultExpiry);
                 _redis.SetAsync(newUser).Wait();
 
                 return ErrorCode.None;
@@ -41,11 +41,11 @@ namespace APIServer.Repository
             }
         }
 
-        public async Task<ErrorCode> CheckAuthToken(string email, string authToken)
+        public async Task<ErrorCode> CheckAuthToken(string id, string authToken)
         {
 
             var defaultExpiry = TimeSpan.FromDays(1);
-            _redis = new RedisString<RedisUserInfo>(_connection, "UID" + email, defaultExpiry);
+            _redis = new RedisString<RedisUserInfo>(_connection, "UID" + id, defaultExpiry);
 
             try
             {

@@ -2,7 +2,7 @@
 {
     public interface IRedisDB : IDisposable
     {
-        public ErrorCode SetAuthToken(string email, string authToken);
-        public Task<ErrorCode> CheckAuthToken(string email, string authToken);
+        public ErrorCode SetAuthToken(string id, string authToken);
+        public Task<ErrorCode> CheckAuthToken(string id, string authToken);
     }
 }

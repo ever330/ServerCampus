@@ -32,22 +32,13 @@
             _connection.Close();
         }
 
-        public async Task<ErrorCode> CreateUserGameData(string email)
+        public async Task<ErrorCode> CreateUserGameData(string id)
         {
             try
             {
-                UserGameData userGameData = new UserGameData
-                {
-                    Email = email,
-                    Level = 1,
-                    Exp = 0,
-                    WinCount = 0,
-                    LoseCount = 0
-                };
-                //var count = await _queryFactory.Query("user_game_data").InsertAsync(userGameData);
                 var count = await _queryFactory.Query("user_game_data").InsertAsync(new
                 {
-                    email = email,
+                    id = id,
                     level = 1,
                     exp = 0,
                     win_count = 0,
@@ -67,11 +58,11 @@
             }
         }
 
-        public async Task<Tuple<ErrorCode, UserGameData?>> GetUserGameData(string email)
+        public async Task<Tuple<ErrorCode, UserGameData?>> GetUserGameData(string id)
         {
             try
             {
-                var userData = await _queryFactory.Query("user_game_data").Select().Where("Email", email).FirstOrDefaultAsync<UserGameData>();
+                var userData = await _queryFactory.Query("user_game_data").Select().Where("id", id).FirstOrDefaultAsync<UserGameData>();
 
                 if (userData == null || userData.Level == 0)
                 {
@@ -85,11 +76,11 @@
             }
         }
 
-        public async Task<Tuple<ErrorCode, int>> DailyAttendance(string email)
+        public async Task<Tuple<ErrorCode, int>> DailyAttendance(string id)
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("Email", email).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
                 var data = await _queryFactory.Query("user_daily_attendance").Select().WhereIn("uid", new List<object> { subQuery.uid }).Where("attendance_date", DateTime.Now.AddDays(-1)).FirstOrDefaultAsync<UserDailyAttendance>();
 
@@ -105,13 +96,11 @@
                     attendance.ConsecutiveAttendance = data.ConsecutiveAttendance + 1;
                 }
 
-                //var count = await _queryFactory.Query("user_daily_attendance").InsertAsync(attendance);
-
                 var count = await _queryFactory.Query("user_daily_attendance").InsertAsync(new
                 {
                     uid = subQuery.uid,
-                    attendance_date = DateTime.Now,
-                    consecutive_attendance = 1
+                    attendance_date = attendance.AttendanceDate,
+                    consecutive_attendance = attendance.ConsecutiveAttendance
                 });
 
                 if (count != 1)
@@ -127,11 +116,11 @@
             }
         }
 
-        public async Task<ErrorCode> CheckAttendanceAlready(string email)
+        public async Task<ErrorCode> CheckAttendanceAlready(string id)
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("Email", email).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
                 var todayCheck = await _queryFactory.Query("user_daily_attendance").Select().WhereIn("uid", subQuery.uid).Where("attendance_date", DateTime.Now).FirstOrDefaultAsync();
 
@@ -148,28 +137,20 @@
             }
         }
 
-        public async Task<ErrorCode> PostToMailbox(string email, string mailName, string mailContent, int reward)
+        public async Task<ErrorCode> PostToMailbox(string id, string mailName, string mailContent, int reward)
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("Email", email).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
                 if (subQuery == null)
                 {
                     return ErrorCode.PostMailError;
                 }
 
-                UserMailbox mail = new UserMailbox
-                {
-                    Uid = subQuery.uid,
-                    MailName = mailName,
-                    MailContent = mailContent,
-                    Reward = reward
-                };
-
                 var count = await _queryFactory.Query("user_mailbox").InsertAsync(new
                 {
-                    uid = mail.Uid,
+                    uid = subQuery.uid,
                     mail_name = mailName,
                     mail_content = mailContent,
                     reward = reward
@@ -188,11 +169,11 @@
             }
         }
 
-        public async Task<Tuple<ErrorCode, List<Mail>?>> GetMailbox(string email)
+        public async Task<Tuple<ErrorCode, List<Mail>?>> GetMailbox(string id)
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("Email", email).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
                 Query query = new Query("user_mailbox").Where("uid", subQuery.uid);
 

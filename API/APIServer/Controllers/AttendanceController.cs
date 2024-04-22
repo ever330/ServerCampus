@@ -28,8 +28,8 @@ namespace APIServer.Controllers
         [Route("attendance")]
         public async Task<ResDailyAttendance> Attendance([FromBody] ReqDailyAttendance request)
         {
-            var check = await _redisDB.CheckAuthToken(request.Email, request.AuthToken);
-            var checkAttendanceAlready = await _gameDB.CheckAttendanceAlready(request.Email);
+            var check = await _redisDB.CheckAuthToken(request.Id, request.AuthToken);
+            var checkAttendanceAlready = await _gameDB.CheckAttendanceAlready(request.Id);
 
             ResDailyAttendance resLogin = new ResDailyAttendance
             {
@@ -38,7 +38,7 @@ namespace APIServer.Controllers
 
             if (check == ErrorCode.CheckTokenError)
             {
-                _logger.ZLogError($"{request.Email} : 토큰 확인 실패");
+                _logger.ZLogError($"{request.Id} : 토큰 확인 실패");
                 return resLogin;
             }
 
@@ -48,36 +48,36 @@ namespace APIServer.Controllers
                 return resLogin;
             }
 
-            var res = await _gameDB.DailyAttendance(request.Email);
+            var res = await _gameDB.DailyAttendance(request.Id);
 
             resLogin.Result = res.Item1;
             if (resLogin.Result == ErrorCode.AttendanceError)
             {
-                _logger.ZLogError($"{request.Email} : 출석 체크 실패");
+                _logger.ZLogError($"{request.Id} : 출석 체크 실패");
                 return resLogin;
             }
 
-            _logger.ZLogInformation($"{request.Email} : 출석 체크");
+            _logger.ZLogInformation($"{request.Id} : 출석 체크");
             resLogin.ConsecutiveAttendance = res.Item2;
 
-            await PostAttendanceMail(request.Email, resLogin.ConsecutiveAttendance);
+            await PostAttendanceMail(request.Id, resLogin.ConsecutiveAttendance);
 
             return resLogin;
         }
 
-        private async Task PostAttendanceMail(string email, int consecutiveAttendance)
+        private async Task PostAttendanceMail(string id, int consecutiveAttendance)
         {
             string mailName = "출석 체크 보상";
             string mailContent = "출석 체크 보상입니다.";
             int reward = consecutiveAttendance * RewardMoney;
 
-            var result = await _gameDB.PostToMailbox(email, mailName, mailContent, reward);
+            var result = await _gameDB.PostToMailbox(id, mailName, mailContent, reward);
 
             if (result == ErrorCode.PostMailError)
             {
-                _logger.ZLogError($"{email} : 우편 전송 에러");
+                _logger.ZLogError($"{id} : 우편 전송 에러");
             }
-            _logger.ZLogError($"{email} : 우편 전송 성공");
+            _logger.ZLogError($"{id} : 우편 전송 성공");
         }
     }
 }

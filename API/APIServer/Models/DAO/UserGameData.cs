@@ -5,8 +5,8 @@ namespace APIServer.Models.DAO
     [Table("user_game_data")]
     public class UserGameData
     {
-        [Column("email")]
-        public string Email { get; set; } = null!;
+        [Column("id")]
+        public string Id { get; set; } = null!;
         [Column("level")]
         public int Level { get; set; }
         [Column("exp")]

@@ -2,7 +2,7 @@
 {
     public class ReqDailyAttendance
     {
-        public string Email { get; set; } = null!;
+        public string Id { get; set; } = null!;
         public string AuthToken { get; set; } = null!;
     }
 }

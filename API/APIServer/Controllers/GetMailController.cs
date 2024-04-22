@@ -29,7 +29,7 @@ namespace APIServer.Controllers
         [Route("getMail")]
         public async Task<ResGetMail> GetMail([FromBody] ReqGetMail request)
         {
-            var check = await _redisDB.CheckAuthToken(request.Email, request.AuthToken);
+            var check = await _redisDB.CheckAuthToken(request.Id, request.AuthToken);
 
             ResGetMail resLogin = new ResGetMail
             {
@@ -38,16 +38,16 @@ namespace APIServer.Controllers
 
             if (check == ErrorCode.CheckTokenError)
             {
-                _logger.ZLogError($"{request.Email} : 토큰 확인 실패");
+                _logger.ZLogError($"{request.Id} : 토큰 확인 실패");
                 return resLogin;
             }
 
-            var mail = await _gameDB.GetMailbox(request.Email);
+            var mail = await _gameDB.GetMailbox(request.Id);
             resLogin.Result = mail.Item1;
 
             if (mail.Item1 == ErrorCode.GetMailError || mail.Item2 == null)
             {
-                _logger.ZLogError($"{request.Email} : 메일 가져오기 에러");
+                _logger.ZLogError($"{request.Id} : 메일 가져오기 에러");
                 return resLogin;
             }
 
