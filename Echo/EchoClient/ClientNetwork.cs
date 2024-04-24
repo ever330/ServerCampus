@@ -21,7 +21,7 @@ namespace EchoClient
             {
                 _soc = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-                var ipEp = new IPEndPoint(IPAddress.Parse("ip"), port);
+                var ipEp = new IPEndPoint(IPAddress.Parse(ip), port);
                 _soc.Connect(ipEp);
 
                 if (_soc == null || !_soc.Connected)
@@ -29,6 +29,7 @@ namespace EchoClient
                     return false;
                 }
 
+                NetworkMessageQ.Enqueue("서버에 연결되었습니다.");
                 return true;
             }
             catch (Exception ex)

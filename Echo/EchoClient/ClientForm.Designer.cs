@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             ipTextBox = new TextBox();
             ipLabel = new Label();
             portLabel = new Label();
@@ -37,7 +38,8 @@
             sendTextBox = new TextBox();
             sendBtn = new Button();
             logRichTextBox = new RichTextBox();
-            button1 = new Button();
+            disconnnectBtn = new Button();
+            processTimer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // ipTextBox
@@ -116,21 +118,22 @@
             logRichTextBox.TabIndex = 8;
             logRichTextBox.Text = "";
             // 
-            // button1
+            // disconnnectBtn
             // 
-            button1.Location = new Point(357, 11);
-            button1.Name = "button1";
-            button1.Size = new Size(57, 23);
-            button1.TabIndex = 9;
-            button1.Text = "해제";
-            button1.UseVisualStyleBackColor = true;
+            disconnnectBtn.Location = new Point(357, 11);
+            disconnnectBtn.Name = "disconnnectBtn";
+            disconnnectBtn.Size = new Size(57, 23);
+            disconnnectBtn.TabIndex = 9;
+            disconnnectBtn.Text = "해제";
+            disconnnectBtn.UseVisualStyleBackColor = true;
+            disconnnectBtn.Click += disconnectBtn_Click;
             // 
             // ClientForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(426, 297);
-            Controls.Add(button1);
+            Controls.Add(disconnnectBtn);
             Controls.Add(logRichTextBox);
             Controls.Add(sendBtn);
             Controls.Add(sendTextBox);
@@ -157,6 +160,7 @@
         private TextBox sendTextBox;
         private Button sendBtn;
         private RichTextBox logRichTextBox;
-        private Button button1;
+        private Button disconnnectBtn;
+        private System.Windows.Forms.Timer processTimer;
     }
 }

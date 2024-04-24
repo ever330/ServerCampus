@@ -11,7 +11,7 @@ namespace EchoServer
 {
     public class EBinaryRequestInfo : BinaryRequestInfo
     {
-        public short TotalData { get; set; }
+        public short PacketData { get; set; }
         public short PacketId { get; set; }
 
         public const int HEADER_SIZE = 4;
@@ -19,7 +19,7 @@ namespace EchoServer
         public EBinaryRequestInfo(short totalData, short packetId, byte[] body) 
             : base(null, body)
         { 
-            this.TotalData = totalData;
+            this.PacketData = totalData;
             this.PacketId = packetId;
         }
     }
