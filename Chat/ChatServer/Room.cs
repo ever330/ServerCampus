@@ -67,25 +67,25 @@ namespace ChatServer
 
         public void NotifyRoomUsers(string netSessionId)
         {
-            var packet = new RoomUsersPacket();
+            var packet = new NtfRoomUserListPacket();
             foreach (var user in UserList)
             {
                 packet.UserIdList.Add(user.UserId);
             }
 
             var body = MemoryPackSerializer.Serialize(packet);
-            var sendPacket = PacketSerializer.Serialize(PACKET_ID.S2C_USER_LIST, body);
+            var sendPacket = PacketSerializer.Serialize(PACKET_ID.NTF_ROOM_USER_LIST, body);
 
             NetSendFunc(netSessionId, sendPacket);
         }
 
         public void NofifyNewUser(string newNetSessionId, string newUserId)
         {
-            var packet = new NewUserPacket();
+            var packet = new NtfRoomNewUserPacket();
             packet.UserId = newUserId;
 
             var body = MemoryPackSerializer.Serialize(packet);
-            var sendPacket = PacketSerializer.Serialize(PACKET_ID.S2C_NEW_USER, body);
+            var sendPacket = PacketSerializer.Serialize(PACKET_ID.NTF_ROOM_NEW_USER, body);
 
             Broadcast(newNetSessionId, sendPacket);
         }
@@ -97,11 +97,11 @@ namespace ChatServer
                 return;
             }
 
-            var packet = new LeaveUserPacket();
+            var packet = new NtfRoomLeaveUserPacket();
             packet.UserId = userId;
 
             var body = MemoryPackSerializer.Serialize(packet);
-            var sendPacket = PacketSerializer.Serialize(PACKET_ID.S2C_LEAVE_USER, body);
+            var sendPacket = PacketSerializer.Serialize(PACKET_ID.NTF_ROOM_LEAVE_USER, body);
 
             Broadcast("", sendPacket);
         }

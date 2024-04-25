@@ -1,5 +1,7 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,5 +25,15 @@ namespace ChatServer
                 Body = packetBody;
             }
         }
+    }
+
+
+
+    [MemoryPackable]
+    public partial class InternalNtfRoomLeavePacket
+    {
+        public int RoomNumber;
+
+        public string UserId;
     }
 }

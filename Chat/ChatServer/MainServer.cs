@@ -72,6 +72,34 @@ namespace ChatServer
             _packetProcessor.Destroy();
         }
 
+        public bool SendData(string sessionId, byte[] sendData)
+        {
+            var session = GetSessionByID(sessionId);
+
+            try
+            {
+                if (session == null)
+                {
+                    return false;
+                }
+
+                session.Send(sendData, 0, sendData.Length);
+            }
+            catch (Exception ex)
+            {
+                MainLogger.Error($"{ex.ToString()},  {ex.StackTrace}");
+
+                session.SendEndWhenSendingTimeOut();
+                session.Close();
+            }
+            return true;
+        }
+
+        public void Distribute(ServerPacketData requestPacket)
+        {
+            _packetProcessor.InsertPacket(requestPacket);
+        }
+
         void OnConnected(ClientSession session)
         {
             MainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");

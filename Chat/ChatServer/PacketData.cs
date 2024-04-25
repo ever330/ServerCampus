@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,20 +34,84 @@ namespace ChatServer
     }
 
     [MemoryPackable]
-    public partial class RoomUsersPacket
+    public partial class ReqLoginPacket
+    {
+        public string UserId;
+
+        public string AuthToken;
+    }
+
+    [MemoryPackable]
+    public partial class ResLoginPacket
+    {
+        public short Result;
+    }
+
+
+    [MemoryPackable]
+    public partial class NtfMustClosePacket
+    {
+        public short Result;
+    }
+
+
+
+    [MemoryPackable]
+    public partial class ReqRoomEnterPacket
+    {
+        public int RoomNumber;
+    }
+
+    [MemoryPackable]
+    public partial class ResRoomEnterPacket
+    {
+        public short Result;
+    }
+
+    [MemoryPackable]
+    public partial class NtfRoomUserListPacket
     {
         public List<string> UserIdList = new List<string>();
     }
 
     [MemoryPackable]
-    public partial class NewUserPacket
+    public partial class NtfRoomNewUserPacket
     {
         public string UserId;
     }
 
+
     [MemoryPackable]
-    public partial class LeaveUserPacket
+    public partial class ReqRoomLeavePacket
+    {
+
+    }
+
+    [MemoryPackable]
+    public partial class ResRoomLeavePacket
+    {
+        public short Result;
+    }
+
+    [MemoryPackable]
+    public partial class NtfRoomLeaveUserPacket
     {
         public string UserId;
+    }
+
+
+    [MemoryPackable]
+    public partial class ReqRoomChatPacket
+    {
+        public string ChatMessage;
+    }
+
+
+    [MemoryPackable]
+    public partial class NtfRoomChatPacket
+    {
+        public string UserId;
+
+        public string ChatMessage;
     }
 }
