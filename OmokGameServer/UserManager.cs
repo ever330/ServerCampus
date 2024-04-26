@@ -42,12 +42,12 @@ namespace OmokGameServer
 
         public ERROR_CODE RemoveUser(string sessionId)
         {
-            //User user = _userDict.Find(x => x.SessionId == sessionId);
-            //if (user == null)
-            //{
-            //    return ERROR_CODE.USER_NOT_EXIST;
-            //}
-            //_userDict.Remove(user);
+            if (!_userDict.ContainsKey(sessionId))
+            {
+                return ERROR_CODE.USER_NOT_EXIST;
+            }
+
+            _userDict.Remove(sessionId);
 
             return ERROR_CODE.NONE;
         }

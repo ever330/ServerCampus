@@ -17,7 +17,7 @@ namespace OmokGameServer
 {
     public class MainServer : AppServer<ClientSession, OmokBinaryRequestInfo>, IHostedService
     {
-        public static ILog MainLogger;
+        ILog MainLogger;
 
         ServerOption _serverOption;
         IServerConfig _networkConfig;
@@ -131,6 +131,33 @@ namespace OmokGameServer
 
             MainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
+        }
+
+        public bool SendData(string sessionId, byte[] data)
+        {
+            var session = GetSessionByID(sessionId);
+
+            try
+            {
+                if (session == null)
+                {
+                    MainLogger.Error($"Send Data Session is Null");
+                    return false;
+                }
+
+                session.Send(data);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MainLogger.Error($"Send Data Error : {ex.ToString()}");
+
+                session.SendEndWhenSendingTimeOut();
+                session.Close();
+
+                return false;
+            }
         }
 
         public void StopServer()

@@ -15,7 +15,11 @@ namespace OmokGameServer
     {
         NONE = 0,
 
+        // 게임 서버 접속 관련
         USER_COUNT_MAX = 1001,
         USER_NOT_EXIST = 1002,
+
+        // 방 관련
+        ROOM_USER_MAX = 1101,
     }
 }
