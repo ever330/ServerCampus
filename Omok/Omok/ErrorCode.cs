@@ -28,5 +28,13 @@ namespace Omok
         AttendanceAlready = 1206,
         PostMailError = 1207,
         GetMailError = 1208,
+
+
+        // 게임 서버 접속 관련
+        USER_COUNT_MAX = 3001,
+        USER_NOT_EXIST = 3002,
+
+        // 방 관련
+        ROOM_USER_MAX = 3101,
     }
 }

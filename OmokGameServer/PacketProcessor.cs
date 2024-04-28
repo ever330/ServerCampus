@@ -1,4 +1,5 @@
 ﻿using ChatServer;
+using Microsoft.Extensions.Logging;
 using SuperSocket.SocketBase.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,30 +14,71 @@ namespace OmokGameServer
     {
         bool _isThreadRunning = false;
         Thread _processThread;
-        ILog MainLogger;
+        ILogger<MainServer> _mainLogger;
 
         BufferBlock<OmokBinaryRequestInfo> _packetBuffer = new BufferBlock<OmokBinaryRequestInfo>();
+        Func<string, byte[], bool> _sendFunc;
+        Dictionary<short, Action<OmokBinaryRequestInfo>> _handlerDict = new Dictionary<short, Action<OmokBinaryRequestInfo>>();
+
+        ServerPacketHandler _serverPacketHandler = new ServerPacketHandler();
+        LobbyPacketHandler _lobbyPacketHandler = new LobbyPacketHandler();
+        RoomPacketHandler _roomPacketHandler = new RoomPacketHandler();
+
+        UserManager _userManager;
+        RoomManager _roomManager;
 
 
-        public void Init(ILog mainLogger)
+        public void Init(ILogger<MainServer> mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
         {
-            MainLogger = mainLogger;
+            _mainLogger = mainLogger;
+            _userManager = userManager;
+            _roomManager = roomManager;
+            _serverPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
+            _lobbyPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
+            _roomPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
             _isThreadRunning = true;
             _processThread= new Thread(Process);
             _processThread.Start();
         }
 
-        public void Process()
+        public void Destroy()
+        {
+            _isThreadRunning = false;
+            _packetBuffer.Complete();
+        }
+
+        public void RegistHandlers()
+        {
+            _serverPacketHandler.RegistPacketHandler(_handlerDict);
+            _lobbyPacketHandler.RegistPacketHandler(_handlerDict);
+            _roomPacketHandler.RegistPacketHandler(_handlerDict);
+        }
+
+        public void InsertPacket(OmokBinaryRequestInfo req)
+        {
+            _packetBuffer.Post(req);
+        }
+
+        void Process()
         {
             while (_isThreadRunning)
             {
                 try
                 {
                     var packet = _packetBuffer.Receive();
-                }
-                catch
-                {
 
+                    if (_handlerDict.ContainsKey(packet.PacketId))
+                    {
+                        _handlerDict[packet.PacketId](packet);
+                    }
+                    else
+                    {
+                        _mainLogger.LogInformation($"PacketProcessor Error : 없는 패킷 ID {packet.PacketId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _mainLogger.LogError($"PacketProcessor Error : {ex.ToString()}");
                 }
             }
         }

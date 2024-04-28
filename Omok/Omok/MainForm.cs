@@ -9,16 +9,20 @@ using Omok.Models;
 using Omok.Model;
 using System.Text.RegularExpressions;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
+using System.Net.Sockets;
+using System.Net;
+using Omok.Packet;
+using MemoryPack;
 
 namespace Omok
 {
     public partial class Form1 : Form
     {
-        private CreateAccountForm _createAccountForm;
-        private InGameForm _inGameForm;
+        CreateAccountForm _createAccountForm;
+        InGameForm _inGameForm;
 
-        private string _myEmail;
-        private string _myAuthToken;
+        string _myEmail;
+        string _myAuthToken;
 
         public Form1()
         {
@@ -153,6 +157,11 @@ namespace Omok
                 _inGameForm.SetInGameData(_myEmail, _myAuthToken, res.Level, res.Exp, res.WinCount, res.LoseCount, res.Money);
                 _inGameForm.ShowDialog();
             }
+        }
+
+        private void guestBtn_Click(object sender, EventArgs e)
+        {
+            _inGameForm.Init();
         }
     }
 }

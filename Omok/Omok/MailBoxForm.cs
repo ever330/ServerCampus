@@ -12,7 +12,7 @@ namespace Omok
 {
     public partial class MailBoxForm : Form
     {
-        private List<Mail> _mails = new List<Mail>();
+        List<Mail> _mails = new List<Mail>();
 
         public MailBoxForm()
         {

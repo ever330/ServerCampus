@@ -15,20 +15,21 @@ namespace ChatServer
     {
         public short PacketData { get; set; }
         public short PacketId { get; set; }
+        public string SessionId { get; set; }
 
         public const int HEADER_SIZE = 4;
 
-        public OmokBinaryRequestInfo(short totalData, short packetId, byte[] body)
+        public OmokBinaryRequestInfo(short packetData, short packetId, byte[] body)
             : base(null, body)
         {
-            this.PacketData = totalData;
+            this.PacketData = packetData;
             this.PacketId = packetId;
         }
     }
 
     public class ReceiveFilter : FixedHeaderReceiveFilter<OmokBinaryRequestInfo>
     {
-        public ReceiveFilter() : base(PacketDefine.PACKET_HEADER)
+        public ReceiveFilter() : base(OmokBinaryRequestInfo.HEADER_SIZE)
         {
         }
 
@@ -36,7 +37,7 @@ namespace ChatServer
         {
             if (!BitConverter.IsLittleEndian)
             {
-                Array.Reverse(header, offset, PacketDefine.PACKET_HEADER);
+                Array.Reverse(header, offset, 2);
             }
 
             var totalData = BitConverter.ToInt16(header, offset);
@@ -47,7 +48,7 @@ namespace ChatServer
         {
             if (!BitConverter.IsLittleEndian)
             {
-                Array.Reverse(header.Array, 0, PacketDefine.PACKET_HEADER);
+                Array.Reverse(header.Array, 0, OmokBinaryRequestInfo.HEADER_SIZE);
             }
 
             return new OmokBinaryRequestInfo(BitConverter.ToInt16(header.Array, 0),

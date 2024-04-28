@@ -13,6 +13,7 @@ namespace OmokGameServer
 
         int _roomUserMaxCount = 0;
 
+
         public Room(int roomNumber, int roomUserMaxCount)
         {
             _roomNumber = roomNumber;
@@ -41,6 +42,11 @@ namespace OmokGameServer
                 _userList.Remove(user);
                 user.LeaveRoom();
             }
+        }
+
+        public List<User> GetUserList()
+        {
+            return _userList;
         }
     }
 }

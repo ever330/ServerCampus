@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             emailTextLabel = new Label();
             levelTextLabel = new Label();
             WinLoseTextLabel = new Label();
@@ -38,6 +39,14 @@
             levelLabel = new Label();
             winLoseLabel = new Label();
             mailboxBtn = new Button();
+            netMessageRTB = new RichTextBox();
+            enterRoomBtn = new Button();
+            roomNumberLabel = new Label();
+            roomNumberText = new Label();
+            backGroundTimer = new System.Windows.Forms.Timer(components);
+            loginBtn = new Button();
+            chatTextBox = new TextBox();
+            chatSendBtn = new Button();
             SuspendLayout();
             // 
             // emailTextLabel
@@ -72,7 +81,7 @@
             // 
             // attendanceBtn
             // 
-            attendanceBtn.Location = new Point(473, 235);
+            attendanceBtn.Location = new Point(477, 359);
             attendanceBtn.Name = "attendanceBtn";
             attendanceBtn.Size = new Size(75, 23);
             attendanceBtn.TabIndex = 6;
@@ -83,7 +92,7 @@
             // moneyTextLabel
             // 
             moneyTextLabel.AutoSize = true;
-            moneyTextLabel.Location = new Point(20, 239);
+            moneyTextLabel.Location = new Point(24, 363);
             moneyTextLabel.Name = "moneyTextLabel";
             moneyTextLabel.Size = new Size(70, 15);
             moneyTextLabel.TabIndex = 7;
@@ -92,7 +101,7 @@
             // moneyLabel
             // 
             moneyLabel.AutoSize = true;
-            moneyLabel.Location = new Point(81, 239);
+            moneyLabel.Location = new Point(85, 363);
             moneyLabel.Name = "moneyLabel";
             moneyLabel.Size = new Size(14, 15);
             moneyLabel.TabIndex = 8;
@@ -127,7 +136,7 @@
             // 
             // mailboxBtn
             // 
-            mailboxBtn.Location = new Point(392, 235);
+            mailboxBtn.Location = new Point(396, 359);
             mailboxBtn.Name = "mailboxBtn";
             mailboxBtn.Size = new Size(75, 23);
             mailboxBtn.TabIndex = 12;
@@ -135,11 +144,81 @@
             mailboxBtn.UseVisualStyleBackColor = true;
             mailboxBtn.Click += mailboxBtn_Click;
             // 
+            // netMessageRTB
+            // 
+            netMessageRTB.Location = new Point(12, 69);
+            netMessageRTB.Name = "netMessageRTB";
+            netMessageRTB.Size = new Size(191, 249);
+            netMessageRTB.TabIndex = 13;
+            netMessageRTB.Text = "";
+            // 
+            // enterRoomBtn
+            // 
+            enterRoomBtn.Location = new Point(12, 40);
+            enterRoomBtn.Name = "enterRoomBtn";
+            enterRoomBtn.Size = new Size(75, 23);
+            enterRoomBtn.TabIndex = 14;
+            enterRoomBtn.Text = "방 입장";
+            enterRoomBtn.UseVisualStyleBackColor = true;
+            enterRoomBtn.Click += enterRoomBtn_Click;
+            // 
+            // roomNumberLabel
+            // 
+            roomNumberLabel.AutoSize = true;
+            roomNumberLabel.Location = new Point(93, 44);
+            roomNumberLabel.Name = "roomNumberLabel";
+            roomNumberLabel.Size = new Size(54, 15);
+            roomNumberLabel.TabIndex = 15;
+            roomNumberLabel.Text = "방번호 : ";
+            // 
+            // roomNumberText
+            // 
+            roomNumberText.AutoSize = true;
+            roomNumberText.Location = new Point(144, 44);
+            roomNumberText.Name = "roomNumberText";
+            roomNumberText.Size = new Size(19, 15);
+            roomNumberText.TabIndex = 16;
+            roomNumberText.Text = "-1";
+            // 
+            // loginBtn
+            // 
+            loginBtn.Location = new Point(473, 5);
+            loginBtn.Name = "loginBtn";
+            loginBtn.Size = new Size(95, 23);
+            loginBtn.TabIndex = 17;
+            loginBtn.Text = "테스트 로그인";
+            loginBtn.UseVisualStyleBackColor = true;
+            loginBtn.Click += loginBtn_Click;
+            // 
+            // chatTextBox
+            // 
+            chatTextBox.Location = new Point(12, 324);
+            chatTextBox.Name = "chatTextBox";
+            chatTextBox.Size = new Size(100, 23);
+            chatTextBox.TabIndex = 18;
+            // 
+            // chatSendBtn
+            // 
+            chatSendBtn.Location = new Point(128, 324);
+            chatSendBtn.Name = "chatSendBtn";
+            chatSendBtn.Size = new Size(75, 23);
+            chatSendBtn.TabIndex = 19;
+            chatSendBtn.Text = "전송";
+            chatSendBtn.UseVisualStyleBackColor = true;
+            chatSendBtn.Click += chatSendBtn_Click;
+            // 
             // InGameForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(560, 270);
+            ClientSize = new Size(580, 394);
+            Controls.Add(chatSendBtn);
+            Controls.Add(chatTextBox);
+            Controls.Add(loginBtn);
+            Controls.Add(roomNumberText);
+            Controls.Add(roomNumberLabel);
+            Controls.Add(enterRoomBtn);
+            Controls.Add(netMessageRTB);
             Controls.Add(mailboxBtn);
             Controls.Add(winLoseLabel);
             Controls.Add(levelLabel);
@@ -169,5 +248,13 @@
         private Label levelLabel;
         private Label winLoseLabel;
         private Button mailboxBtn;
+        private RichTextBox netMessageRTB;
+        private Button enterRoomBtn;
+        private Label roomNumberLabel;
+        private Label roomNumberText;
+        private System.Windows.Forms.Timer backGroundTimer;
+        private Button loginBtn;
+        private TextBox chatTextBox;
+        private Button chatSendBtn;
     }
 }

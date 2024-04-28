@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ChatServer;
+using MemoryPack;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -17,7 +18,7 @@ namespace OmokGameServer
 {
     public class MainServer : AppServer<ClientSession, OmokBinaryRequestInfo>, IHostedService
     {
-        ILog MainLogger;
+        ILog _mainLogger;
 
         ServerOption _serverOption;
         IServerConfig _networkConfig;
@@ -25,6 +26,10 @@ namespace OmokGameServer
         /// <summary>
         /// 패킷 프로세서, 룸 매니저 만들기
         /// </summary>
+        
+        PacketProcessor _packetProcessor;
+        UserManager _userManager;
+        RoomManager _roomManager;
 
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly ILogger<MainServer> _appLogger;
@@ -77,11 +82,12 @@ namespace OmokGameServer
 
         private void AppOnStopped()
         {
-            MainLogger.Info("OnStopped - begin");
+            _appLogger.LogInformation("OnStopped - begin");
 
             base.Stop();
+            StopServer();
 
-            MainLogger.Info("OnStopped - end");
+            _appLogger.LogInformation("OnStopped - end");
         }
 
         private void InitConfig(ServerOption serverOption)
@@ -107,29 +113,38 @@ namespace OmokGameServer
 
                 if (bResult == false)
                 {
-                    MainLogger.Error("서버 네트워크 설정 실패");
+                    _appLogger.LogError("서버 네트워크 설정 실패");
                     return;
                 }
                 else
                 {
-                    MainLogger = base.Logger;
+                    _mainLogger = base.Logger;
                 }
 
                 CreateComponent(serverOption);
 
-                MainLogger.Info("서버 생성 성공");
+                _appLogger.LogInformation("서버 생성 성공");
             }
             catch (Exception ex)
             {
-                MainLogger.Error($"[ERROR] 서버 생성 실패: {ex.ToString()}");
+                _appLogger.LogError($"[ERROR] 서버 생성 실패: {ex.ToString()}");
             }
         }
 
         public ERROR_CODE CreateComponent(ServerOption serverOpt)
         {
             // todo: 패킷 프로세서와 룸 매니저 기본 세팅
+            _userManager = new UserManager();
+            _userManager.Init(_serverOption.MaxConnectionNumber);
 
-            MainLogger.Info("CreateComponent - Success");
+            _roomManager = new RoomManager();
+            _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData);
+
+            _packetProcessor = new PacketProcessor();
+            _packetProcessor.Init(_appLogger, _userManager, _roomManager, SendData);
+            _packetProcessor.RegistHandlers();
+
+            _appLogger.LogInformation("CreateComponent - Success");
             return ERROR_CODE.NONE;
         }
 
@@ -141,7 +156,7 @@ namespace OmokGameServer
             {
                 if (session == null)
                 {
-                    MainLogger.Error($"Send Data Session is Null");
+                    _appLogger.LogError($"Send Data Session is Null");
                     return false;
                 }
 
@@ -151,7 +166,7 @@ namespace OmokGameServer
             }
             catch (Exception ex)
             {
-                MainLogger.Error($"Send Data Error : {ex.ToString()}");
+                _appLogger.LogError($"Send Data Error : {ex.ToString()}");
 
                 session.SendEndWhenSendingTimeOut();
                 session.Close();
@@ -162,23 +177,33 @@ namespace OmokGameServer
 
         public void StopServer()
         {
+            _packetProcessor.Destroy();
             Stop();
         }
 
         void OnConnected(ClientSession session)
         {
-            MainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
+            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
+
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_CONNECT, Array.Empty<byte>());
+            req.SessionId = session.SessionID;
+            _packetProcessor.InsertPacket(req);
         }
 
         void OnClosed(ClientSession session, CloseReason reason)
         {
-            MainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속 해제, {reason.ToString()}");
+            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 접속 해제, {reason.ToString()}");
+
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_DISCONNECT, Array.Empty<byte>());
+            req.SessionId = session.SessionID;
+            _packetProcessor.InsertPacket(req);
         }
 
         void OnPacketReceived(ClientSession session, OmokBinaryRequestInfo reqInfo)
         {
-            MainLogger.Info($"[{DateTime.Now}] {session.SessionID} 데이터 수신, 데이터 크기 : {reqInfo.Body.Length}, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
-
+            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 데이터 수신, 데이터 크기 : {reqInfo.Body.Length}, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
+            reqInfo.SessionId = session.SessionID;
+            _packetProcessor.InsertPacket(reqInfo);
         }
     }
 

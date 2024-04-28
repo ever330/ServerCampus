@@ -4,23 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OmokGameServer
+namespace Omok.Packet
 {
     public class PacketDefine
     {
         public const short PACKET_HEADER = 4;
-    }
 
-    public enum ERROR_CODE : short
-    {
-        NONE = 0,
-
-        // 게임 서버 접속 관련
-        USER_COUNT_MAX = 3001,
-        USER_NOT_EXIST = 3002,
-
-        // 방 관련
-        ROOM_USER_MAX = 3101,
+        public const int PACKET_BUFFER_SIZE = 2048;
     }
 
     public enum PACKET_ID : short
