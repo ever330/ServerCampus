@@ -1,5 +1,4 @@
-﻿using ChatServer;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SuperSocket.SocketBase.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ namespace OmokGameServer
     {
         bool _isThreadRunning = false;
         Thread _processThread;
-        ILogger<MainServer> _mainLogger;
+        ILog _mainLogger;
 
         BufferBlock<OmokBinaryRequestInfo> _packetBuffer = new BufferBlock<OmokBinaryRequestInfo>();
         Func<string, byte[], bool> _sendFunc;
@@ -28,7 +27,7 @@ namespace OmokGameServer
         RoomManager _roomManager;
 
 
-        public void Init(ILogger<MainServer> mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
+        public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
         {
             _mainLogger = mainLogger;
             _userManager = userManager;
@@ -73,12 +72,12 @@ namespace OmokGameServer
                     }
                     else
                     {
-                        _mainLogger.LogInformation($"PacketProcessor Error : 없는 패킷 ID {packet.PacketId}");
+                        _mainLogger.Info($"PacketProcessor Error : 없는 패킷 ID {packet.PacketId}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _mainLogger.LogError($"PacketProcessor Error : {ex.ToString()}");
+                    _mainLogger.Error($"PacketProcessor Error : {ex.ToString()}");
                 }
             }
         }

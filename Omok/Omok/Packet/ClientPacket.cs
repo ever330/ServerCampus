@@ -44,11 +44,28 @@ namespace Omok.Packet
         public string Chat { get; set; }
     }
 
-
     [MemoryPackable]
     public partial class NtfChatPacket
     {
         public string Id { set; get; }
         public string Chat { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ReqReadyPacket
+    {
+
+    }
+
+    [MemoryPackable]
+    public partial class ResReadyPacket
+    {
+        public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfReadyPacket
+    {
+        public bool Result { get; set; }
     }
 }

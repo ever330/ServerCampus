@@ -1,5 +1,4 @@
-﻿using ChatServer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,10 +12,10 @@ namespace OmokGameServer
     {
         protected UserManager _userManager;
         protected RoomManager _roomManager;
-        protected ILogger<MainServer> _logger;
+        protected ILog _logger;
         protected Func<string, byte[], bool> _sendFunc;
 
-        public void Init(UserManager userManager, RoomManager roomManager, ILogger<MainServer> logger, Func<string, byte[], bool> sendFunc)
+        public void Init(UserManager userManager, RoomManager roomManager, ILog logger, Func<string, byte[], bool> sendFunc)
         {
             _userManager = userManager;
             _roomManager = roomManager;

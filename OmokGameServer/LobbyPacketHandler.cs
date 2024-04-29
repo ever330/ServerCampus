@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ChatServer;
 using MemoryPack;
 
 namespace OmokGameServer
@@ -18,11 +17,11 @@ namespace OmokGameServer
 
         public void ReqUserLogin(OmokBinaryRequestInfo packet)
         {
-            _logger.LogInformation($"{packet.SessionId} 로그인 시도");
+            _logger.Info($"{packet.SessionId} 로그인 시도");
 
             ReqLoginPacket req = MemoryPackSerializer.Deserialize<ReqLoginPacket>(packet.Body);
 
-            _logger.LogInformation($"아이디 : {req.Id}");
+            _logger.Info($"아이디 : {req.Id}");
 
             _userManager.AddUser(req.Id, packet.SessionId);
 
@@ -38,8 +37,7 @@ namespace OmokGameServer
             Array.Copy(data, 0, sendData, 4, data.Length);
             bool sendResult = _sendFunc(packet.SessionId, sendData);
 
-            _logger.LogInformation($"로그인 결과 전송 {sendResult}");
+            _logger.Info($"로그인 결과 전송 {sendResult}");
         }
-
     }
 }

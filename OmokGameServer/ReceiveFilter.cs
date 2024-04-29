@@ -9,7 +9,7 @@ using SuperSocket.SocketBase.Protocol;
 using SuperSocket.SocketEngine.Protocol;
 
 
-namespace ChatServer
+namespace OmokGameServer
 {
     public class OmokBinaryRequestInfo : BinaryRequestInfo
     {
@@ -46,11 +46,6 @@ namespace ChatServer
 
         protected override OmokBinaryRequestInfo ResolveRequestInfo(ArraySegment<byte> header, byte[] bodyBuffer, int offset, int length)
         {
-            if (!BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(header.Array, 0, OmokBinaryRequestInfo.HEADER_SIZE);
-            }
-
             return new OmokBinaryRequestInfo(BitConverter.ToInt16(header.Array, 0),
                                             BitConverter.ToInt16(header.Array, 2),
                                             bodyBuffer.CloneRange(offset, length));

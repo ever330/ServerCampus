@@ -1,11 +1,10 @@
-﻿using ChatServer;
-using MemoryPack;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MemoryPack;
 
 namespace OmokGameServer
 {
@@ -19,7 +18,7 @@ namespace OmokGameServer
 
         public void ReqEnterRoom(OmokBinaryRequestInfo packet)
         {
-            _logger.LogInformation($"{packet.SessionId} 방 입장 시도");
+            _logger.Info($"{packet.SessionId} 방 입장 시도");
 
             ReqEnterRoomPacket req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
 
@@ -38,14 +37,14 @@ namespace OmokGameServer
             Array.Copy(data, 0, sendData, 4, data.Length);
             bool sendResult = _sendFunc(packet.SessionId, sendData);
 
-            _logger.LogInformation($"방 입장 결과 전송 {sendResult}");
+            _logger.Info($"방 입장 결과 전송 {sendResult}");
         }
 
         public void ReqChat(OmokBinaryRequestInfo packet)
         {
             ReqChatPacket req = MemoryPackSerializer.Deserialize<ReqChatPacket>(packet.Body);
 
-            _logger.LogInformation($"{packet.SessionId} 채팅 수신 : {req.Chat}");
+            _logger.Info($"{packet.SessionId} 채팅 수신 : {req.Chat}");
 
             User tempUser = _userManager.GetUser(packet.SessionId);
             _roomManager.BroadCast(tempUser.RoomNumber, tempUser.UserId, req.Chat);

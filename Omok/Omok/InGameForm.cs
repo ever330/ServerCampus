@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Json;
 using System.Net.Sockets;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -40,6 +42,19 @@ namespace Omok
 
         Queue<ClientPacket> _recvQueue = new Queue<ClientPacket>();
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
+
+        int _margin = 40;
+        int _gridSize = 30; // gridSize
+        int _stoneSize = 28; // stoneSize
+        int _flowerDotSize = 10; // flowerSize
+
+        Graphics _graphics;
+        Pen _pen;
+        Brush _wBrush, _bBrush;
+
+        enum STONE { none, black, white };
+        STONE[,] _board = new STONE[19, 19];
+        bool flag = false;  // false = 검은 돌, true = 흰돌
 
         public InGameForm()
         {
@@ -300,13 +315,16 @@ namespace Omok
                         var enterRoomPacket = MemoryPackSerializer.Deserialize<ResEnterRoomPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {enterRoomPacket.RoomNumber}");
                         roomNumberText.Text = enterRoomPacket.RoomNumber.ToString();
+                        InitializeBoard();
                     }
                     break;
 
                 case PACKET_ID.NTF_ROOM_CHAT:
                     {
                         var chatPacket = MemoryPackSerializer.Deserialize<NtfChatPacket>(packet.Body);
-                        _clientNetwork.NetworkMessageQ.Enqueue($"{chatPacket.Id} : {chatPacket.Chat}");
+                        chatRTB.AppendText($"{chatPacket.Id} : {chatPacket.Chat}\n");
+                        chatRTB.SelectionStart = chatRTB.Text.Length;
+                        chatRTB.ScrollToCaret();
                     }
                     break;
 
@@ -352,6 +370,69 @@ namespace Omok
             chatTextBox.Clear();
 
             _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_ROOM_CHAT, MemoryPackSerializer.Serialize(req)));
+        }
+
+        private void InitializeBoard()
+        {
+            _pen = new Pen(Color.Black);
+            _bBrush = new SolidBrush(Color.Black);
+            _wBrush = new SolidBrush(Color.White);
+
+            _graphics = omokPanel.CreateGraphics();
+
+            // 세로선 19개
+            for (int i = 0; i < 19; i++)
+            {
+                _graphics.DrawLine(_pen, new Point(_margin + i * _gridSize, _margin),
+                  new Point(_margin + i * _gridSize, _margin + 18 * _gridSize));
+            }
+
+            // 가로선 19개
+            for (int i = 0; i < 19; i++)
+            {
+                _graphics.DrawLine(_pen, new Point(_margin, _margin + i * _gridSize),
+                  new Point(_margin + 18 * _gridSize, _margin + i * _gridSize));
+            }
+
+            // 화점그리기
+            for (int x = 3; x <= 15; x += 6)
+                for (int y = 3; y <= 15; y += 6)
+                {
+                    _graphics.FillEllipse(_bBrush,
+                    _margin + _gridSize * x - _flowerDotSize / 2,
+                      _margin + _gridSize * y - _flowerDotSize / 2,
+                      _flowerDotSize, _flowerDotSize);
+                }
+        }
+
+        private void panel1_MouseDown(object sender, MouseEventArgs e)
+        {
+            // e.X는 픽셀단위, x는 바둑판 좌표
+            int x = (e.X - _margin + _gridSize / 2) / _gridSize;
+            int y = (e.Y - _margin + _gridSize / 2) / _gridSize;
+
+            if (_board[x, y] != STONE.none)
+                return;
+
+            // 바둑판[x,y] 에 돌을 그린다
+            Rectangle r = new Rectangle(
+              _margin + _gridSize * x - _stoneSize / 2,
+              _margin + _gridSize * y - _stoneSize / 2,
+              _stoneSize, _stoneSize);
+
+            // 검은돌 차례
+            if (flag == false)
+            {
+                _graphics.FillEllipse(_bBrush, r);
+                flag = true;
+                _board[x, y] = STONE.black;
+            }
+            else
+            {
+                _graphics.FillEllipse(_wBrush, r);
+                flag = false;
+                _board[x, y] = STONE.white;
+            }
         }
     }
 }

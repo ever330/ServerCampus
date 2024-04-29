@@ -1,11 +1,10 @@
-﻿using ChatServer;
-using MemoryPack;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MemoryPack;
 
 namespace OmokGameServer
 {
@@ -19,12 +18,12 @@ namespace OmokGameServer
 
         public void NtfSessionConnected(OmokBinaryRequestInfo packet)
         {
-            _logger.LogInformation($"{packet.SessionId} 접속");
+            _logger.Info($"{packet.SessionId} 접속");
         }
 
         public void NtfSessionDisconnected(OmokBinaryRequestInfo packet)
         {
-            _logger.LogInformation($"{packet.SessionId} 접속 종료");
+            _logger.Info($"{packet.SessionId} 접속 종료");
         }
     }
 }

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ChatServer;
-using MemoryPack;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic.FileIO;
+using MemoryPack;
 using SuperSocket.SocketBase;
 using SuperSocket.SocketBase.Config;
 using SuperSocket.SocketBase.Logging;
@@ -22,10 +21,6 @@ namespace OmokGameServer
 
         ServerOption _serverOption;
         IServerConfig _networkConfig;
-
-        /// <summary>
-        /// 패킷 프로세서, 룸 매니저 만들기
-        /// </summary>
         
         PacketProcessor _packetProcessor;
         UserManager _userManager;
@@ -71,7 +66,7 @@ namespace OmokGameServer
 
             if (IsResult)
             {
-                _appLogger.LogInformation("서버 네트워크 시작");
+                _mainLogger.Info("서버 네트워크 시작");
             }
             else
             {
@@ -123,7 +118,7 @@ namespace OmokGameServer
 
                 CreateComponent(serverOption);
 
-                _appLogger.LogInformation("서버 생성 성공");
+                _mainLogger.Info("서버 생성 성공");
             }
             catch (Exception ex)
             {
@@ -133,7 +128,6 @@ namespace OmokGameServer
 
         public ERROR_CODE CreateComponent(ServerOption serverOpt)
         {
-            // todo: 패킷 프로세서와 룸 매니저 기본 세팅
             _userManager = new UserManager();
             _userManager.Init(_serverOption.MaxConnectionNumber);
 
@@ -141,10 +135,10 @@ namespace OmokGameServer
             _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData);
 
             _packetProcessor = new PacketProcessor();
-            _packetProcessor.Init(_appLogger, _userManager, _roomManager, SendData);
+            _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData);
             _packetProcessor.RegistHandlers();
 
-            _appLogger.LogInformation("CreateComponent - Success");
+            _mainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
         }
 
@@ -156,7 +150,7 @@ namespace OmokGameServer
             {
                 if (session == null)
                 {
-                    _appLogger.LogError($"Send Data Session is Null");
+                    _mainLogger.Error($"Send Data Session is Null");
                     return false;
                 }
 
@@ -166,7 +160,7 @@ namespace OmokGameServer
             }
             catch (Exception ex)
             {
-                _appLogger.LogError($"Send Data Error : {ex.ToString()}");
+                _mainLogger.Error($"Send Data Error : {ex.ToString()}");
 
                 session.SendEndWhenSendingTimeOut();
                 session.Close();
@@ -183,7 +177,7 @@ namespace OmokGameServer
 
         void OnConnected(ClientSession session)
         {
-            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
+            _mainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
 
             OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_CONNECT, Array.Empty<byte>());
             req.SessionId = session.SessionID;
@@ -192,7 +186,7 @@ namespace OmokGameServer
 
         void OnClosed(ClientSession session, CloseReason reason)
         {
-            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 접속 해제, {reason.ToString()}");
+            _mainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속 해제, {reason.ToString()}");
 
             OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_DISCONNECT, Array.Empty<byte>());
             req.SessionId = session.SessionID;
@@ -201,7 +195,7 @@ namespace OmokGameServer
 
         void OnPacketReceived(ClientSession session, OmokBinaryRequestInfo reqInfo)
         {
-            _appLogger.LogInformation($"[{DateTime.Now}] {session.SessionID} 데이터 수신, 데이터 크기 : {reqInfo.Body.Length}, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
+            _mainLogger.Info($"[{DateTime.Now}] {session.SessionID} 데이터 수신, 데이터 크기 : {reqInfo.Body.Length}, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
             reqInfo.SessionId = session.SessionID;
             _packetProcessor.InsertPacket(reqInfo);
         }
