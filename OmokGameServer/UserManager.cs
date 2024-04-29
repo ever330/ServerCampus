@@ -1,6 +1,8 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,10 +13,12 @@ namespace OmokGameServer
         Dictionary<string, User> _userDict = new Dictionary<string, User>();
         int _maxUserCount = 0;
         int _userIndex = 0;
+        protected Func<string, byte[], bool> _sendFunc;
 
-        public void Init(int maxUserCount)
+        public void Init(int maxUserCount, Func<string, byte[], bool> sendFunc)
         {
             _maxUserCount = maxUserCount;
+            _sendFunc = sendFunc;
         }
 
         public ERROR_CODE AddUser(string userId, string sessionId)
@@ -28,7 +32,19 @@ namespace OmokGameServer
             user.Set(_userIndex, sessionId, userId);
 
             _userDict.Add(sessionId, user);
-            _userIndex++;
+
+            _userIndex++; 
+
+            ResLoginPacket res = new ResLoginPacket();
+            res.Result = true;
+            var data = MemoryPackSerializer.Serialize(res);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, data);
+            bool sendResult = _sendFunc(sessionId, sendData);
+
+            if (!sendResult)
+            {
+                return ERROR_CODE.NONE;
+            }
 
             return ERROR_CODE.NONE;
         }

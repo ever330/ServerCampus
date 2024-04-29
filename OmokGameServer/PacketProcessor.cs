@@ -20,12 +20,11 @@ namespace OmokGameServer
         Dictionary<short, Action<OmokBinaryRequestInfo>> _handlerDict = new Dictionary<short, Action<OmokBinaryRequestInfo>>();
 
         ServerPacketHandler _serverPacketHandler = new ServerPacketHandler();
-        LobbyPacketHandler _lobbyPacketHandler = new LobbyPacketHandler();
+        CommonPacketHandler _lobbyPacketHandler = new CommonPacketHandler();
         RoomPacketHandler _roomPacketHandler = new RoomPacketHandler();
 
         UserManager _userManager;
         RoomManager _roomManager;
-
 
         public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
         {

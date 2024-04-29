@@ -24,6 +24,17 @@ namespace OmokGameServer
         public void NtfSessionDisconnected(OmokBinaryRequestInfo packet)
         {
             _logger.Info($"{packet.SessionId} 접속 종료");
+
+            var user = _userManager.GetUser(packet.SessionId);
+            if (user != null )
+            {
+                var result =  _userManager.RemoveUser(packet.SessionId);
+
+                if (result != ERROR_CODE.NONE)
+                {
+                    _logger.Error($"{packet.SessionId} 접속 종료 에러");
+                }
+            }
         }
     }
 }

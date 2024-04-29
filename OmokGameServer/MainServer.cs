@@ -129,7 +129,7 @@ namespace OmokGameServer
         public ERROR_CODE CreateComponent(ServerOption serverOpt)
         {
             _userManager = new UserManager();
-            _userManager.Init(_serverOption.MaxConnectionNumber);
+            _userManager.Init(_serverOption.MaxConnectionNumber, SendData);
 
             _roomManager = new RoomManager();
             _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData);
@@ -179,7 +179,7 @@ namespace OmokGameServer
         {
             _mainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속, ThreadId : {Thread.CurrentThread.ManagedThreadId}");
 
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_CONNECT, Array.Empty<byte>());
+            var req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_CONNECT, null);
             req.SessionId = session.SessionID;
             _packetProcessor.InsertPacket(req);
         }
@@ -188,7 +188,7 @@ namespace OmokGameServer
         {
             _mainLogger.Info($"[{DateTime.Now}] {session.SessionID} 접속 해제, {reason.ToString()}");
 
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_DISCONNECT, Array.Empty<byte>());
+            var req = new OmokBinaryRequestInfo(PacketDefine.PACKET_HEADER, (short)PACKET_ID.SESSION_DISCONNECT, null);
             req.SessionId = session.SessionID;
             _packetProcessor.InsertPacket(req);
         }

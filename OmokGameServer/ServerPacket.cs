@@ -16,16 +16,4 @@ namespace OmokGameServer
     public partial class NtfSessionDisConnectPacket
     {
     }
-
-    [MemoryPackable]
-    public partial class NtfUserEnterRoomPacket
-    {
-        public int RoomNumber { get; set; }
-    }
-
-    [MemoryPackable]
-    public partial class NtfUserLeaveRoomPacket
-    {
-        public int RoomNumber { get; set; }
-    }
 }

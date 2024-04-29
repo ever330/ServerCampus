@@ -17,6 +17,7 @@ using MemoryPack;
 using Microsoft.VisualBasic.Devices;
 using Omok.Models;
 using Omok.Packet;
+using OmokGameServer;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Omok
@@ -133,7 +134,7 @@ namespace Omok
                 MessageBox.Show("출석체크 오류가 발생하였습니다. 상태 코드 : " + response.StatusCode);
             }
 
-            ResDailyAttendance? res = await response.Content.ReadFromJsonAsync<ResDailyAttendance>();
+            var res = await response.Content.ReadFromJsonAsync<ResDailyAttendance>();
 
             if (res == null || res.Result == ErrorCode.AttendanceError)
             {
@@ -177,7 +178,7 @@ namespace Omok
                 return;
             }
 
-            ResGetMail? res = await response.Content.ReadFromJsonAsync<ResGetMail>();
+            var res = await response.Content.ReadFromJsonAsync<ResGetMail>();
 
             if (res == null || res.Result != ErrorCode.None)
             {
@@ -196,10 +197,10 @@ namespace Omok
 
         private void TryLoginToOmokServer()
         {
-            ReqLoginPacket req = new ReqLoginPacket();
+            var req = new ReqLoginPacket();
             req.Id = "게스트";
 
-            byte[] reqData = MemoryPackSerializer.Serialize(req);
+            var reqData = MemoryPackSerializer.Serialize(req);
 
             _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_LOGIN, reqData));
         }
@@ -247,16 +248,12 @@ namespace Omok
                         break;
                     }
 
-                    byte[] pac = data.ToArray();
-                    short packetSize = BitConverter.ToInt16(pac, 0);
-                    short packetId = BitConverter.ToInt16(pac, 2);
-                    byte[] packetdata = new byte[packetSize - PacketDefine.PACKET_HEADER];
-                    Array.Copy(pac, PacketDefine.PACKET_HEADER, packetdata, 0, packetSize - PacketDefine.PACKET_HEADER);
+                    var pac = data.ToArray();
 
-                    ClientPacket packet = new ClientPacket();
-                    packet.PacketSize = packetSize;
-                    packet.PacketId = packetId;
-                    packet.Body = packetdata;
+                    var packet = new ClientPacket();
+                    packet.PacketSize = FastBinaryRead.Int16(pac, 0);
+                    packet.PacketId = FastBinaryRead.Int16(pac, 2);
+                    packet.Body = FastBinaryRead.Bytes(pac, PacketDefine.PACKET_HEADER, packet.PacketSize - PacketDefine.PACKET_HEADER);
 
                     lock (((System.Collections.ICollection)_recvQueue).SyncRoot)
                     {
@@ -319,6 +316,14 @@ namespace Omok
                     }
                     break;
 
+                case PACKET_ID.RES_LEAVE_ROOM:
+                    {
+                        var leaveRoomPacket = MemoryPackSerializer.Deserialize<ResLeaveRoomPacket>(packet.Body);
+                        _clientNetwork.NetworkMessageQ.Enqueue("방 퇴장");
+                        roomNumberText.Text = "-1";
+                    }
+                    break;
+
                 case PACKET_ID.NTF_ROOM_CHAT:
                     {
                         var chatPacket = MemoryPackSerializer.Deserialize<NtfChatPacket>(packet.Body);
@@ -335,20 +340,20 @@ namespace Omok
 
         private void enterRoomBtn_Click(object sender, EventArgs e)
         {
-            ReqEnterRoomPacket req = new ReqEnterRoomPacket();
-            byte[] body = MemoryPackSerializer.Serialize(req);
+            var req = new ReqEnterRoomPacket();
+            var body = MemoryPackSerializer.Serialize(req);
 
             _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_ENTER_ROOM, body));
         }
 
         byte[] MakeSendData(PACKET_ID packetId, byte[] body)
         {
-            short packetSize = (short)(PacketDefine.PACKET_HEADER + body.Length);
+            var packetSize = (short)(PacketDefine.PACKET_HEADER + body.Length);
 
-            byte[] sendData = new byte[packetSize];
-            Array.Copy(BitConverter.GetBytes(packetSize), 0, sendData, 0, 2);
-            Array.Copy(BitConverter.GetBytes((short)packetId), 0, sendData, 2, 2);
-            Array.Copy(body, 0, sendData, 4, body.Length);
+            var sendData = new byte[packetSize];
+            FastBinaryWrite.Int16(sendData, 0, packetSize);
+            FastBinaryWrite.Int16(sendData, 2, (short)packetId);
+            Array.Copy(body, 0, sendData, PacketDefine.PACKET_HEADER, body.Length);
 
             return sendData;
         }
@@ -365,7 +370,13 @@ namespace Omok
                 return;
             }
 
-            ReqChatPacket req = new ReqChatPacket();
+            if (roomNumberText.Text == "-1")
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("방에 들어가있지 않습니다.");
+                return;
+            }
+
+            var req = new ReqChatPacket();
             req.Chat = chatTextBox.Text;
             chatTextBox.Clear();
 
@@ -433,6 +444,22 @@ namespace Omok
                 flag = false;
                 _board[x, y] = STONE.white;
             }
+        }
+
+        private void roomExitBtn_Click(object sender, EventArgs e)
+        {
+            if (roomNumberText.Text == "-1")
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("방에 들어가있지 않습니다.");
+                return;
+            }
+
+            var req = new ReqLeaveRoomPacket();
+            req.RoomNumber = Int32.Parse(roomNumberText.Text);
+
+            var body = MemoryPackSerializer.Serialize(req);
+
+            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_LEAVE_ROOM, body));
         }
     }
 }

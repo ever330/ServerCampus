@@ -33,7 +33,7 @@ namespace OmokGameServer
             return ERROR_CODE.NONE;
         }
 
-        public void LeaveRoom(string sessionId)
+        public ERROR_CODE LeaveRoom(string sessionId)
         {
             var user = _userList.Find(x => x.SessionId  == sessionId);
 
@@ -41,7 +41,11 @@ namespace OmokGameServer
             {
                 _userList.Remove(user);
                 user.LeaveRoom();
+
+                return ERROR_CODE.NONE;
             }
+
+            return ERROR_CODE.ROOM_LEAVE_ERROR;
         }
 
         public List<User> GetUserList()

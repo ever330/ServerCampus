@@ -39,6 +39,32 @@ namespace Omok.Packet
     }
 
     [MemoryPackable]
+    public partial class ReqLeaveRoomPacket
+    {
+        public int RoomNumber { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ResLeaveRoomPacket
+    {
+        public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfEnterRoomPacket
+    {
+        public int RoomNumber { get; set; }
+        public string Id { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfLeaveRoomPacket
+    {
+        public int RoomNumber { get; set; }
+        public string Id { get; set; }
+    }
+
+    [MemoryPackable]
     public partial class ReqChatPacket
     {
         public string Chat { get; set; }

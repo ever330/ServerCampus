@@ -13,6 +13,7 @@ namespace OmokGameServer
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
             packetHandlers.Add((short)PACKET_ID.REQ_ENTER_ROOM, ReqEnterRoom);
+            packetHandlers.Add((short)PACKET_ID.REQ_LEAVE_ROOM, ReqLeaveRoom);
             packetHandlers.Add((short)PACKET_ID.REQ_ROOM_CHAT, ReqChat);
         }
 
@@ -20,34 +21,38 @@ namespace OmokGameServer
         {
             _logger.Info($"{packet.SessionId} 방 입장 시도");
 
-            ReqEnterRoomPacket req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
+            var req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
 
-            int roomNumber = _roomManager.EnterRoom(_userManager.GetUser(packet.SessionId));
-            
-            ResEnterRoomPacket res = new ResEnterRoomPacket();
-            res.RoomNumber = roomNumber;
+            var result = _roomManager.EnterRoom(_userManager.GetUser(packet.SessionId));
 
-            byte[] data = MemoryPackSerializer.Serialize(res);
-            short packetId = (short)PACKET_ID.RES_ENTER_ROOM;
-            short packetSize = (short)(PacketDefine.PACKET_HEADER + data.Length);
+            if (!result)
+            {
+                _logger.Error($"{packet.SessionId} 방 입장 실패");
+            }
+        }
 
-            byte[] sendData = new byte[packetSize];
-            Array.Copy(BitConverter.GetBytes(packetSize), 0, sendData, 0, 2);
-            Array.Copy(BitConverter.GetBytes(packetId), 0, sendData, 2, 2);
-            Array.Copy(data, 0, sendData, 4, data.Length);
-            bool sendResult = _sendFunc(packet.SessionId, sendData);
+        public void ReqLeaveRoom(OmokBinaryRequestInfo packet)
+        {
+            _logger.Info($"{packet.SessionId} 방 퇴장 시도");
 
-            _logger.Info($"방 입장 결과 전송 {sendResult}");
+            var req = MemoryPackSerializer.Deserialize<ReqLeaveRoomPacket>(packet.Body);
+
+            var result = _roomManager.LeaveRoom(_userManager.GetUser(packet.SessionId), req.RoomNumber);
+
+            if (!result)
+            {
+                _logger.Error($"{packet.SessionId} 방 퇴장 에러 발생");
+            }
         }
 
         public void ReqChat(OmokBinaryRequestInfo packet)
         {
-            ReqChatPacket req = MemoryPackSerializer.Deserialize<ReqChatPacket>(packet.Body);
+            var req = MemoryPackSerializer.Deserialize<ReqChatPacket>(packet.Body);
 
             _logger.Info($"{packet.SessionId} 채팅 수신 : {req.Chat}");
 
-            User tempUser = _userManager.GetUser(packet.SessionId);
-            _roomManager.BroadCast(tempUser.RoomNumber, tempUser.UserId, req.Chat);
+            var tempUser = _userManager.GetUser(packet.SessionId);
+            _roomManager.BroadCastChat(tempUser.RoomNumber, tempUser.UserId, req.Chat);
         }
     }
 }

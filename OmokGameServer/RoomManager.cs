@@ -27,33 +27,60 @@ namespace OmokGameServer
             _sendFunc = sendFunc;
         }
 
-        public int EnterRoom(User user)
+        public bool EnterRoom(User user)
         {
             if (_roomList[_roomEnterIndex].EnterRoom(user) != ERROR_CODE.NONE)
             {
                 _roomEnterIndex++;
                 _roomList[_roomEnterIndex].EnterRoom(user);
             }
-            return _roomEnterIndex;
+
+            ResEnterRoomPacket res = new ResEnterRoomPacket();
+            res.RoomNumber = _roomEnterIndex;
+
+            var data = MemoryPackSerializer.Serialize(res);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_ENTER_ROOM, data);
+            return _sendFunc(user.SessionId, sendData);
         }
 
-        public void BroadCast(int roomNumber, string userId, string chat)
+        public bool LeaveRoom(User user, int roomNumber)
         {
-            Room tempRoom = _roomList[_roomEnterIndex];
+            var result = _roomList[roomNumber].LeaveRoom(user.SessionId);
+
+            var res = new ResLeaveRoomPacket();
+
+            if (result != ERROR_CODE.NONE)
+            {
+                res.Result = false;
+                return false;
+            }
+            res.Result = true;
+
+            var data = MemoryPackSerializer.Serialize(res);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LEAVE_ROOM, data);
+            _sendFunc(user.SessionId, sendData);
+
+            var ntfLeave = new NtfLeaveRoomPacket();
+            ntfLeave.RoomNumber = roomNumber;
+            ntfLeave.Id = user.UserId;
+            var ntf = MemoryPackSerializer.Serialize(ntfLeave);
+            var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_LEAVE_USER, ntf);
+            _sendFunc(user.SessionId, ntfData);
+
+            return true;
+        }
+
+        public void BroadCastChat(int roomNumber, string userId, string chat)
+        {
+            Room tempRoom = _roomList[roomNumber];
             List<User> tempUserList = tempRoom.GetUserList();
 
             NtfChatPacket chatPacket = new NtfChatPacket();
             chatPacket.Id = userId;
             chatPacket.Chat = chat;
 
-            byte[] data = MemoryPackSerializer.Serialize(chatPacket);
-            short packetId = (short)PACKET_ID.NTF_ROOM_CHAT;
-            short packetSize = (short)(PacketDefine.PACKET_HEADER + data.Length);
-
-            byte[] sendData = new byte[packetSize];
-            Array.Copy(BitConverter.GetBytes(packetSize), 0, sendData, 0, 2);
-            Array.Copy(BitConverter.GetBytes(packetId), 0, sendData, 2, 2);
-            Array.Copy(data, 0, sendData, 4, data.Length);
+            var data = MemoryPackSerializer.Serialize(chatPacket);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_ROOM_CHAT, data);
 
             for (int i = 0; i < tempUserList.Count; i++)
             {
