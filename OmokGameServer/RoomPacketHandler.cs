@@ -15,6 +15,9 @@ namespace OmokGameServer
             packetHandlers.Add((short)PACKET_ID.REQ_ENTER_ROOM, ReqEnterRoom);
             packetHandlers.Add((short)PACKET_ID.REQ_LEAVE_ROOM, ReqLeaveRoom);
             packetHandlers.Add((short)PACKET_ID.REQ_ROOM_CHAT, ReqChat);
+            packetHandlers.Add((short)PACKET_ID.REQ_READY, ReqReady);
+            packetHandlers.Add((short)PACKET_ID.REQ_NOT_READY, ReqNotReady);
+            packetHandlers.Add((short)PACKET_ID.REQ_PUT_STONE, ReqPutStone);
         }
 
         public void ReqEnterRoom(OmokBinaryRequestInfo packet)
@@ -52,7 +55,37 @@ namespace OmokGameServer
             _logger.Info($"{packet.SessionId} 채팅 수신 : {req.Chat}");
 
             var tempUser = _userManager.GetUser(packet.SessionId);
-            _roomManager.BroadCastChat(tempUser.RoomNumber, tempUser.UserId, req.Chat);
+            var chatPacket = new NtfChatPacket();
+            chatPacket.Id = tempUser.UserId;
+            chatPacket.Chat = req.Chat;
+
+            var data = MemoryPackSerializer.Serialize(chatPacket);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_ROOM_CHAT, data);
+
+            _roomManager.BroadCast(tempUser.RoomNumber, packet.SessionId, sendData);
+        }
+
+        public void ReqReady(OmokBinaryRequestInfo packet)
+        {
+            _logger.Info($"{packet.SessionId} 준비 완료 수신");
+
+            _roomManager.UserStateChange(_userManager.GetUser(packet.SessionId), PACKET_ID.REQ_READY, packet.Body);
+        }
+
+        public void ReqNotReady(OmokBinaryRequestInfo packet)
+        {
+            _logger.Info($"{packet.SessionId} 준비 해제 수신");
+
+            _roomManager.UserStateChange(_userManager.GetUser(packet.SessionId), PACKET_ID.REQ_NOT_READY, packet.Body);
+        }
+
+        public void ReqPutStone(OmokBinaryRequestInfo packet)
+        {
+            _logger.Info($"{packet.SessionId} 돌 놓기 수신");
+
+            var req = MemoryPackSerializer.Deserialize<ReqPutStonePacket>(packet.Body);
+
+            _roomManager.PutStone(_userManager.GetUser(packet.SessionId), req.PosX, req.PosY);
         }
     }
 }

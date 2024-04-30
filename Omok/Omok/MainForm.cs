@@ -21,8 +21,7 @@ namespace Omok
         CreateAccountForm _createAccountForm;
         InGameForm _inGameForm;
 
-        string _myEmail;
-        string _myAuthToken;
+        UserInfo _userInfo;
 
         public Form1()
         {
@@ -30,8 +29,7 @@ namespace Omok
             _createAccountForm = new CreateAccountForm();
             _inGameForm = new InGameForm();
 
-            _myEmail = "";
-            _myAuthToken = "";
+            _userInfo = new UserInfo();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -107,8 +105,8 @@ namespace Omok
             {
                 richTextBox1.Text += "로그인을 성공하였습니다.\n";
                 richTextBox1.Text += "토큰 정보 : " + res.AuthToken + "\n";
-                _myAuthToken = res.AuthToken;
-                _myEmail = email;
+                _userInfo.AuthToken = res.AuthToken;
+                _userInfo.Email = email;
 
                 await TryLoginToGameServer();
             }
@@ -128,8 +126,8 @@ namespace Omok
 
             var request = new ReqLoginToGame
             {
-                Email = _myEmail,
-                AuthToken = _myAuthToken
+                Email = _userInfo.Email,
+                AuthToken = _userInfo.AuthToken
             };
 
             var response = await client.PostAsJsonAsync("http://localhost:5292/api/Login/login", request);
@@ -154,7 +152,7 @@ namespace Omok
             if (res.Result == ErrorCode.None)
             {
                 richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
-                _inGameForm.SetInGameData(_myEmail, _myAuthToken, res.Level, res.Exp, res.WinCount, res.LoseCount, res.Money);
+                _inGameForm.SetUserInfo(_userInfo);
                 _inGameForm.ShowDialog();
             }
         }

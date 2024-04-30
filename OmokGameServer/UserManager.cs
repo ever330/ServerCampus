@@ -67,5 +67,10 @@ namespace OmokGameServer
 
             return ERROR_CODE.NONE;
         }
+
+        public int GetUserCount()
+        {
+            return _userDict.Count;
+        }
     }
 }

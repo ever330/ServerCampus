@@ -44,7 +44,6 @@
             roomNumberLabel = new Label();
             roomNumberText = new Label();
             backGroundTimer = new System.Windows.Forms.Timer(components);
-            loginBtn = new Button();
             chatTextBox = new TextBox();
             chatSendBtn = new Button();
             omokPanel = new TableLayoutPanel();
@@ -55,6 +54,11 @@
             otherUserLabel = new Label();
             otherUserTextLabel = new Label();
             roomExitBtn = new Button();
+            putBtn = new Button();
+            otherUserStateLabel = new Label();
+            limitTimeLabel = new Label();
+            limitTimer = new System.Windows.Forms.Timer(components);
+            turnLabel = new Label();
             SuspendLayout();
             // 
             // emailTextLabel
@@ -70,7 +74,7 @@
             // levelTextLabel
             // 
             levelTextLabel.AutoSize = true;
-            levelTextLabel.Location = new Point(240, 5);
+            levelTextLabel.Location = new Point(182, 5);
             levelTextLabel.Margin = new Padding(2, 0, 2, 0);
             levelTextLabel.Name = "levelTextLabel";
             levelTextLabel.Size = new Size(86, 15);
@@ -80,7 +84,7 @@
             // WinLoseTextLabel
             // 
             WinLoseTextLabel.AutoSize = true;
-            WinLoseTextLabel.Location = new Point(412, 5);
+            WinLoseTextLabel.Location = new Point(330, 5);
             WinLoseTextLabel.Margin = new Padding(2, 0, 2, 0);
             WinLoseTextLabel.Name = "WinLoseTextLabel";
             WinLoseTextLabel.Size = new Size(42, 15);
@@ -89,7 +93,7 @@
             // 
             // attendanceBtn
             // 
-            attendanceBtn.Location = new Point(603, 411);
+            attendanceBtn.Location = new Point(545, 5);
             attendanceBtn.Name = "attendanceBtn";
             attendanceBtn.Size = new Size(75, 23);
             attendanceBtn.TabIndex = 6;
@@ -100,7 +104,7 @@
             // moneyTextLabel
             // 
             moneyTextLabel.AutoSize = true;
-            moneyTextLabel.Location = new Point(13, 415);
+            moneyTextLabel.Location = new Point(12, 447);
             moneyTextLabel.Name = "moneyTextLabel";
             moneyTextLabel.Size = new Size(70, 15);
             moneyTextLabel.TabIndex = 7;
@@ -109,7 +113,7 @@
             // moneyLabel
             // 
             moneyLabel.AutoSize = true;
-            moneyLabel.Location = new Point(74, 415);
+            moneyLabel.Location = new Point(73, 447);
             moneyLabel.Name = "moneyLabel";
             moneyLabel.Size = new Size(14, 15);
             moneyLabel.TabIndex = 8;
@@ -127,7 +131,7 @@
             // levelLabel
             // 
             levelLabel.AutoSize = true;
-            levelLabel.Location = new Point(331, 5);
+            levelLabel.Location = new Point(264, 5);
             levelLabel.Name = "levelLabel";
             levelLabel.Size = new Size(29, 15);
             levelLabel.TabIndex = 10;
@@ -136,7 +140,7 @@
             // winLoseLabel
             // 
             winLoseLabel.AutoSize = true;
-            winLoseLabel.Location = new Point(458, 5);
+            winLoseLabel.Location = new Point(376, 5);
             winLoseLabel.Name = "winLoseLabel";
             winLoseLabel.Size = new Size(24, 15);
             winLoseLabel.TabIndex = 11;
@@ -144,7 +148,7 @@
             // 
             // mailboxBtn
             // 
-            mailboxBtn.Location = new Point(523, 411);
+            mailboxBtn.Location = new Point(464, 5);
             mailboxBtn.Name = "mailboxBtn";
             mailboxBtn.Size = new Size(75, 23);
             mailboxBtn.TabIndex = 12;
@@ -188,16 +192,6 @@
             roomNumberText.TabIndex = 16;
             roomNumberText.Text = "-1";
             // 
-            // loginBtn
-            // 
-            loginBtn.Location = new Point(571, 5);
-            loginBtn.Name = "loginBtn";
-            loginBtn.Size = new Size(95, 23);
-            loginBtn.TabIndex = 17;
-            loginBtn.Text = "테스트 로그인";
-            loginBtn.UseVisualStyleBackColor = true;
-            loginBtn.Click += loginBtn_Click;
-            // 
             // chatTextBox
             // 
             chatTextBox.Location = new Point(12, 308);
@@ -217,6 +211,7 @@
             // 
             // omokPanel
             // 
+            omokPanel.BackColor = Color.SandyBrown;
             omokPanel.ColumnCount = 2;
             omokPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             omokPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
@@ -226,7 +221,7 @@
             omokPanel.RowCount = 2;
             omokPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             omokPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            omokPanel.Size = new Size(420, 360);
+            omokPanel.Size = new Size(380, 380);
             omokPanel.TabIndex = 20;
             omokPanel.MouseDown += panel1_MouseDown;
             // 
@@ -239,6 +234,7 @@
             readyBtn.TabIndex = 21;
             readyBtn.Text = "게임준비";
             readyBtn.UseVisualStyleBackColor = true;
+            readyBtn.Click += readyBtn_Click;
             // 
             // chatRTB
             // 
@@ -299,11 +295,53 @@
             roomExitBtn.UseVisualStyleBackColor = true;
             roomExitBtn.Click += roomExitBtn_Click;
             // 
+            // putBtn
+            // 
+            putBtn.Enabled = false;
+            putBtn.Location = new Point(392, 423);
+            putBtn.Name = "putBtn";
+            putBtn.Size = new Size(75, 23);
+            putBtn.TabIndex = 28;
+            putBtn.Text = "착수";
+            putBtn.UseVisualStyleBackColor = true;
+            putBtn.Click += putBtn_Click;
+            // 
+            // otherUserStateLabel
+            // 
+            otherUserStateLabel.AutoSize = true;
+            otherUserStateLabel.Location = new Point(69, 403);
+            otherUserStateLabel.Name = "otherUserStateLabel";
+            otherUserStateLabel.Size = new Size(43, 15);
+            otherUserStateLabel.TabIndex = 29;
+            otherUserStateLabel.Text = "대기중";
+            // 
+            // limitTimeLabel
+            // 
+            limitTimeLabel.AutoSize = true;
+            limitTimeLabel.Location = new Point(351, 427);
+            limitTimeLabel.Name = "limitTimeLabel";
+            limitTimeLabel.Size = new Size(21, 15);
+            limitTimeLabel.TabIndex = 30;
+            limitTimeLabel.Text = "60";
+            // 
+            // turnLabel
+            // 
+            turnLabel.AutoSize = true;
+            turnLabel.Location = new Point(297, 427);
+            turnLabel.Name = "turnLabel";
+            turnLabel.Size = new Size(47, 15);
+            turnLabel.TabIndex = 31;
+            turnLabel.Text = "내 차례";
+            // 
             // InGameForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(705, 445);
+            ClientSize = new Size(644, 478);
+            Controls.Add(turnLabel);
+            Controls.Add(limitTimeLabel);
+            Controls.Add(otherUserStateLabel);
+            Controls.Add(putBtn);
             Controls.Add(roomExitBtn);
             Controls.Add(otherUserTextLabel);
             Controls.Add(otherUserLabel);
@@ -314,7 +352,6 @@
             Controls.Add(omokPanel);
             Controls.Add(chatSendBtn);
             Controls.Add(chatTextBox);
-            Controls.Add(loginBtn);
             Controls.Add(roomNumberText);
             Controls.Add(roomNumberLabel);
             Controls.Add(enterRoomBtn);
@@ -332,6 +369,7 @@
             Margin = new Padding(2);
             Name = "InGameForm";
             Text = "InGameForm";
+            FormClosing += InGame_FormClosing;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -353,7 +391,6 @@
         private Label roomNumberLabel;
         private Label roomNumberText;
         private System.Windows.Forms.Timer backGroundTimer;
-        private Button loginBtn;
         private TextBox chatTextBox;
         private Button chatSendBtn;
         private TableLayoutPanel omokPanel;
@@ -364,5 +401,10 @@
         private Label otherUserLabel;
         private Label otherUserTextLabel;
         private Button roomExitBtn;
+        private Button putBtn;
+        private Label otherUserStateLabel;
+        private Label limitTimeLabel;
+        private System.Windows.Forms.Timer limitTimer;
+        private Label turnLabel;
     }
 }

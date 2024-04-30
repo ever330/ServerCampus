@@ -45,6 +45,7 @@ namespace OmokGameServer
     public partial class ResEnterRoomPacket
     {
         public int RoomNumber { get; set; }
+        public string OtherUserId { get; set; }
     }
 
     [MemoryPackable]
@@ -60,16 +61,14 @@ namespace OmokGameServer
     }
 
     [MemoryPackable]
-    public partial class NtfEnterRoomPacket
+    public partial class NtfNewUserPacket
     {
-        public int RoomNumber { get; set; }
         public string Id { get; set; }
     }
 
     [MemoryPackable]
-    public partial class NtfLeaveRoomPacket
+    public partial class NtfLeaveUserPacket
     {
-        public int RoomNumber { get; set; }
         public string Id { get; set; }
     }
 
@@ -90,7 +89,7 @@ namespace OmokGameServer
     [MemoryPackable]
     public partial class ReqReadyPacket
     {
-
+        public int RoomNumber { get; set; }
     }
 
     [MemoryPackable]
@@ -100,8 +99,64 @@ namespace OmokGameServer
     }
 
     [MemoryPackable]
-    public partial class NtfReadyPacket
+    public partial class ReqNotReadyPacket
+    {
+        public int RoomNumber { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ResNotReadyPacket
     {
         public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfReadyStatePacket
+    {
+        public string Id { set; get; }
+        public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfGameStartPacket
+    {
+        public string StartPlayer { set; get; }
+    }
+
+    [MemoryPackable]
+    public partial class ReqPutStonePacket
+    {
+        public int RoomNumber { get; set; }
+        public int PosX { get; set; }
+        public int PosY { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ResPutStonePacket
+    {
+        public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfPutStonePacket
+    {
+        public int Stone { get; set; }
+        public int PosX { get; set; }
+        public int PosY { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfWinPacket
+    {
+        public int Stone { get; set; }
+        public int PosX { get; set; }
+        public int PosY { get; set; }
+        public string Id { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ReqTimeOutPacket
+    {
+        public int RoomNumber { get; set; }
     }
 }

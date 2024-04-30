@@ -34,6 +34,8 @@ namespace OmokGameServer
                 {
                     _logger.Error($"{packet.SessionId} 접속 종료 에러");
                 }
+
+                _logger.Info($"현재 유저 수 : {_userManager.GetUserCount()}");
             }
         }
     }

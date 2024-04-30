@@ -42,5 +42,15 @@ namespace OmokGameServer
         NTF_NEW_USER = 1207,
         NTF_LEAVE_USER = 1208,
         NTF_ROOM_USERS = 1209,
+        REQ_READY = 1210,
+        RES_READY = 1211,
+        REQ_NOT_READY = 1212,
+        RES_NOT_READY = 1213,
+        NTF_READY_STATE = 1214,
+        NTF_GAME_START = 1215,
+        REQ_PUT_STONE = 1216,
+        RES_PUT_STONE = 1217,
+        NTF_PUT_STONE = 1218,
+        NTF_WIN_GAME = 1219,
     }
 }

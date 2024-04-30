@@ -26,6 +26,7 @@ namespace OmokGameServer
             var result = _userManager.AddUser(req.Id, packet.SessionId);
 
             _logger.Info($"유저 로그인 결과 : {result}");
+            _logger.Info($"현재 유저 수 : {_userManager.GetUserCount()}");
         }
     }
 }

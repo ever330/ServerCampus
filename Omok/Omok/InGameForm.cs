@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Linq;
@@ -24,14 +25,7 @@ namespace Omok
 {
     public partial class InGameForm : Form
     {
-        string _email = null!;
-        string _authToken = null!;
-
-        int _level;
-        int _exp;
-        int _winCount;
-        int _loseCount;
-        int _money;
+        UserInfo _userInfo;
 
         MailBoxForm _mailBoxForm;
         ClientNetwork _clientNetwork;
@@ -44,18 +38,32 @@ namespace Omok
         Queue<ClientPacket> _recvQueue = new Queue<ClientPacket>();
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
 
-        int _margin = 40;
-        int _gridSize = 30; // gridSize
-        int _stoneSize = 28; // stoneSize
-        int _flowerDotSize = 10; // flowerSize
+        const int MARGIN = 10;
+        const int GRID_SIZE = 20;
+        const int STONE_SIZE = 17;
+        const int FLOWER_DOT_SIZE = 7;
 
         Graphics _graphics;
         Pen _pen;
         Brush _wBrush, _bBrush;
 
-        enum STONE { none, black, white };
-        STONE[,] _board = new STONE[19, 19];
-        bool flag = false;  // false = 검은 돌, true = 흰돌
+        enum STONE { NONE, BLACK, WHITE };
+        enum USER_STATE { NONE, READY, PLAYING }
+
+        const int BOARD_SIZE = 19;
+        STONE[,] _board = new STONE[BOARD_SIZE, BOARD_SIZE];
+
+        STONE _myStone = STONE.NONE;
+        USER_STATE _state = USER_STATE.NONE;
+
+        int _selectedX, _selectedY = -1;
+        int _roomNumber = -1;
+
+        string _otherUserId;
+        bool _isGamePlaying = false;
+        int _limitTime;
+
+        const int StartTimeLimit = 60;
 
         public InGameForm()
         {
@@ -72,13 +80,32 @@ namespace Omok
             _packetBufferManager = new PacketBufferManager(PacketDefine.PACKET_BUFFER_SIZE, PacketDefine.PACKET_HEADER);
 
             _isNetworkRunning = true;
+
+            Random r = new Random();
+            int randomNum = r.Next(1, 100000);
+            _userInfo = new UserInfo
+            {
+                Email = "게스트" + randomNum,
+                AuthToken = "1234",
+                Id = "게스트" + randomNum,
+                Level = 1,
+                Exp = 0,
+                WinCount = 0,
+                LoseCount = 0,
+                Money = 0
+            };
+
             TryLoginToOmokServer();
-            SetInGameData("Guest", "test", 1, 0, 0, 0, 0);
+
+            SetUserInfo(_userInfo);
 
             _recvThread = new Thread(ReceiveProcess);
             _recvThread.Start();
             _sendThread = new Thread(SendProcess);
             _sendThread.Start();
+
+            limitTimer.Tick += new EventHandler(PutStoneTimer);
+            limitTimer.Interval = 1000;
 
             backGroundTimer.Tick += new EventHandler(BackGroundProcess);
             backGroundTimer.Interval = 100;
@@ -86,30 +113,31 @@ namespace Omok
             ShowDialog();
         }
 
-        public void SetInGameData(string email, string authToken, int level, int exp, int winCount, int loseCount, int money)
+        private void InGame_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _email = email;
-            _authToken = authToken;
-            _level = level;
-            _exp = exp;
-            _winCount = winCount;
-            _loseCount = loseCount;
-            _money = money;
+            _isNetworkRunning = false;
+            _clientNetwork.Close();
+            backGroundTimer.Stop();
+        }
+
+        public void SetUserInfo(UserInfo userInfo)
+        {
+            _userInfo = userInfo;
 
             RefreshUserData();
         }
 
         public void RefreshUserData()
         {
-            emailLabel.Text = _email;
-            levelLabel.Text = _level + $"({_exp})";
+            emailLabel.Text = _userInfo.Email;
+            levelLabel.Text = _userInfo.Level + $"({_userInfo.Exp})";
             float winningRate = 0;
-            if (_winCount != 0)
+            if (_userInfo.WinCount != 0)
             {
-                winningRate = _winCount / (_winCount + _loseCount) * 100;
+                winningRate = _userInfo.WinCount / (_userInfo.WinCount + _userInfo.LoseCount) * 100;
             }
-            winLoseLabel.Text = winningRate + $"%(W:{_winCount}/L:{_loseCount})";
-            moneyLabel.Text = _money.ToString();
+            winLoseLabel.Text = winningRate + $"%(W:{_userInfo.WinCount}/L:{_userInfo.LoseCount})";
+            moneyLabel.Text = _userInfo.Money.ToString();
         }
 
         private async void attendanceBtn_Click(object sender, EventArgs e)
@@ -123,8 +151,8 @@ namespace Omok
 
             var request = new ReqDailyAttendance
             {
-                Email = _email,
-                AuthToken = _authToken
+                Email = _userInfo.Email,
+                AuthToken = _userInfo.AuthToken
             };
 
             var response = await client.PostAsJsonAsync("http://localhost:5292/api/Attendance/attendance", request);
@@ -166,8 +194,8 @@ namespace Omok
 
             var request = new ReqGetMail
             {
-                Email = _email,
-                AuthToken = _authToken
+                Email = _userInfo.Email,
+                AuthToken = _userInfo.AuthToken
             };
 
             var response = await client.PostAsJsonAsync("http://localhost:5292/api/GetMail/getMail", request);
@@ -198,7 +226,7 @@ namespace Omok
         private void TryLoginToOmokServer()
         {
             var req = new ReqLoginPacket();
-            req.Id = "게스트";
+            req.Id = _userInfo.Id;
 
             var reqData = MemoryPackSerializer.Serialize(req);
 
@@ -312,6 +340,9 @@ namespace Omok
                         var enterRoomPacket = MemoryPackSerializer.Deserialize<ResEnterRoomPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {enterRoomPacket.RoomNumber}");
                         roomNumberText.Text = enterRoomPacket.RoomNumber.ToString();
+                        _roomNumber = enterRoomPacket.RoomNumber;
+                        otherUserTextLabel.Text = enterRoomPacket.OtherUserId;
+                        _otherUserId = enterRoomPacket.OtherUserId;
                         InitializeBoard();
                     }
                     break;
@@ -321,6 +352,56 @@ namespace Omok
                         var leaveRoomPacket = MemoryPackSerializer.Deserialize<ResLeaveRoomPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue("방 퇴장");
                         roomNumberText.Text = "-1";
+                        _roomNumber = -1;
+                        omokPanel.Refresh();
+                    }
+                    break;
+
+                case PACKET_ID.NTF_NEW_USER:
+                    {
+                        var leaveRoomPacket = MemoryPackSerializer.Deserialize<NtfNewUserPacket>(packet.Body);
+                        _clientNetwork.NetworkMessageQ.Enqueue("새 유저 입장");
+                        otherUserTextLabel.Text = leaveRoomPacket.Id;
+                        _otherUserId = leaveRoomPacket.Id;
+                    }
+                    break;
+
+                case PACKET_ID.RES_READY:
+                    {
+                        var resReadyPac = MemoryPackSerializer.Deserialize<ResReadyPacket>(packet.Body);
+                        if (resReadyPac.Result)
+                        {
+                            _state = USER_STATE.READY;
+                            stateTextLabel.Text = "준비완료";
+                            readyBtn.Text = "준비해제";
+                        }
+                    }
+                    break;
+
+                case PACKET_ID.RES_NOT_READY:
+                    {
+                        var resReadyPac = MemoryPackSerializer.Deserialize<ResNotReadyPacket>(packet.Body);
+                        if (resReadyPac.Result)
+                        {
+                            _state = USER_STATE.NONE;
+                            stateTextLabel.Text = "대기중";
+                            readyBtn.Text = "게임준비";
+                        }
+                    }
+                    break;
+
+                case PACKET_ID.NTF_READY_STATE:
+                    {
+                        var readyStatePacket = MemoryPackSerializer.Deserialize<NtfReadyStatePacket>(packet.Body);
+                        _clientNetwork.NetworkMessageQ.Enqueue("상대방 상태 변경");
+                        if (readyStatePacket.Result)
+                        {
+                            otherUserStateLabel.Text = "준비완료";
+                        }
+                        else
+                        {
+                            otherUserStateLabel.Text = "대기중";
+                        }
                     }
                     break;
 
@@ -333,13 +414,96 @@ namespace Omok
                     }
                     break;
 
+                case PACKET_ID.NTF_GAME_START:
+                    {
+                        var startPacket = MemoryPackSerializer.Deserialize<NtfGameStartPacket>(packet.Body);
+                        _clientNetwork.NetworkMessageQ.Enqueue("게임 시작");
+                        otherUserStateLabel.Text = "게임중";
+                        stateTextLabel.Text = "게임중";
+                        readyBtn.Text = "게임중";
+                        _state = USER_STATE.PLAYING;
+                        readyBtn.Enabled = false;
+                        _isGamePlaying = true;
+                        _limitTime = StartTimeLimit;
+                        limitTimer.Start();
+
+                        if (startPacket.StartPlayer == _userInfo.Id)
+                        {
+                            _myStone = STONE.BLACK;
+                            putBtn.Enabled = true;
+                            turnLabel.Text = "내차례";
+                        }
+                        else
+                        {
+                            _myStone = STONE.WHITE;
+                            turnLabel.Text = "상대차례";
+                        }
+                    }
+                    break;
+
+                case PACKET_ID.RES_PUT_STONE:
+                    {
+                        var putPacket = MemoryPackSerializer.Deserialize<ResPutStonePacket>(packet.Body);
+                        if (putPacket.Result)
+                        {
+                            _limitTime = StartTimeLimit;
+                            turnLabel.Text = "상대차례";
+                            SelectClear(_selectedX, _selectedY);
+                            DrawStone(_myStone, _selectedX, _selectedY);
+                            _selectedX = -1;
+                            _selectedY = -1;
+                        }
+                        else
+                        {
+                            putBtn.Enabled = true;
+                            MessageBox.Show("놓을 수 없는 위치입니다.");
+                        }
+                    }
+                    break;
+
+                case PACKET_ID.NTF_PUT_STONE:
+                    {
+                        _limitTime = StartTimeLimit;
+                        turnLabel.Text = "내차례";
+                        putBtn.Enabled = true;
+                        var putPacket = MemoryPackSerializer.Deserialize<NtfPutStonePacket>(packet.Body);
+                        DrawStone((STONE)putPacket.Stone, putPacket.PosX, putPacket.PosY);
+                    }
+                    break;
+
+                case PACKET_ID.NTF_WIN_GAME:
+                    {
+                        var winPacket = MemoryPackSerializer.Deserialize<NtfWinPacket>(packet.Body);
+                        SelectClear(_selectedX, _selectedY);
+                        DrawStone((STONE)winPacket.Stone, winPacket.PosX, winPacket.PosY);
+                        MessageBox.Show($"게임 종료!\n승자 : {winPacket.Id}");
+                    }
+                    break;
+
                 default:
                     break;
             }
         }
 
+        void PutStoneTimer(object sender, EventArgs e)
+        {
+            _limitTime--;
+            limitTimeLabel.Text = _limitTime.ToString();
+
+            if (_limitTime == 0)
+            {
+                /// todo : 타임아웃 시 서버에게 패킷 전송.
+            }
+        }
+
         private void enterRoomBtn_Click(object sender, EventArgs e)
         {
+            if (_roomNumber != -1)
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("이미 방에 들어가있습니다.");
+                return;
+            }
+
             var req = new ReqEnterRoomPacket();
             var body = MemoryPackSerializer.Serialize(req);
 
@@ -358,11 +522,6 @@ namespace Omok
             return sendData;
         }
 
-        private void loginBtn_Click(object sender, EventArgs e)
-        {
-            TryLoginToOmokServer();
-        }
-
         private void chatSendBtn_Click(object sender, EventArgs e)
         {
             if (chatTextBox.Text == "")
@@ -370,11 +529,15 @@ namespace Omok
                 return;
             }
 
-            if (roomNumberText.Text == "-1")
+            if (_roomNumber == -1)
             {
                 _clientNetwork.NetworkMessageQ.Enqueue("방에 들어가있지 않습니다.");
                 return;
             }
+
+            chatRTB.AppendText($"{_userInfo.Id} : {chatTextBox.Text}\n");
+            chatRTB.SelectionStart = chatRTB.Text.Length;
+            chatRTB.ScrollToCaret();
 
             var req = new ReqChatPacket();
             req.Chat = chatTextBox.Text;
@@ -385,6 +548,7 @@ namespace Omok
 
         private void InitializeBoard()
         {
+            _board = new STONE[19, 19];
             _pen = new Pen(Color.Black);
             _bBrush = new SolidBrush(Color.Black);
             _wBrush = new SolidBrush(Color.White);
@@ -392,74 +556,156 @@ namespace Omok
             _graphics = omokPanel.CreateGraphics();
 
             // 세로선 19개
-            for (int i = 0; i < 19; i++)
+            for (int i = 0; i < BOARD_SIZE; i++)
             {
-                _graphics.DrawLine(_pen, new Point(_margin + i * _gridSize, _margin),
-                  new Point(_margin + i * _gridSize, _margin + 18 * _gridSize));
+                _graphics.DrawLine(_pen, new Point(MARGIN + i * GRID_SIZE, MARGIN),
+                  new Point(MARGIN + i * GRID_SIZE, MARGIN + 18 * GRID_SIZE));
             }
 
             // 가로선 19개
-            for (int i = 0; i < 19; i++)
+            for (int i = 0; i < BOARD_SIZE; i++)
             {
-                _graphics.DrawLine(_pen, new Point(_margin, _margin + i * _gridSize),
-                  new Point(_margin + 18 * _gridSize, _margin + i * _gridSize));
+                _graphics.DrawLine(_pen, new Point(MARGIN, MARGIN + i * GRID_SIZE),
+                  new Point(MARGIN + 18 * GRID_SIZE, MARGIN + i * GRID_SIZE));
             }
 
             // 화점그리기
             for (int x = 3; x <= 15; x += 6)
+            {
                 for (int y = 3; y <= 15; y += 6)
                 {
                     _graphics.FillEllipse(_bBrush,
-                    _margin + _gridSize * x - _flowerDotSize / 2,
-                      _margin + _gridSize * y - _flowerDotSize / 2,
-                      _flowerDotSize, _flowerDotSize);
+                    MARGIN + GRID_SIZE * x - FLOWER_DOT_SIZE / 2,
+                      MARGIN + GRID_SIZE * y - FLOWER_DOT_SIZE / 2,
+                      FLOWER_DOT_SIZE, FLOWER_DOT_SIZE);
                 }
+            }
         }
 
         private void panel1_MouseDown(object sender, MouseEventArgs e)
         {
-            // e.X는 픽셀단위, x는 바둑판 좌표
-            int x = (e.X - _margin + _gridSize / 2) / _gridSize;
-            int y = (e.Y - _margin + _gridSize / 2) / _gridSize;
-
-            if (_board[x, y] != STONE.none)
+            if (_state != USER_STATE.PLAYING)
                 return;
 
-            // 바둑판[x,y] 에 돌을 그린다
-            Rectangle r = new Rectangle(
-              _margin + _gridSize * x - _stoneSize / 2,
-              _margin + _gridSize * y - _stoneSize / 2,
-              _stoneSize, _stoneSize);
+            SelectClear(_selectedX, _selectedY);
 
-            // 검은돌 차례
-            if (flag == false)
+            // e.X는 픽셀단위, x는 바둑판 좌표
+            int x = (e.X - MARGIN + GRID_SIZE / 2) / GRID_SIZE;
+            int y = (e.Y - MARGIN + GRID_SIZE / 2) / GRID_SIZE;
+
+            if (_board[x, y] != STONE.NONE)
+            {
+                _selectedX = -1;
+                _selectedY = -1;
+                return;
+            }
+
+            Rectangle r = new Rectangle(
+              MARGIN + GRID_SIZE * x - STONE_SIZE / 2,
+              MARGIN + GRID_SIZE * y - STONE_SIZE / 2,
+              STONE_SIZE, STONE_SIZE);
+
+            _graphics.DrawRectangle(_pen, r);
+
+            _selectedX = x;
+            _selectedY = y;
+        }
+
+        void SelectClear(int posX, int posY)
+        {
+            if (posX != -1 && posY != -1)
+            {
+                Rectangle eraseR = new Rectangle(
+                    MARGIN + GRID_SIZE * posX - STONE_SIZE / 2,
+                    MARGIN + GRID_SIZE * posY - STONE_SIZE / 2,
+                    STONE_SIZE, STONE_SIZE);
+
+                _pen.Color = Color.SandyBrown;
+                _graphics.DrawRectangle(_pen, eraseR);
+
+                _pen.Color = Color.Black;
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+        }
+
+        void DrawStone(STONE stone, int x, int y)
+        {
+            Rectangle r = new Rectangle(
+              MARGIN + GRID_SIZE * x - STONE_SIZE / 2,
+              MARGIN + GRID_SIZE * y - STONE_SIZE / 2,
+              STONE_SIZE, STONE_SIZE);
+
+            if (stone == STONE.BLACK)
             {
                 _graphics.FillEllipse(_bBrush, r);
-                flag = true;
-                _board[x, y] = STONE.black;
+                _board[x, y] = STONE.BLACK;
             }
             else
             {
                 _graphics.FillEllipse(_wBrush, r);
-                flag = false;
-                _board[x, y] = STONE.white;
+                _board[x, y] = STONE.WHITE;
             }
         }
 
         private void roomExitBtn_Click(object sender, EventArgs e)
         {
-            if (roomNumberText.Text == "-1")
+            if (_roomNumber == -1)
             {
                 _clientNetwork.NetworkMessageQ.Enqueue("방에 들어가있지 않습니다.");
                 return;
             }
 
             var req = new ReqLeaveRoomPacket();
-            req.RoomNumber = Int32.Parse(roomNumberText.Text);
+            req.RoomNumber = _roomNumber;
 
             var body = MemoryPackSerializer.Serialize(req);
 
             _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_LEAVE_ROOM, body));
+        }
+
+        private void putBtn_Click(object sender, EventArgs e)
+        {
+            if (_selectedX == -1 & _selectedY == -1)
+            {
+                MessageBox.Show("놓을곳을 선택해주세요.");
+                return;
+            }
+
+            var req = new ReqPutStonePacket();
+            req.RoomNumber = _roomNumber;
+            req.PosX = _selectedX;
+            req.PosY = _selectedY;
+
+            var body = MemoryPackSerializer.Serialize(req);
+
+            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_PUT_STONE, body));
+            putBtn.Enabled = false;
+        }
+
+        private void readyBtn_Click(object sender, EventArgs e)
+        {
+            if (_state == USER_STATE.NONE)
+            {
+                var req = new ReqReadyPacket();
+                req.RoomNumber = _roomNumber;
+
+                var body = MemoryPackSerializer.Serialize(req);
+
+                _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_READY, body));
+            }
+            else if (_state == USER_STATE.READY)
+            {
+                var req = new ReqNotReadyPacket();
+                req.RoomNumber = _roomNumber;
+
+                var body = MemoryPackSerializer.Serialize(req);
+
+                _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_NOT_READY, body));
+            }
         }
     }
 }
