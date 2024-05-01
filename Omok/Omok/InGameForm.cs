@@ -72,7 +72,7 @@ namespace Omok
             _mailBoxForm = new MailBoxForm();
         }
 
-        public void Init()
+        public void Init(string id)
         {
             _clientNetwork = new ClientNetwork();
             _clientNetwork.Connect("127.0.0.1", 3030);
@@ -81,13 +81,11 @@ namespace Omok
 
             _isNetworkRunning = true;
 
-            Random r = new Random();
-            int randomNum = r.Next(1, 100000);
             _userInfo = new UserInfo
             {
-                Email = "게스트" + randomNum,
+                Email = id,
                 AuthToken = "1234",
-                Id = "게스트" + randomNum,
+                Id = id,
                 Level = 1,
                 Exp = 0,
                 WinCount = 0,
@@ -129,7 +127,7 @@ namespace Omok
 
         public void RefreshUserData()
         {
-            emailLabel.Text = _userInfo.Email;
+            idLabel.Text = _userInfo.Email;
             levelLabel.Text = _userInfo.Level + $"({_userInfo.Exp})";
             float winningRate = 0;
             if (_userInfo.WinCount != 0)
@@ -227,6 +225,7 @@ namespace Omok
         {
             var req = new ReqLoginPacket();
             req.Id = _userInfo.Id;
+            req.AuthToken = _userInfo.AuthToken;
 
             var reqData = MemoryPackSerializer.Serialize(req);
 
@@ -353,6 +352,8 @@ namespace Omok
                         _clientNetwork.NetworkMessageQ.Enqueue("방 퇴장");
                         roomNumberText.Text = "-1";
                         _roomNumber = -1;
+                        _otherUserId = "";
+                        otherUserTextLabel.Text = "";
                         omokPanel.Refresh();
                     }
                     break;
@@ -477,6 +478,19 @@ namespace Omok
                         SelectClear(_selectedX, _selectedY);
                         DrawStone((STONE)winPacket.Stone, winPacket.PosX, winPacket.PosY);
                         MessageBox.Show($"게임 종료!\n승자 : {winPacket.Id}");
+                        otherUserStateLabel.Text = "대기중";
+                        stateTextLabel.Text = "대기중";
+                        readyBtn.Text = "게임준비";
+                        readyBtn.Enabled = true;
+                        _clientNetwork.NetworkMessageQ.Enqueue("게임 종료");
+                    }
+                    break;
+
+                case PACKET_ID.NTF_HEART_BEAT:
+                    {
+                        var resHeartBeat = new ResHeartBeatPacket();
+                        var res = MemoryPackSerializer.Serialize(resHeartBeat);
+                        _sendQueue.Enqueue(MakeSendData(PACKET_ID.RES_HEART_BEAT, res));
                     }
                     break;
 
@@ -622,8 +636,74 @@ namespace Omok
 
                 _pen.Color = Color.SandyBrown;
                 _graphics.DrawRectangle(_pen, eraseR);
+            }
+            _pen.Color = Color.Black;
+            if (posX == 0 && posY == 0)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
 
-                _pen.Color = Color.Black;
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+            else if (posX == 0 && posY == 18)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+            }
+            else if (posX == 18 && posY == 0)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+            else if (posX == 18 && posY == 18)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+            }
+            else if (posX == 0)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+            else if (posY == 0)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+            else if (posX == 18)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE + 11));
+            }
+            else if (posY == 18)
+            {
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
+                  new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
+
+                _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE - 11),
+                  new Point(MARGIN + posX * GRID_SIZE, MARGIN + posY * GRID_SIZE));
+            }
+            else
+            {
                 _graphics.DrawLine(_pen, new Point(MARGIN + posX * GRID_SIZE - 11, MARGIN + posY * GRID_SIZE),
                   new Point(MARGIN + _selectedX * GRID_SIZE + 11, MARGIN + posY * GRID_SIZE));
 

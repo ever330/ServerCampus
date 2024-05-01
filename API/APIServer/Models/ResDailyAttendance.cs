@@ -2,7 +2,7 @@
 {
     public class ResDailyAttendance
     {
-        public ErrorCode Result { get; set; }
+        public ERROR_CODE Result { get; set; }
         public int ConsecutiveAttendance { get; set; }
     }
 }

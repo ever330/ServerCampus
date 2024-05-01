@@ -17,14 +17,18 @@ namespace OmokGameServer
         public int RoomNumber { get; private set; }
         public USER_STATE State { get; set; }
         public STONE Stone { get; set; }
+        public DateTime HeartBeatTime { get; set; }
+        public UserGameData GameData { get; set; }
 
-        public void Set(int userIndex, string sessionId, string userId)
+        public void Set(int userIndex, string sessionId, string userId, UserGameData gameData)
         {
             _userIndex = userIndex;
             SessionId = sessionId;
             UserId = userId;
             State = USER_STATE.NONE;
             Stone = STONE.NONE;
+            HeartBeatTime = DateTime.Now;
+            GameData = gameData;
         }
 
         public void EnterRoom(int roomNumber)

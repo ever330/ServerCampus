@@ -19,6 +19,13 @@ namespace OmokGameServer
         ERROR
     }
 
+    public enum LINE_STATE
+    {
+        OPEN,
+        CLOSE,
+        HALF
+    }
+
     public class Room
     {
         int _roomNumber;
@@ -108,12 +115,12 @@ namespace OmokGameServer
 
         public PUT_RESULT CheckStoneCount(STONE stone, int row, int col)
         {
-            int colCount = CheckLine(row, col, 0, 1, stone);
-            int rowCount = CheckLine(row, col, 1, 0, stone);
-            int diaCount1 = CheckLine(row, col, 1, 1, stone);
-            int diaCount2 = CheckLine(row, col, 1, -1, stone);
+            var colCount = CheckLine(row, col, 0, 1, stone);
+            var rowCount = CheckLine(row, col, 1, 0, stone);
+            var diaCount1 = CheckLine(row, col, 1, 1, stone);
+            var diaCount2 = CheckLine(row, col, 1, -1, stone);
 
-            if (colCount == 5 || rowCount == 5 || diaCount1 == 5 || diaCount2 == 5)
+            if (stone == STONE.WHITE && (colCount >= 5 || rowCount >= 5 || diaCount1 >= 5 || diaCount2 >= 5))
             {
                 return PUT_RESULT.WIN;
             }
@@ -124,15 +131,28 @@ namespace OmokGameServer
                 {
                     return PUT_RESULT.ERROR;
                 }
-                else if ((colCount == 4 && rowCount == 4) || (colCount == 4 && diaCount1 == 4) ||
-                        (colCount == 4 && diaCount2 == 4) || (rowCount == 4 && diaCount1 == 4) ||
-                        (rowCount == 4 && diaCount2 == 4) || (diaCount1 == 4 && diaCount2 == 4))
+                else if (colCount == 5 || rowCount == 5 || diaCount1 == 5 || diaCount2 == 5)
                 {
-                    return PUT_RESULT.ERROR;
+                    return PUT_RESULT.WIN;
                 }
-                else if ((colCount == 3 && rowCount == 3) || (colCount == 3 && diaCount1 == 3) ||
-                        (colCount == 3 && diaCount2 == 3) || (rowCount == 3 && diaCount1 == 3) ||
-                        (rowCount == 3 && diaCount2 == 3) || (diaCount1 == 3 && diaCount2 == 3))
+
+                var colCheck = BlackStoneCheck(row, col, 0, 1, stone);
+                var rowCheck = BlackStoneCheck(row, col, 1, 0, stone);
+                var diaCheck1 = BlackStoneCheck(row, col, 1, 1, stone);
+                var diaCheck2 = BlackStoneCheck(row, col, 1, -1, stone);
+
+                if ((colCheck.Item1 == LINE_STATE.OPEN && rowCheck.Item1 == LINE_STATE.OPEN 
+                    && colCheck.Item2 == rowCheck.Item2 && (rowCheck.Item2 == 3 || rowCheck.Item2 == 4))
+                    || (colCheck.Item1 == LINE_STATE.OPEN && diaCheck1.Item1 == LINE_STATE.OPEN
+                    && colCheck.Item2 == diaCheck1.Item2 && (diaCheck1.Item2 == 3 || diaCheck1.Item2 == 4))
+                    || (colCheck.Item1 == LINE_STATE.OPEN && diaCheck2.Item1 == LINE_STATE.OPEN
+                    && colCheck.Item2 == diaCheck2.Item2 && (diaCheck2.Item2 == 3 || diaCheck2.Item2 == 4))
+                    || (rowCheck.Item1 == LINE_STATE.OPEN && diaCheck1.Item1 == LINE_STATE.OPEN
+                    && rowCheck.Item2 == diaCheck1.Item2 && (diaCheck1.Item2 == 3 || diaCheck1.Item2 == 4))
+                    || (rowCheck.Item1 == LINE_STATE.OPEN && diaCheck2.Item1 == LINE_STATE.OPEN
+                    && rowCheck.Item2 == diaCheck2.Item2 && (diaCheck2.Item2 == 3 || diaCheck2.Item2 == 4))
+                    || (diaCheck1.Item1 == LINE_STATE.OPEN && diaCheck2.Item1 == LINE_STATE.OPEN
+                    && diaCheck1.Item2 == diaCheck2.Item2 && (diaCheck2.Item2 == 3 || diaCheck2.Item2 == 4)))
                 {
                     return PUT_RESULT.ERROR;
                 }
@@ -141,13 +161,210 @@ namespace OmokGameServer
             return PUT_RESULT.NONE;
         }
 
+        (LINE_STATE, int) BlackStoneCheck(int row, int col, int dRow, int dCol, STONE stone)
+        {
+            int myStoneCount = 1;
+            int emptyCount = 0;
+
+            LINE_STATE lineState1 = LINE_STATE.OPEN;
+            LINE_STATE lineState2 = LINE_STATE.OPEN;
+
+            STONE prevStone = stone;
+            
+            // check 33
+            for (int i = 1; i <= 6; i++)
+            {
+                int r = row + i * dRow;
+                int c = col + i * dCol;
+                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE)
+                {
+                    continue;
+                }
+                if (_board[r, c] == stone)
+                {
+                    myStoneCount++;
+                }
+                else if (_board[r, c] == STONE.NONE)
+                {
+                    emptyCount++;
+                    if (emptyCount >= 2)
+                    {
+                        emptyCount = 0;
+                        lineState1 = LINE_STATE.OPEN;
+                        prevStone = STONE.NONE;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (prevStone == STONE.NONE)
+                    {
+                        lineState1 = LINE_STATE.HALF;
+                    }
+                    else if (prevStone == stone)
+                    {
+                        lineState1 = LINE_STATE.CLOSE;
+                    }
+                    emptyCount = 0;
+                    prevStone = STONE.NONE;
+                    break;
+                }
+
+                prevStone = _board[r, c];
+            }
+            
+            for (int i = -1; i >= -6; i--)
+            {
+                int r = row + i * dRow;
+                int c = col + i * dCol;
+                if (_board[r, c] == stone)
+                {
+                    myStoneCount++;
+                }
+                else if (_board[r, c] == STONE.NONE)
+                {
+                    emptyCount++;
+                    if (emptyCount >= 2)
+                    {
+                        emptyCount = 0;
+                        lineState2 = LINE_STATE.OPEN;
+                        break;
+                    }
+                }
+                else
+                {
+                    if (prevStone == STONE.NONE)
+                    {
+                        lineState2 = LINE_STATE.HALF;
+                    }
+                    else if (prevStone == stone)
+                    {
+                        lineState2 = LINE_STATE.CLOSE;
+                    }
+                    emptyCount = 0;
+                    break;
+                }
+
+                prevStone = _board[r, c];
+            }
+
+            if (myStoneCount == 3)
+            {
+                if (lineState1 == LINE_STATE.HALF && lineState2 == LINE_STATE.HALF)
+                {
+                    return (LINE_STATE.CLOSE, 3);
+                }
+                else if (lineState1 == LINE_STATE.CLOSE || lineState2 == LINE_STATE.CLOSE)
+                {
+                    return (LINE_STATE.CLOSE, 3);
+                }
+                else
+                {
+                    return (LINE_STATE.OPEN, 3);
+                }
+            }
+            else if (myStoneCount == 4)
+            {
+                // check 44
+                for (int i = 0; i <= 6; i++)
+                {
+                    int r = row + i * dRow;
+                    int c = col + i * dCol;
+                    if (_board[r, c] == stone)
+                    {
+                        myStoneCount++;
+                    }
+                    else if (_board[r, c] == STONE.NONE)
+                    {
+                        emptyCount++;
+                        if (emptyCount >= 2)
+                        {
+                            emptyCount = 0;
+                            lineState1 = LINE_STATE.OPEN;
+                            prevStone = STONE.NONE;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (prevStone == STONE.NONE)
+                        {
+                            lineState1 = LINE_STATE.HALF;
+                        }
+                        else if (prevStone == stone && emptyCount == 1)
+                        {
+                            lineState1 = LINE_STATE.HALF;
+                        }
+                        else if (prevStone == stone && emptyCount == 0)
+                        {
+                            lineState1 = LINE_STATE.CLOSE;
+                        }
+                        emptyCount = 0;
+                        prevStone = STONE.NONE;
+                        break;
+                    }
+
+                    prevStone = _board[r, c];
+                }
+
+                for (int i = -1; i >= -6; i--)
+                {
+                    int r = row + i * dRow;
+                    int c = col + i * dCol;
+                    if (_board[r, c] == stone)
+                    {
+                        myStoneCount++;
+                    }
+                    else if (_board[r, c] == STONE.NONE)
+                    {
+                        emptyCount++;
+                        if (emptyCount >= 2)
+                        {
+                            emptyCount = 0;
+                            lineState2 = LINE_STATE.OPEN;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (prevStone == STONE.NONE)
+                        {
+                            lineState2 = LINE_STATE.HALF;
+                        }
+                        else if (prevStone == stone && emptyCount == 1)
+                        {
+                            lineState1 = LINE_STATE.HALF;
+                        }
+                        else if (prevStone == stone && emptyCount == 0)
+                        {
+                            lineState1 = LINE_STATE.CLOSE;
+                        }
+                        emptyCount = 0;
+                        break;
+                    }
+
+                    prevStone = _board[r, c];
+                }
+
+                if (lineState1 == LINE_STATE.CLOSE && lineState2 == LINE_STATE.CLOSE)
+                {
+                    return (LINE_STATE.CLOSE, 4);
+                }
+                else
+                {
+                    return (LINE_STATE.OPEN, 4);
+                }
+            }
+            
+            return (LINE_STATE.OPEN, myStoneCount);
+        }
+
         int CheckLine(int row, int col, int dRow, int dCol, STONE stone)
         {
             int maxLinkCount = 0;
             int linkCount = 0;
-            STONE prevStone = 0;
 
-            for (int i = -6; i <= 6; i++)
+            for (int i = -5; i <= 5; i++)
             {
                 int r = row + i * dRow;
                 int c = col + i * dCol;
@@ -157,11 +374,11 @@ namespace OmokGameServer
                     continue;
                 }
 
-                if (i == 0 || (i == -6 && _board[r, c] == stone))
+                if (i == 0 || (i == -5 && _board[r, c] == stone))
                 {
                     linkCount++;
                 }
-                else if (_board[r, c] != STONE.NONE && _board[r, c] != stone)
+                else if (_board[r, c] != stone)
                 {
                     maxLinkCount = Math.Max(maxLinkCount, linkCount);
                     linkCount = 0;
@@ -170,15 +387,7 @@ namespace OmokGameServer
                 {
                     linkCount++;
                 }
-                else if (prevStone == STONE.NONE && _board[r, c] == STONE.NONE)
-                {
-                    maxLinkCount = Math.Max(maxLinkCount, linkCount);
-                    linkCount = 0;
-                }
-
-                prevStone = _board[r, c];
             }
-
             return maxLinkCount;
         }
     }

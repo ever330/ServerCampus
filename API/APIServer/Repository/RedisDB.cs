@@ -19,7 +19,7 @@ namespace APIServer.Repository
             _connection.GetConnection().Close();
         }
 
-        public ErrorCode SetAuthToken(string id, string authToken)
+        public ERROR_CODE SetAuthToken(string id, string authToken)
         {
             try
             {
@@ -33,15 +33,15 @@ namespace APIServer.Repository
                 _redis = new RedisString<RedisUserInfo>(_connection, "UID" + id, defaultExpiry);
                 _redis.SetAsync(newUser).Wait();
 
-                return ErrorCode.None;
+                return ERROR_CODE.None;
             }
             catch
             {
-                return ErrorCode.SetGameServerTokenError;
+                return ERROR_CODE.SetGameServerTokenError;
             }
         }
 
-        public async Task<ErrorCode> CheckAuthToken(string id, string authToken)
+        public async Task<ERROR_CODE> CheckAuthToken(string id, string authToken)
         {
 
             var defaultExpiry = TimeSpan.FromDays(1);
@@ -53,16 +53,16 @@ namespace APIServer.Repository
 
                 if (authToken == result.Value.AuthToken)
                 {
-                    return ErrorCode.None;
+                    return ERROR_CODE.None;
                 }
                 else
                 {
-                    return ErrorCode.CheckTokenError;
+                    return ERROR_CODE.CheckTokenError;
                 }
             }
             catch
             {
-                return ErrorCode.CheckTokenError;
+                return ERROR_CODE.CheckTokenError;
             }
         }
     }

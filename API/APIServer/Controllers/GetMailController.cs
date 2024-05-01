@@ -36,7 +36,7 @@ namespace APIServer.Controllers
                 Result = check
             };
 
-            if (check == ErrorCode.CheckTokenError)
+            if (check == ERROR_CODE.CheckTokenError)
             {
                 _logger.ZLogError($"{request.Id} : 토큰 확인 실패");
                 return resLogin;
@@ -45,7 +45,7 @@ namespace APIServer.Controllers
             var mail = await _gameDB.GetMailbox(request.Id);
             resLogin.Result = mail.Item1;
 
-            if (mail.Item1 == ErrorCode.GetMailError || mail.Item2 == null)
+            if (mail.Item1 == ERROR_CODE.GetMailError || mail.Item2 == null)
             {
                 _logger.ZLogError($"{request.Id} : 메일 가져오기 에러");
                 return resLogin;

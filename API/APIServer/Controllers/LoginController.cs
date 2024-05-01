@@ -35,7 +35,7 @@ namespace APIServer.Controllers
                 Result = res
             };
 
-            if (res == ErrorCode.VerifyTokenError)
+            if (res == ERROR_CODE.VerifyTokenError)
             {
                 _logger.ZLogError($"{request.Id} : 토큰 검증 실패");
                 return resLogin;
@@ -46,7 +46,7 @@ namespace APIServer.Controllers
 
             var checkRes = await CheckUserData(request.Id);
 
-            if (resLogin.Result != ErrorCode.None || checkRes.Item2 == null)
+            if (resLogin.Result != ERROR_CODE.None || checkRes.Item2 == null)
             {
                 _logger.ZLogError($"{request.Id} : 유저 데이터 생성 실패");
                 return resLogin;
@@ -62,7 +62,7 @@ namespace APIServer.Controllers
             return resLogin;
         }
 
-        private async Task<ErrorCode> TryVerifyToken(string id, string token)
+        private async Task<ERROR_CODE> TryVerifyToken(string id, string token)
         {
             var request = new ReqVerifyAuthToken
             {
@@ -77,7 +77,7 @@ namespace APIServer.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 _logger.ZLogInformation($"토큰 검증 시도 실패");
-                return ErrorCode.VerifyTokenError;
+                return ERROR_CODE.VerifyTokenError;
             }
 
             ResVerifyAuthToken? res = await response.Content.ReadFromJsonAsync<ResVerifyAuthToken>();
@@ -85,23 +85,23 @@ namespace APIServer.Controllers
             if (res == null)
             {
                 _logger.ZLogInformation($"토큰 검증 시도 실패");
-                return ErrorCode.VerifyTokenError;
+                return ERROR_CODE.VerifyTokenError;
             }
 
             return res.Result;
         }
 
-        private async Task<Tuple<ErrorCode, UserGameData?>> CheckUserData(string email)
+        private async Task<Tuple<ERROR_CODE, UserGameData?>> CheckUserData(string email)
         {
             var getRes = await _gameDB.GetUserGameData(email);
 
-            if (getRes.Item1 == ErrorCode.UserDataNotExist)
+            if (getRes.Item1 == ERROR_CODE.UserDataNotExist)
             {
                 var createRes = await _gameDB.CreateUserGameData(email);
 
-                if (createRes == ErrorCode.CreateUserDataError)
+                if (createRes == ERROR_CODE.CreateUserDataError)
                 {
-                    return new Tuple<ErrorCode, UserGameData?>(ErrorCode.CreateUserDataError, null);
+                    return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.CreateUserDataError, null);
                 }
                 
                 UserGameData userData = new UserGameData
@@ -112,7 +112,7 @@ namespace APIServer.Controllers
                     LoseCount = 0
                 };
 
-                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.None, userData);
+                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.None, userData);
             }
 
             return getRes;

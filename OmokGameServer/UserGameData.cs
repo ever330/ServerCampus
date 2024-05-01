@@ -1,6 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace APIServer.Models.DAO
+namespace OmokGameServer
 {
     [Table("user_game_data")]
     public class UserGameData

@@ -32,7 +32,7 @@
             _connection.Close();
         }
 
-        public async Task<ErrorCode> CreateUserGameData(string id)
+        public async Task<ERROR_CODE> CreateUserGameData(string id)
         {
             try
             {
@@ -47,18 +47,18 @@
 
                 if (count != 1)
                 {
-                    return ErrorCode.CreateUserDataError;
+                    return ERROR_CODE.CreateUserDataError;
                 }
 
-                return ErrorCode.None;
+                return ERROR_CODE.None;
             }
             catch
             {
-                return ErrorCode.CreateUserDataError;
+                return ERROR_CODE.CreateUserDataError;
             }
         }
 
-        public async Task<Tuple<ErrorCode, UserGameData?>> GetUserGameData(string id)
+        public async Task<Tuple<ERROR_CODE, UserGameData?>> GetUserGameData(string id)
         {
             try
             {
@@ -66,17 +66,17 @@
 
                 if (userData == null || userData.Level == 0)
                 {
-                    return new Tuple<ErrorCode, UserGameData?>(ErrorCode.UserDataNotExist, userData);
+                    return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.UserDataNotExist, userData);
                 }
-                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.None, userData);
+                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.None, userData);
             }
             catch
             {
-                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.GetUserDataError, null);
+                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.GetUserDataError, null);
             }
         }
 
-        public async Task<Tuple<ErrorCode, int>> DailyAttendance(string id)
+        public async Task<Tuple<ERROR_CODE, int>> DailyAttendance(string id)
         {
             try
             {
@@ -105,18 +105,18 @@
 
                 if (count != 1)
                 {
-                    return new Tuple<ErrorCode, int>(ErrorCode.AttendanceError, 0);
+                    return new Tuple<ERROR_CODE, int>(ERROR_CODE.AttendanceError, 0);
                 }
 
-                return new Tuple<ErrorCode, int>(ErrorCode.None, attendance.ConsecutiveAttendance);
+                return new Tuple<ERROR_CODE, int>(ERROR_CODE.None, attendance.ConsecutiveAttendance);
             }
             catch
             {
-                return new Tuple<ErrorCode, int>(ErrorCode.AttendanceError, 0);
+                return new Tuple<ERROR_CODE, int>(ERROR_CODE.AttendanceError, 0);
             }
         }
 
-        public async Task<ErrorCode> CheckAttendanceAlready(string id)
+        public async Task<ERROR_CODE> CheckAttendanceAlready(string id)
         {
             try
             {
@@ -126,18 +126,18 @@
 
                 if (todayCheck != 0)
                 {
-                    return ErrorCode.AttendanceAlready;
+                    return ERROR_CODE.AttendanceAlready;
                 }
 
-                return ErrorCode.None;
+                return ERROR_CODE.None;
             }
             catch
             {
-                return ErrorCode.AttendanceError;
+                return ERROR_CODE.AttendanceError;
             }
         }
 
-        public async Task<ErrorCode> PostToMailbox(string id, string mailName, string mailContent, int reward)
+        public async Task<ERROR_CODE> PostToMailbox(string id, string mailName, string mailContent, int reward)
         {
             try
             {
@@ -145,7 +145,7 @@
 
                 if (subQuery == null)
                 {
-                    return ErrorCode.PostMailError;
+                    return ERROR_CODE.PostMailError;
                 }
 
                 var count = await _queryFactory.Query("user_mailbox").InsertAsync(new
@@ -158,18 +158,18 @@
 
                 if (count != 1)
                 {
-                    return ErrorCode.PostMailError;
+                    return ERROR_CODE.PostMailError;
                 }
 
-                return ErrorCode.None;
+                return ERROR_CODE.None;
             }
             catch
             {
-                return ErrorCode.PostMailError;
+                return ERROR_CODE.PostMailError;
             }
         }
 
-        public async Task<Tuple<ErrorCode, List<Mail>?>> GetMailbox(string id)
+        public async Task<Tuple<ERROR_CODE, List<Mail>?>> GetMailbox(string id)
         {
             try
             {
@@ -190,14 +190,14 @@
 
                 if (mails == null)
                 {
-                    return new Tuple<ErrorCode, List<Mail>?> (ErrorCode.GetMailError, null);
+                    return new Tuple<ERROR_CODE, List<Mail>?> (ERROR_CODE.GetMailError, null);
                 }
 
-                return new Tuple<ErrorCode, List<Mail>?> (ErrorCode.None, mails);
+                return new Tuple<ERROR_CODE, List<Mail>?> (ERROR_CODE.None, mails);
             }
             catch
             {
-                return new Tuple<ErrorCode, List<Mail>?> (ErrorCode.GetMailError, null);
+                return new Tuple<ERROR_CODE, List<Mail>?> (ERROR_CODE.GetMailError, null);
             }
         }
     }

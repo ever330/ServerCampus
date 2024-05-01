@@ -9,9 +9,9 @@ namespace APIServer.Models.DAO
         [Key]
         [Column("uid")]
         public int Uid { get; set; }
-        [Column("mail_name")]
+        [Column("mailName")]
         public string MailName { get; set; } = null!;
-        [Column("mail_content")]
+        [Column("mailContent")]
         public string MailContent { get; set; } = null!;
         [Column("reward")]
         public int Reward { get; set; }

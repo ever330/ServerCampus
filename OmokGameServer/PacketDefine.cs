@@ -15,10 +15,17 @@ namespace OmokGameServer
     {
         NONE = 0,
 
+        // DB 관련
+        SET_GAME_SERVER_TOKEN_ERROR = 1000,
+        CHECK_TOKEN_ERROR = 1001,
+        UPDATE_USER_INFO_ERROR = 1002,
+        USER_DATA_NOT_EXIST = 1003,
+        GET_USER_DATA_ERROR = 1004,
+
         // 게임 서버 접속 관련
         USER_COUNT_MAX = 3001,
         USER_NOT_EXIST = 3002,
-        USER_LOGIN_ERROR = 3003,
+        USER_ALREADY_EXIST = 3003,
 
         // 방 관련
         ROOM_USER_MAX = 3101,
@@ -52,5 +59,8 @@ namespace OmokGameServer
         RES_PUT_STONE = 1217,
         NTF_PUT_STONE = 1218,
         NTF_WIN_GAME = 1219,
+
+        NTF_HEART_BEAT = 1300,
+        RES_HEART_BEAT = 1301,
     }
 }

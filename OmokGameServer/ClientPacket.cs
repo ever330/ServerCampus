@@ -27,6 +27,7 @@ namespace OmokGameServer
     public partial class ReqLoginPacket
     {
         public string Id { get; set; }
+        public string AuthToken { get; set; }
     }
 
     [MemoryPackable]
@@ -158,5 +159,17 @@ namespace OmokGameServer
     public partial class ReqTimeOutPacket
     {
         public int RoomNumber { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfHeartBeatPacket
+    {
+
+    }
+
+    [MemoryPackable]
+    public partial class ResHeartBeatPacket
+    {
+
     }
 }

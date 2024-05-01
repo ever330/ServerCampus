@@ -36,13 +36,13 @@ namespace APIServer.Controllers
                 Result = check
             };
 
-            if (check == ErrorCode.CheckTokenError)
+            if (check == ERROR_CODE.CheckTokenError)
             {
                 _logger.ZLogError($"{request.Id} : 토큰 확인 실패");
                 return resLogin;
             }
 
-            if (checkAttendanceAlready == ErrorCode.AttendanceAlready)
+            if (checkAttendanceAlready == ERROR_CODE.AttendanceAlready)
             {
                 resLogin.Result = checkAttendanceAlready;
                 return resLogin;
@@ -51,7 +51,7 @@ namespace APIServer.Controllers
             var res = await _gameDB.DailyAttendance(request.Id);
 
             resLogin.Result = res.Item1;
-            if (resLogin.Result == ErrorCode.AttendanceError)
+            if (resLogin.Result == ERROR_CODE.AttendanceError)
             {
                 _logger.ZLogError($"{request.Id} : 출석 체크 실패");
                 return resLogin;
@@ -73,7 +73,7 @@ namespace APIServer.Controllers
 
             var result = await _gameDB.PostToMailbox(id, mailName, mailContent, reward);
 
-            if (result == ErrorCode.PostMailError)
+            if (result == ERROR_CODE.PostMailError)
             {
                 _logger.ZLogError($"{id} : 우편 전송 에러");
             }

@@ -40,5 +40,8 @@ namespace Omok.Packet
         RES_PUT_STONE = 1217,
         NTF_PUT_STONE = 1218,
         NTF_WIN_GAME = 1219,
+
+        NTF_HEART_BEAT = 1300,
+        RES_HEART_BEAT = 1301,
     }
 }

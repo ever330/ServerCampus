@@ -159,7 +159,7 @@ namespace Omok
 
         private void guestBtn_Click(object sender, EventArgs e)
         {
-            _inGameForm.Init();
+            _inGameForm.Init(emailTextBox.Text);
         }
     }
 }

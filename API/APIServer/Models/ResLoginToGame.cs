@@ -4,7 +4,7 @@ namespace APIServer.Models
 {
     public class ResLoginToGame
     {
-        public ErrorCode Result { get; set; }
+        public ERROR_CODE Result { get; set; }
         public int Level { get; set; }
         public int Exp { get; set; }
         public int WinCount { get; set; }

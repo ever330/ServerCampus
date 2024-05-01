@@ -5,9 +5,9 @@ namespace APIServer.Models.DAO
     [Table("user_daily_attendance")]
     public class UserDailyAttendance
     {
-        [Column("attendance_date")]
+        [Column("attendanceDate")]
         public DateTime AttendanceDate { get; set; }
-        [Column("consecutive_attendance")]
+        [Column("consecutiveAttendance")]
         public int ConsecutiveAttendance { get; set; }
     }
 }

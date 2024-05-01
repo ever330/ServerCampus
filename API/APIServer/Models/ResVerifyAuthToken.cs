@@ -2,6 +2,6 @@
 {
     public class ResVerifyAuthToken
     {
-        public ErrorCode Result { get; set; }
+        public ERROR_CODE Result { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class ResGetMail
     {
-        public ErrorCode Result { get; set; }
+        public ERROR_CODE Result { get; set; }
         public List<Mail>? Mails { get; set; }
     }
 

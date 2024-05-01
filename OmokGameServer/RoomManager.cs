@@ -12,14 +12,16 @@ namespace OmokGameServer
     {
         List<Room> _roomList = new List<Room>();
         Queue<int> _roomIndexQueue = new Queue<int>();
+        DBManager _dbManager;
 
         protected Func<string, byte[], bool> _sendFunc;
 
         int _roomMaxCount = 0;
         int _roomUserMax = 0;
 
-        public void Init(int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc)
+        public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc)
         {
+            _dbManager = dbManager;
             _roomMaxCount = roomMaxCount;
             _roomUserMax = roomUserMax;
             for (int i = 0; i < _roomMaxCount; i++)
@@ -220,6 +222,16 @@ namespace OmokGameServer
                 var win = MemoryPackSerializer.Serialize(winPac);
                 var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_WIN_GAME, win);
                 BroadCast(user.RoomNumber, null, winData);
+
+                _dbManager.UpdateGameResult(user.UserId, user.GameData.WinCount + 1, user.GameData.LoseCount);
+
+                foreach (var tempUser in tempRoom.GetUserList())
+                {
+                    if (user != tempUser)
+                    {
+                        _dbManager.UpdateGameResult(tempUser.UserId, tempUser.GameData.WinCount, tempUser.GameData.LoseCount + 1);
+                    }
+                }
             }
         }
     }

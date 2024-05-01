@@ -29,5 +29,7 @@ namespace OmokGameServer
         public int RoomMaxUserCount { get; set; } = 0;
 
         public int RoomStartNumber { get; set; } = 0;
+        public string RedisDB { get; set; }
+        public string GameDB { get; set; }
     }
 }

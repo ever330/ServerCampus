@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            emailTextLabel = new Label();
+            idTextLabel = new Label();
             levelTextLabel = new Label();
             WinLoseTextLabel = new Label();
             attendanceBtn = new Button();
             moneyTextLabel = new Label();
             moneyLabel = new Label();
-            emailLabel = new Label();
+            idLabel = new Label();
             levelLabel = new Label();
             winLoseLabel = new Label();
             mailboxBtn = new Button();
@@ -61,15 +61,15 @@
             turnLabel = new Label();
             SuspendLayout();
             // 
-            // emailTextLabel
+            // idTextLabel
             // 
-            emailTextLabel.AutoSize = true;
-            emailTextLabel.Location = new Point(20, 5);
-            emailTextLabel.Margin = new Padding(2, 0, 2, 0);
-            emailTextLabel.Name = "emailTextLabel";
-            emailTextLabel.Size = new Size(54, 15);
-            emailTextLabel.TabIndex = 0;
-            emailTextLabel.Text = "이메일 : ";
+            idTextLabel.AutoSize = true;
+            idTextLabel.Location = new Point(20, 5);
+            idTextLabel.Margin = new Padding(2, 0, 2, 0);
+            idTextLabel.Name = "idTextLabel";
+            idTextLabel.Size = new Size(54, 15);
+            idTextLabel.TabIndex = 0;
+            idTextLabel.Text = "아이디 : ";
             // 
             // levelTextLabel
             // 
@@ -119,14 +119,14 @@
             moneyLabel.TabIndex = 8;
             moneyLabel.Text = "0";
             // 
-            // emailLabel
+            // idLabel
             // 
-            emailLabel.AutoSize = true;
-            emailLabel.Location = new Point(79, 5);
-            emailLabel.Name = "emailLabel";
-            emailLabel.Size = new Size(36, 15);
-            emailLabel.TabIndex = 9;
-            emailLabel.Text = "email";
+            idLabel.AutoSize = true;
+            idLabel.Location = new Point(79, 5);
+            idLabel.Name = "idLabel";
+            idLabel.Size = new Size(17, 15);
+            idLabel.TabIndex = 9;
+            idLabel.Text = "id";
             // 
             // levelLabel
             // 
@@ -359,13 +359,13 @@
             Controls.Add(mailboxBtn);
             Controls.Add(winLoseLabel);
             Controls.Add(levelLabel);
-            Controls.Add(emailLabel);
+            Controls.Add(idLabel);
             Controls.Add(moneyLabel);
             Controls.Add(moneyTextLabel);
             Controls.Add(attendanceBtn);
             Controls.Add(WinLoseTextLabel);
             Controls.Add(levelTextLabel);
-            Controls.Add(emailTextLabel);
+            Controls.Add(idTextLabel);
             Margin = new Padding(2);
             Name = "InGameForm";
             Text = "InGameForm";
@@ -376,13 +376,13 @@
 
         #endregion
 
-        private Label emailTextLabel;
+        private Label idTextLabel;
         private Label levelTextLabel;
         private Label WinLoseTextLabel;
         private Button attendanceBtn;
         private Label moneyTextLabel;
         private Label moneyLabel;
-        private Label emailLabel;
+        private Label idLabel;
         private Label levelLabel;
         private Label winLoseLabel;
         private Button mailboxBtn;
