@@ -40,6 +40,9 @@ namespace Omok.Packet
         RES_PUT_STONE = 1217,
         NTF_PUT_STONE = 1218,
         NTF_WIN_GAME = 1219,
+        REQ_TIME_OUT = 1220,
+        NTF_TIME_OUT = 1221,
+        NTF_TIME_OUT_WIN = 1222,
 
         NTF_HEART_BEAT = 1300,
         RES_HEART_BEAT = 1301,

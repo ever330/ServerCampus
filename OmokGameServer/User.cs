@@ -19,6 +19,7 @@ namespace OmokGameServer
         public STONE Stone { get; set; }
         public DateTime HeartBeatTime { get; set; }
         public UserGameData GameData { get; set; }
+        public int TimeOutCount { get; set; }
 
         public void Set(int userIndex, string sessionId, string userId, UserGameData gameData)
         {
@@ -29,6 +30,7 @@ namespace OmokGameServer
             Stone = STONE.NONE;
             HeartBeatTime = DateTime.Now;
             GameData = gameData;
+            TimeOutCount = 0;
         }
 
         public void EnterRoom(int roomNumber)

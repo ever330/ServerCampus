@@ -483,14 +483,51 @@ namespace Omok
                         readyBtn.Text = "게임준비";
                         readyBtn.Enabled = true;
                         _clientNetwork.NetworkMessageQ.Enqueue("게임 종료");
+                        limitTimer.Stop();
                     }
                     break;
 
                 case PACKET_ID.NTF_HEART_BEAT:
                     {
-                        var resHeartBeat = new ResHeartBeatPacket();
+                        var resHeartBeat = MemoryPackSerializer.Deserialize<NtfWinPacket>(packet.Body);
                         var res = MemoryPackSerializer.Serialize(resHeartBeat);
                         _sendQueue.Enqueue(MakeSendData(PACKET_ID.RES_HEART_BEAT, res));
+                    }
+                    break;
+
+                case PACKET_ID.NTF_TIME_OUT:
+                    {
+                        var res = MemoryPackSerializer.Deserialize<NtfTimeOutPacket>(packet.Body);
+                        if ((STONE)res.Stone == _myStone)
+                        {
+                            _clientNetwork.NetworkMessageQ.Enqueue("상대방 시간 초과");
+                            _limitTime = StartTimeLimit;
+                            turnLabel.Text = "내차례";
+                            putBtn.Enabled = true;
+                        }
+                        else
+                        {
+                            _clientNetwork.NetworkMessageQ.Enqueue("내 시간 초과");
+                            _limitTime = StartTimeLimit;
+                            turnLabel.Text = "상대차례";
+                            putBtn.Enabled = false;
+                            SelectClear(_selectedX, _selectedY);
+                            _selectedX = -1;
+                            _selectedY = -1;
+                        }
+                    }
+                    break;
+
+                case PACKET_ID.NTF_TIME_OUT_WIN:
+                    {
+                        var res = MemoryPackSerializer.Deserialize<NtfTimeOutWinPacket>(packet.Body);
+                        MessageBox.Show($"시간 초과 누적으로 게임 종료!\n승자 : {res.Id}");
+                        otherUserStateLabel.Text = "대기중";
+                        stateTextLabel.Text = "대기중";
+                        readyBtn.Text = "게임준비";
+                        readyBtn.Enabled = true;
+                        _clientNetwork.NetworkMessageQ.Enqueue("게임 종료");
+                        limitTimer.Stop();
                     }
                     break;
 
@@ -502,12 +539,22 @@ namespace Omok
         void PutStoneTimer(object sender, EventArgs e)
         {
             _limitTime--;
-            limitTimeLabel.Text = _limitTime.ToString();
 
-            if (_limitTime == 0)
+            if (_limitTime <= 0)
             {
+                _limitTime = 0;
                 /// todo : 타임아웃 시 서버에게 패킷 전송.
+                /// 상대 턴인데 시간 초과되었을 경우 패킷 전송
+                if (!putBtn.Enabled)
+                {
+                    var req = new ReqTimeOutPacket();
+                    req.RoomNumber = _roomNumber;
+                    req.Stone = (int)_myStone;
+                    var body = MemoryPackSerializer.Serialize(req);
+                    _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_TIME_OUT, body));
+                }
             }
+            limitTimeLabel.Text = _limitTime.ToString();
         }
 
         private void enterRoomBtn_Click(object sender, EventArgs e)

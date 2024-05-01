@@ -159,6 +159,19 @@ namespace OmokGameServer
     public partial class ReqTimeOutPacket
     {
         public int RoomNumber { get; set; }
+        public int Stone { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfTimeOutPacket
+    {
+        public int Stone { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class NtfTimeOutWinPacket
+    {
+        public string Id { get; set; }
     }
 
     [MemoryPackable]

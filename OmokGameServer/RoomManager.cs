@@ -72,7 +72,7 @@ namespace OmokGameServer
                 var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_NEW_USER, ntf);
                 BroadCast(roomNumber, user.SessionId, ntfData);
             }
-
+            user.TimeOutCount = 0;
             var data = MemoryPackSerializer.Serialize(res);
             var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_ENTER_ROOM, data);
             return _sendFunc(user.SessionId, sendData);
@@ -222,6 +222,7 @@ namespace OmokGameServer
                 var win = MemoryPackSerializer.Serialize(winPac);
                 var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_WIN_GAME, win);
                 BroadCast(user.RoomNumber, null, winData);
+                user.TimeOutCount = 0;
 
                 _dbManager.UpdateGameResult(user.UserId, user.GameData.WinCount + 1, user.GameData.LoseCount);
 
@@ -230,6 +231,42 @@ namespace OmokGameServer
                     if (user != tempUser)
                     {
                         _dbManager.UpdateGameResult(tempUser.UserId, tempUser.GameData.WinCount, tempUser.GameData.LoseCount + 1);
+                        tempUser.TimeOutCount = 0;
+                    }
+                }
+            }
+        }
+
+        public void PutTimeOut(User user, int roomNumber, STONE stone)
+        {
+            var room = _roomList[roomNumber];
+
+            foreach (var tempUser in room.GetUserList())
+            {
+                if (user != tempUser)
+                {
+                    tempUser.TimeOutCount++;
+                    if (tempUser.TimeOutCount >= 6)
+                    {
+                        var winPac = new NtfTimeOutWinPacket();
+                        winPac.Id = user.UserId;
+                        var win = MemoryPackSerializer.Serialize(winPac);
+                        var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT_WIN, win);
+                        BroadCast(user.RoomNumber, null, winData);
+                        user.TimeOutCount = 0;
+                        tempUser.TimeOutCount = 0;
+
+                        _dbManager.UpdateGameResult(user.UserId, user.GameData.WinCount + 1, user.GameData.LoseCount);
+
+                        _dbManager.UpdateGameResult(tempUser.UserId, tempUser.GameData.WinCount, tempUser.GameData.LoseCount + 1);
+                    }
+                    else
+                    {
+                        var pac = new NtfTimeOutPacket();
+                        pac.Stone = (int)stone;
+                        var ntf = MemoryPackSerializer.Serialize(pac);
+                        var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT, ntf);
+                        BroadCast(user.RoomNumber, null, ntfData);
                     }
                 }
             }

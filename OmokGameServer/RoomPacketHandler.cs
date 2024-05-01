@@ -18,6 +18,7 @@ namespace OmokGameServer
             packetHandlers.Add((short)PACKET_ID.REQ_READY, ReqReady);
             packetHandlers.Add((short)PACKET_ID.REQ_NOT_READY, ReqNotReady);
             packetHandlers.Add((short)PACKET_ID.REQ_PUT_STONE, ReqPutStone);
+            packetHandlers.Add((short)PACKET_ID.REQ_TIME_OUT, ReqTimeOut);
         }
 
         public void ReqEnterRoom(OmokBinaryRequestInfo packet)
@@ -86,6 +87,14 @@ namespace OmokGameServer
             var req = MemoryPackSerializer.Deserialize<ReqPutStonePacket>(packet.Body);
 
             _roomManager.PutStone(_userManager.GetUser(packet.SessionId), req.PosX, req.PosY);
+        }
+
+        public void ReqTimeOut(OmokBinaryRequestInfo packet)
+        {
+            var req = MemoryPackSerializer.Deserialize<ReqTimeOutPacket>(packet.Body);
+            _logger.Info($"{req.RoomNumber} 타임아웃");
+
+            _roomManager.PutTimeOut(_userManager.GetUser(packet.SessionId), req.RoomNumber, (STONE)req.Stone);
         }
     }
 }
