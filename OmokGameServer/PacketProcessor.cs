@@ -16,24 +16,19 @@ namespace OmokGameServer
         ILog _mainLogger;
 
         BufferBlock<OmokBinaryRequestInfo> _packetBuffer = new BufferBlock<OmokBinaryRequestInfo>();
-        Func<string, byte[], bool> _sendFunc;
         Dictionary<short, Action<OmokBinaryRequestInfo>> _handlerDict = new Dictionary<short, Action<OmokBinaryRequestInfo>>();
 
         ServerPacketHandler _serverPacketHandler = new ServerPacketHandler();
         CommonPacketHandler _lobbyPacketHandler = new CommonPacketHandler();
         RoomPacketHandler _roomPacketHandler = new RoomPacketHandler();
 
-        UserManager _userManager;
-        RoomManager _roomManager;
 
-        public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
+        public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc, Action<DBRequestInfo> sendDB)
         {
             _mainLogger = mainLogger;
-            _userManager = userManager;
-            _roomManager = roomManager;
-            _serverPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
-            _lobbyPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
-            _roomPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
+            _serverPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
+            _lobbyPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
+            _roomPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
             _isThreadRunning = true;
             _processThread= new Thread(Process);
             _processThread.Start();

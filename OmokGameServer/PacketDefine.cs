@@ -65,5 +65,14 @@ namespace OmokGameServer
 
         NTF_HEART_BEAT = 1300,
         RES_HEART_BEAT = 1301,
+
+        // MYSQL
+        REQ_UPDATE_RESULT = 2000,
+
+        // REDIS
+        REQ_REDIS_LOGIN = 2101,
+        RES_REDIS_LOGIN = 2102,
+        REQ_CHECK_AUTHTOKEN = 2103,
+        RES_CHECK_AUTHTOKEN = 2104,
     }
 }

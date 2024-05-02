@@ -14,12 +14,13 @@ namespace OmokGameServer
         Queue<int> _roomIndexQueue = new Queue<int>();
         DBManager _dbManager;
 
-        protected Func<string, byte[], bool> _sendFunc;
+        Func<string, byte[], bool> _sendFunc;
+        Action<DBRequestInfo> _sendToDB;
 
         int _roomMaxCount = 0;
         int _roomUserMax = 0;
 
-        public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc)
+        public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> sendToDB)
         {
             _dbManager = dbManager;
             _roomMaxCount = roomMaxCount;
@@ -31,6 +32,7 @@ namespace OmokGameServer
                 _roomIndexQueue.Enqueue(i);
             }
             _sendFunc = sendFunc;
+            _sendToDB = sendToDB;
         }
 
         public bool EnterRoom(User user)
@@ -197,6 +199,7 @@ namespace OmokGameServer
             else if (checkResult == PUT_RESULT.NONE)
             {
                 tempRoom.PutStone(user.Stone, posX, posY);
+                user.TimeOutCount = 0;
 
                 var resPac = new ResPutStonePacket();
                 resPac.Result = true;
@@ -224,13 +227,22 @@ namespace OmokGameServer
                 BroadCast(user.RoomNumber, null, winData);
                 user.TimeOutCount = 0;
 
-                _dbManager.UpdateGameResult(user.UserId, user.GameData.WinCount + 1, user.GameData.LoseCount);
+                var winUser = new ReqUpdateWinLose();
+                winUser.UserId = user.UserId;
+                winUser.Result = true;
+
+                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(winUser)));
 
                 foreach (var tempUser in tempRoom.GetUserList())
                 {
                     if (user != tempUser)
                     {
-                        _dbManager.UpdateGameResult(tempUser.UserId, tempUser.GameData.WinCount, tempUser.GameData.LoseCount + 1);
+                        var loseUser = new ReqUpdateWinLose();
+                        loseUser.UserId = tempUser.UserId;
+                        loseUser.Result = false;
+
+                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(loseUser)));
+
                         tempUser.TimeOutCount = 0;
                     }
                 }
@@ -256,9 +268,17 @@ namespace OmokGameServer
                         user.TimeOutCount = 0;
                         tempUser.TimeOutCount = 0;
 
-                        _dbManager.UpdateGameResult(user.UserId, user.GameData.WinCount + 1, user.GameData.LoseCount);
+                        var winUser = new ReqUpdateWinLose();
+                        winUser.UserId = user.UserId;
+                        winUser.Result = true;
 
-                        _dbManager.UpdateGameResult(tempUser.UserId, tempUser.GameData.WinCount, tempUser.GameData.LoseCount + 1);
+                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(winUser)));
+
+                        var loseUser = new ReqUpdateWinLose();
+                        loseUser.UserId = tempUser.UserId;
+                        loseUser.Result = false;
+
+                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(loseUser)));
                     }
                     else
                     {

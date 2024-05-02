@@ -24,6 +24,8 @@ namespace OmokGameServer
         IServerConfig _networkConfig;
         
         PacketProcessor _packetProcessor;
+        DBProcessor _dbProcessor;
+
         UserManager _userManager;
         RoomManager _roomManager;
         DBManager _dbManager;
@@ -143,11 +145,15 @@ namespace OmokGameServer
             _userManager.Init(_dbManager, _serverOption.MaxConnectionNumber, SendData);
 
             _roomManager = new RoomManager();
-            _roomManager.Init(_dbManager, _serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData);
+            _roomManager.Init(_dbManager, _serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, InsertToDB);
 
             _packetProcessor = new PacketProcessor();
-            _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData);
+            _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData, InsertToDB);
             _packetProcessor.RegistHandlers();
+
+            _dbProcessor = new DBProcessor();
+            _dbProcessor.Init(_mainLogger, _userManager, _dbManager, SendData, Distribute);
+            _dbProcessor.RegistHandlers();
 
             _isServerRunning = true;
             _heartBeatThread = new Thread(SendHeartBeat);
@@ -256,6 +262,16 @@ namespace OmokGameServer
                     Thread.Sleep(_heartBeatInterval / 4);
                 }
             }
+        }
+
+        public void InsertToDB(DBRequestInfo dbReq)
+        {
+            _dbProcessor.InsertPacket(dbReq);
+        }
+
+        public void Distribute(OmokBinaryRequestInfo req)
+        {
+            _packetProcessor.InsertPacket(req);
         }
     }
 

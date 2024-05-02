@@ -14,13 +14,15 @@ namespace OmokGameServer
         protected RoomManager _roomManager;
         protected ILog _logger;
         protected Func<string, byte[], bool> _sendFunc;
+        protected Action<DBRequestInfo> _sendToDB;
 
-        public void Init(UserManager userManager, RoomManager roomManager, ILog logger, Func<string, byte[], bool> sendFunc)
+        public void Init(UserManager userManager, RoomManager roomManager, ILog logger, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> sendToDB)
         {
             _userManager = userManager;
             _roomManager = roomManager;
             _logger = logger;
             _sendFunc = sendFunc;
+            _sendToDB = sendToDB;
         }
     }
 }

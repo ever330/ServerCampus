@@ -90,28 +90,12 @@ namespace OmokGameServer
             if (user != null)
             {
                 result = ERROR_CODE.USER_ALREADY_EXIST;
-                return result;
             }
             else
             {
-                // 웹 API서버와 연동 후에는 토큰 세팅을 옮겨야함.
-                var setResult = _dbManager.SetAuthToken(userId, authToken);
-                var checkResult = _dbManager.CheckAuthToken(userId, authToken);
-
-                if (setResult == ERROR_CODE.NONE && checkResult == ERROR_CODE.NONE)
-                {
-                    result = AddUser(userId, sessionId).Result;
-                    return result;
-                }
-                else if (setResult != ERROR_CODE.NONE)
-                {
-                    return setResult;
-                }
-                else
-                {
-                    return checkResult;
-                }
+                result = AddUser(userId, sessionId).Result;
             }
+            return result;
         }
 
         public Dictionary<string, User> GetUsers()

@@ -22,16 +22,15 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqLoginPacket>(packet.Body);
 
-            var result = _userManager.UserLogin(packet.SessionId, req.Id, req.AuthToken);
+            var dbReq = new ReqSetAuthToken();
+            dbReq.UserId = req.Id;
+            dbReq.AuthToken = req.AuthToken;
 
-            _logger.Debug($"로그인 결과 : {result}");
-            _logger.Info($"현재 유저 수 : {_userManager.GetUserCount()}");
+            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_REDIS_LOGIN, packet.SessionId, MemoryPackSerializer.Serialize(dbReq)));
         }
 
         public void ResHeartBeat(OmokBinaryRequestInfo packet)
         {
-            //_logger.Info($"{packet.SessionId} 하트비트 도착");
-
             _userManager.GetUser(packet.SessionId).HeartBeatTime = DateTime.Now;
         }
     }
