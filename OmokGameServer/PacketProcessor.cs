@@ -75,5 +75,10 @@ namespace OmokGameServer
                 }
             }
         }
+
+        void CheckHeartBeat(object o)
+        {
+
+        }
     }
 }

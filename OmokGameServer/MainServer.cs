@@ -33,12 +33,12 @@ namespace OmokGameServer
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly ILogger<MainServer> _appLogger;
 
-        Thread _heartBeatThread;
+        Timer _heartBeatTimer;
+
         int _heartBeatCounter = 0;
         int _heartBeatIndex = 0;
         const int _heartBeatInterval = 1000;
         const int _heartBeatLimit = 200;
-        bool _isServerRunning = false;
 
         public MainServer(IHostApplicationLifetime appLifetime, IOptions<ServerOption> serverConfig, ILogger<MainServer> logger)
             : base(new DefaultReceiveFilterFactory<ReceiveFilter, OmokBinaryRequestInfo>())
@@ -155,9 +155,7 @@ namespace OmokGameServer
             _dbProcessor.Init(_mainLogger, _userManager, _dbManager, SendData, Distribute);
             _dbProcessor.RegistHandlers();
 
-            _isServerRunning = true;
-            _heartBeatThread = new Thread(SendHeartBeat);
-            _heartBeatThread.Start();
+            _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 250);
 
             _mainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
@@ -221,47 +219,52 @@ namespace OmokGameServer
             _packetProcessor.InsertPacket(reqInfo);
         }
 
-        void SendHeartBeat()
+        void SendHeartBeat(object o)
         {
-            while (_isServerRunning)
+            if (_userManager.GetUserCount() == 0)
             {
-                if (_userManager.GetUserCount() == 0)
-                {
-                    Thread.Sleep(_heartBeatInterval);
-                    continue;
-                }
-                else
-                {
-                    foreach (var user in _userManager.GetUsers())
-                    {
-                        if (_heartBeatCounter >= _heartBeatIndex * (_serverOption.MaxConnectionNumber / 4) && _heartBeatCounter < (_heartBeatIndex + 1) * (_serverOption.MaxConnectionNumber / 4))
-                        {
-                            var userHeartBeat = user.Value.HeartBeatTime;
-                            var dif = DateTime.Now - userHeartBeat;
-                            if (dif.TotalSeconds >= _heartBeatLimit)
-                            {
-                                _mainLogger.Info($"{user.Key} : 연결 지연으로 인하여 접속 강제 종료");
-                                _userManager.RemoveUser(user.Key);
-                                GetSessionByID(user.Key).Close();
-                                continue;
-                            }
-                            var ntfPac = new NtfHeartBeatPacket();
-                            var ntf = MemoryPackSerializer.Serialize(ntfPac);
-                            var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_HEART_BEAT, ntf);
-                            SendData(user.Key, ntfData);
-                        }
-                        _heartBeatCounter++;
-                    }
-                    _heartBeatIndex++;
-                    if (_heartBeatIndex >= 4)
-                    {
-                        _heartBeatIndex = 0;
-                        _heartBeatCounter = 0;
-                    }
-                    //_mainLogger.Info($"하트비트 전송");
-                    Thread.Sleep(_heartBeatInterval / 4);
-                }
+                return;
             }
+            var pac = new ReqSendHeartBeatPacket();
+            //while (_isServerRunning)
+            //{
+            //    if (_userManager.GetUserCount() == 0)
+            //    {
+            //        Thread.Sleep(_heartBeatInterval);
+            //        continue;
+            //    }
+            //    else
+            //    {
+            //        foreach (var user in _userManager.GetUsers())
+            //        {
+            //            if (_heartBeatCounter >= _heartBeatIndex * (_serverOption.MaxConnectionNumber / 4) && _heartBeatCounter < (_heartBeatIndex + 1) * (_serverOption.MaxConnectionNumber / 4))
+            //            {
+            //                var userHeartBeat = user.Value.HeartBeatTime;
+            //                var dif = DateTime.Now - userHeartBeat;
+            //                if (dif.TotalSeconds >= _heartBeatLimit)
+            //                {
+            //                    _mainLogger.Info($"{user.Key} : 연결 지연으로 인하여 접속 강제 종료");
+            //                    _userManager.RemoveUser(user.Key);
+            //                    GetSessionByID(user.Key).Close();
+            //                    continue;
+            //                }
+            //                var ntfPac = new NtfHeartBeatPacket();
+            //                var ntf = MemoryPackSerializer.Serialize(ntfPac);
+            //                var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_HEART_BEAT, ntf);
+            //                SendData(user.Key, ntfData);
+            //            }
+            //            _heartBeatCounter++;
+            //        }
+            //        _heartBeatIndex++;
+            //        if (_heartBeatIndex >= 4)
+            //        {
+            //            _heartBeatIndex = 0;
+            //            _heartBeatCounter = 0;
+            //        }
+            //        //_mainLogger.Info($"하트비트 전송");
+            //        Thread.Sleep(_heartBeatInterval / 4);
+            //    }
+            //}
         }
 
         public void InsertToDB(DBRequestInfo dbReq)

@@ -16,4 +16,10 @@ namespace OmokGameServer
     public partial class NtfSessionDisConnectPacket
     {
     }
+
+    [MemoryPackable]
+    public partial class ReqSendHeartBeatPacket
+    {
+        public int CurrentIndex { get; set; }
+    }
 }
