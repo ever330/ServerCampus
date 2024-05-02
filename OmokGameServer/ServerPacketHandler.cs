@@ -19,6 +19,7 @@ namespace OmokGameServer
         public void NtfSessionConnected(OmokBinaryRequestInfo packet)
         {
             _logger.Info($"{packet.SessionId} 접속");
+            _userManager.SetNewUser(packet.SessionId);
         }
 
         public void NtfSessionDisconnected(OmokBinaryRequestInfo packet)

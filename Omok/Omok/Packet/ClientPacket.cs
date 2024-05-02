@@ -165,7 +165,7 @@ namespace Omok.Packet
     }
 
     [MemoryPackable]
-    public partial class NtfHeartBeatPacket
+    public partial class ReqHeartBeatPacket
     {
 
     }

@@ -18,19 +18,25 @@ namespace OmokGameServer
         public USER_STATE State { get; set; }
         public STONE Stone { get; set; }
         public DateTime HeartBeatTime { get; set; }
-        public UserGameData GameData { get; set; }
+        public int WinCount { get; set; }
+        public int LoseCount { get; set; }
         public int TimeOutCount { get; set; }
 
-        public void Set(int userIndex, string sessionId, string userId, UserGameData gameData)
+        public void Set(int userIndex, string sessionId)
         {
             _userIndex = userIndex;
             SessionId = sessionId;
-            UserId = userId;
             State = USER_STATE.NONE;
             Stone = STONE.NONE;
             HeartBeatTime = DateTime.Now;
-            GameData = gameData;
             TimeOutCount = 0;
+        }
+
+        public void SetData(string userId, int winCount, int loseCount)
+        {
+            UserId = userId;
+            WinCount = winCount;
+            LoseCount = loseCount;
         }
 
         public void EnterRoom(int roomNumber)

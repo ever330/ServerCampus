@@ -487,9 +487,10 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_HEART_BEAT:
+                case PACKET_ID.REQ_HEART_BEAT:
                     {
-                        var resHeartBeat = MemoryPackSerializer.Deserialize<NtfWinPacket>(packet.Body);
+                        var reqHeartBeat = MemoryPackSerializer.Deserialize<ReqHeartBeatPacket>(packet.Body);
+                        var resHeartBeat = new ResHeartBeatPacket();
                         var res = MemoryPackSerializer.Serialize(resHeartBeat);
                         _sendQueue.Enqueue(MakeSendData(PACKET_ID.RES_HEART_BEAT, res));
                     }

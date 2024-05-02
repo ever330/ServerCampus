@@ -13,7 +13,10 @@ namespace OmokGameServer
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
             packetHandlers.Add((short)PACKET_ID.REQ_LOGIN, ReqUserLogin);
+            packetHandlers.Add((short)PACKET_ID.RES_SET_TOKEN, ResSetToken);
+            packetHandlers.Add((short)PACKET_ID.RES_USER_DATA, ResUserData);
             packetHandlers.Add((short)PACKET_ID.RES_HEART_BEAT, ResHeartBeat);
+            packetHandlers.Add((short)PACKET_ID.REQ_SEND_HEART_BEAT, ReqSendHeartBeat);
         }
 
         public void ReqUserLogin(OmokBinaryRequestInfo packet)
@@ -22,16 +25,65 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqLoginPacket>(packet.Body);
 
-            var dbReq = new ReqSetAuthToken();
-            dbReq.UserId = req.Id;
-            dbReq.AuthToken = req.AuthToken;
+            var setToken = new ReqSetToken();
+            setToken.UserId = req.Id;
+            setToken.AuthToken = req.AuthToken;
 
-            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_REDIS_LOGIN, packet.SessionId, MemoryPackSerializer.Serialize(dbReq)));
+            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_SET_TOKEN, packet.SessionId, MemoryPackSerializer.Serialize(setToken)));
+
+            var getUserData = new ReqUserData();
+            getUserData.UserId = req.Id;
+
+            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_USER_DATA, packet.SessionId, MemoryPackSerializer.Serialize(getUserData)));
+        }
+
+        public void ResSetToken(OmokBinaryRequestInfo packet)
+        {
+            var resSet = MemoryPackSerializer.Deserialize<ResSetToken>(packet.Body);
+
+
+            if (!resSet.Result && !_userManager.GetUsers().ContainsKey(packet.SessionId))
+            {
+                _userManager.RemoveUser(packet.SessionId);
+                var res = new ResLoginPacket();
+                res.Result = resSet.Result;
+                var resData = MemoryPackSerializer.Serialize(res);
+                var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
+                _sendFunc(packet.SessionId, sendData);
+            }
+
+        }
+
+        public void ResUserData(OmokBinaryRequestInfo packet)
+        {
+            var resUser = MemoryPackSerializer.Deserialize<ResUserData>(packet.Body);
+
+            if (!resUser.Result && !_userManager.GetUsers().ContainsKey(packet.SessionId))
+            {
+                _userManager.RemoveUser(packet.SessionId);
+                var res = new ResLoginPacket();
+                res.Result = resUser.Result; 
+                var resData = MemoryPackSerializer.Serialize(res);
+                var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
+                _sendFunc(packet.SessionId, sendData);
+                return;
+            }
+
+            _userManager.UserLogin(packet.SessionId, resUser.UserId, resUser.WinCount, resUser.LoseCount);
         }
 
         public void ResHeartBeat(OmokBinaryRequestInfo packet)
         {
+            _logger.Info($"{packet.SessionId} : 하트비트 도착");
             _userManager.GetUser(packet.SessionId).HeartBeatTime = DateTime.Now;
+        }
+
+        public void ReqSendHeartBeat(OmokBinaryRequestInfo packet)
+        {
+            var req = MemoryPackSerializer.Deserialize<ReqSendHeartBeatPacket>(packet.Body);
+
+            _logger.Info($"{req.CurrentIndex} : 하트비트 전송");
+            _userManager.CheckHeartBeat(req.CurrentIndex);
         }
     }
 }

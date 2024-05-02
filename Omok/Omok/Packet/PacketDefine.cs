@@ -44,7 +44,7 @@ namespace Omok.Packet
         NTF_TIME_OUT = 1221,
         NTF_TIME_OUT_WIN = 1222,
 
-        NTF_HEART_BEAT = 1300,
+        REQ_HEART_BEAT = 1300,
         RES_HEART_BEAT = 1301,
     }
 }

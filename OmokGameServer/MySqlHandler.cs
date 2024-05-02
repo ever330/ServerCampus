@@ -13,6 +13,7 @@ namespace OmokGameServer
         public void RegistPacketHandler(Dictionary<short, Action<DBRequestInfo>> packetHandlers)
         {
             packetHandlers.Add((short)PACKET_ID.REQ_UPDATE_RESULT, UpdateGameResult);
+            packetHandlers.Add((short)PACKET_ID.REQ_USER_DATA, GetUserData);
         }
 
         public void UpdateGameResult(DBRequestInfo req)
@@ -22,18 +23,42 @@ namespace OmokGameServer
             var user = _userManager.GetUser(req.SessionId);
             if (gameResult.Result)
             {
-                user.GameData.WinCount++;
+                user.WinCount++;
             }
             else
             {
-                user.GameData.LoseCount++;
+                user.LoseCount++;
             }
-            var updateResult = _dbManager.UpdateGameResult(gameResult.UserId, user.GameData.WinCount, user.GameData.LoseCount);
+            var updateResult = _dbManager.UpdateGameResult(gameResult.UserId, user.WinCount, user.LoseCount);
 
             if (updateResult != ERROR_CODE.NONE)
             {
                 _logger.Error($"{gameResult.UserId} 게임 결과 업데이트 에러 : {updateResult}");
             }
+        }
+
+        public void GetUserData(DBRequestInfo req)
+        {
+            var get = MemoryPackSerializer.Deserialize<ReqUserData>(req.Body);
+            var userData = _dbManager.GetUserData(get.UserId);
+
+            var res = new ResUserData();
+            res.UserId = get.UserId;
+            if (userData.Item1 == ERROR_CODE.NONE)
+            {
+                res.Result = true;
+                res.WinCount = userData.Item2.WinCount;
+                res.LoseCount = userData.Item2.LoseCount;
+            }
+            else
+            {
+                res.Result = false;
+            }
+
+            var resData = MemoryPackSerializer.Serialize(res);
+            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_USER_DATA, resData);
+            reqInfo.SessionId = req.SessionId;
+            _sendToPP(reqInfo);
         }
     }
 }

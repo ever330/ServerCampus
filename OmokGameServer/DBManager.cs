@@ -63,8 +63,8 @@ namespace OmokGameServer
             {
                 var userData = _queryFactory.Query("user_game_data").Where("id", id).UpdateAsync(new
                     {
-                        win_count = winCount,
-                        lose_count = loseCount
+                        winCunt = winCount,
+                        loseCount = loseCount
                     });
 
                 if (userData == null)

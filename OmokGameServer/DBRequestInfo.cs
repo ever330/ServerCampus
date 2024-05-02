@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,19 +29,45 @@ namespace OmokGameServer
         public byte[] Body { get; set; }
     }
 
-    public class ReqSetAuthToken
+    [MemoryPackable]
+    public partial class ReqSetToken
     {
         public string UserId { get; set; }
         public string AuthToken { get; set; }
     }
 
-    public class ReqCheckAuthToken
+    [MemoryPackable]
+    public partial class ResSetToken
+    {
+        public string UserId { get; set; }
+        public string AuthToken { get; set; }
+        public bool Result { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ReqCheckAuthToken
     {
         public string UserId { get; set; }
         public string AuthToken { get; set; }
     }
 
-    public class ReqUpdateWinLose
+    [MemoryPackable]
+    public partial class ReqUserData
+    {
+        public string UserId { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ResUserData
+    {
+        public bool Result { get; set; }
+        public string UserId { get; set; }
+        public int WinCount { get; set; }
+        public int LoseCount { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ReqUpdateWinLose
     {
         public string UserId { get; set; }
         public bool Result { get; set; }

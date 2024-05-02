@@ -14,29 +14,30 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<DBRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_REDIS_LOGIN, SetAuthToken);
+            packetHandlers.Add((short)PACKET_ID.REQ_SET_TOKEN, SetAuthToken);
             packetHandlers.Add((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, CheckAuthToken);
         }
 
         public void SetAuthToken(DBRequestInfo req)
         {
-            var setToken = MemoryPackSerializer.Deserialize<ReqSetAuthToken>(req.Body);
+            var setToken = MemoryPackSerializer.Deserialize<ReqSetToken>(req.Body);
             var result = _dbManager.SetAuthToken(setToken.UserId, setToken.AuthToken);
 
-            var res = new ResLoginPacket();
+            var ntfLogin = new ResSetToken();
+            ntfLogin.UserId = setToken.UserId;
+            ntfLogin.AuthToken = setToken.AuthToken;
             if (result != ERROR_CODE.NONE)
             {
-                res.Result = false;
+                ntfLogin.Result = false;
             }
             else
             {
-                res.Result = true;
-                _userManager.UserLogin(req.SessionId, setToken.UserId, setToken.AuthToken);
+                ntfLogin.Result = true;
             }
-
-            var resData = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
-            _sendFunc(req.SessionId, sendData);
+            var ntfData = MemoryPackSerializer.Serialize(ntfLogin);
+            var reqInfo = new OmokBinaryRequestInfo((short)(ntfData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_SET_TOKEN, ntfData);
+            reqInfo.SessionId = req.SessionId;
+            _sendToPP(reqInfo);
         }
 
         public void CheckAuthToken(DBRequestInfo req)

@@ -33,8 +33,7 @@ namespace OmokGameServer
 
         int _roomUserMaxCount = 0;
 
-        const int BOARD_SIZE = 19;
-        STONE[,] _board = new STONE[BOARD_SIZE, BOARD_SIZE];
+        OmokData _omokData = new OmokData();
 
         public ROOM_STATE RoomState { get; set; }
 
@@ -51,7 +50,7 @@ namespace OmokGameServer
             {
                 for (int y = 0; y < 19; y++)
                 {
-                    _board[x, y] = STONE.NONE;
+                    _omokData.Board[x, y] = STONE.NONE;
                 }
             }
         }
@@ -108,9 +107,20 @@ namespace OmokGameServer
             }
         }
 
+        public string GameStart()
+        {
+            _omokData.Init();
+            _userList[0].Stone = STONE.BLACK;
+            _userList[0].State = USER_STATE.PLAYING;
+            _userList[1].Stone = STONE.WHITE;
+            _userList[1].State = USER_STATE.PLAYING;
+
+            return _userList[0].UserId;
+        }
+
         public void PutStone(STONE stone, int x, int y)
         {
-            _board[x, y] = stone;
+            _omokData.Board[x, y] = stone;
         }
 
         public PUT_RESULT CheckStoneCount(STONE stone, int row, int col)
@@ -166,8 +176,8 @@ namespace OmokGameServer
             int myStoneCount = 1;
             int emptyCount = 0;
 
-            LINE_STATE lineState1 = LINE_STATE.OPEN;
-            LINE_STATE lineState2 = LINE_STATE.OPEN;
+            LINE_STATE lineState1 = LINE_STATE.CLOSE;
+            LINE_STATE lineState2 = LINE_STATE.CLOSE;
 
             STONE prevStone = stone;
             
@@ -176,15 +186,15 @@ namespace OmokGameServer
             {
                 int r = row + i * dRow;
                 int c = col + i * dCol;
-                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE)
+                if (r < 0 || r >= _omokData.BoardSize() || c < 0 || c >= _omokData.BoardSize())
                 {
                     continue;
                 }
-                if (_board[r, c] == stone)
+                if (_omokData.Board[r, c] == stone)
                 {
                     myStoneCount++;
                 }
-                else if (_board[r, c] == STONE.NONE)
+                else if (_omokData.Board[r, c] == STONE.NONE)
                 {
                     emptyCount++;
                     if (emptyCount >= 2)
@@ -210,18 +220,22 @@ namespace OmokGameServer
                     break;
                 }
 
-                prevStone = _board[r, c];
+                prevStone = _omokData.Board[r, c];
             }
             
             for (int i = -1; i >= -6; i--)
             {
                 int r = row + i * dRow;
                 int c = col + i * dCol;
-                if (_board[r, c] == stone)
+                if (r < 0 || r >= _omokData.BoardSize() || c < 0 || c >= _omokData.BoardSize())
+                {
+                    continue;
+                }
+                if (_omokData.Board[r, c] == stone)
                 {
                     myStoneCount++;
                 }
-                else if (_board[r, c] == STONE.NONE)
+                else if (_omokData.Board[r, c] == STONE.NONE)
                 {
                     emptyCount++;
                     if (emptyCount >= 2)
@@ -245,7 +259,7 @@ namespace OmokGameServer
                     break;
                 }
 
-                prevStone = _board[r, c];
+                prevStone = _omokData.Board[r, c];
             }
 
             if (myStoneCount == 3)
@@ -270,11 +284,15 @@ namespace OmokGameServer
                 {
                     int r = row + i * dRow;
                     int c = col + i * dCol;
-                    if (_board[r, c] == stone)
+                    if (r < 0 || r >= _omokData.BoardSize() || c < 0 || c >= _omokData.BoardSize())
+                    {
+                        continue;
+                    }
+                    if (_omokData.Board[r, c] == stone)
                     {
                         myStoneCount++;
                     }
-                    else if (_board[r, c] == STONE.NONE)
+                    else if (_omokData.Board[r, c] == STONE.NONE)
                     {
                         emptyCount++;
                         if (emptyCount >= 2)
@@ -304,18 +322,22 @@ namespace OmokGameServer
                         break;
                     }
 
-                    prevStone = _board[r, c];
+                    prevStone = _omokData.Board[r, c];
                 }
 
                 for (int i = -1; i >= -6; i--)
                 {
                     int r = row + i * dRow;
                     int c = col + i * dCol;
-                    if (_board[r, c] == stone)
+                    if (r < 0 || r >= _omokData.BoardSize() || c < 0 || c >= _omokData.BoardSize())
+                    {
+                        continue;
+                    }
+                    if (_omokData.Board[r, c] == stone)
                     {
                         myStoneCount++;
                     }
-                    else if (_board[r, c] == STONE.NONE)
+                    else if (_omokData.Board[r, c] == STONE.NONE)
                     {
                         emptyCount++;
                         if (emptyCount >= 2)
@@ -343,7 +365,7 @@ namespace OmokGameServer
                         break;
                     }
 
-                    prevStone = _board[r, c];
+                    prevStone = _omokData.Board[r, c];
                 }
 
                 if (lineState1 == LINE_STATE.CLOSE && lineState2 == LINE_STATE.CLOSE)
@@ -369,21 +391,21 @@ namespace OmokGameServer
                 int r = row + i * dRow;
                 int c = col + i * dCol;
 
-                if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE)
+                if (r < 0 || r >= _omokData.BoardSize() || c < 0 || c >= _omokData.BoardSize())
                 {
                     continue;
                 }
 
-                if (i == 0 || (i == -5 && _board[r, c] == stone))
+                if (i == 0 || (i == -5 && _omokData.Board[r, c] == stone))
                 {
                     linkCount++;
                 }
-                else if (_board[r, c] != stone)
+                else if (_omokData.Board[r, c] != stone)
                 {
                     maxLinkCount = Math.Max(maxLinkCount, linkCount);
                     linkCount = 0;
                 }
-                else if (_board[r, c] == stone)
+                else if (_omokData.Board[r, c] == stone)
                 {
                     linkCount++;
                 }

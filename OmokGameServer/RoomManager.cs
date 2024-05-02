@@ -150,13 +150,7 @@ namespace OmokGameServer
                 else
                 {
                     var startPac = new NtfGameStartPacket();
-
-                    var tempUserList = _roomList[pac.RoomNumber].GetUserList();
-                    startPac.StartPlayer = tempUserList[0].UserId;
-                    tempUserList[0].Stone = STONE.BLACK;
-                    tempUserList[0].State = USER_STATE.PLAYING;
-                    tempUserList[1].Stone = STONE.WHITE;
-                    tempUserList[1].State = USER_STATE.PLAYING;
+                    startPac.StartPlayer = _roomList[pac.RoomNumber].GameStart();
 
                     var ntf = MemoryPackSerializer.Serialize(startPac);
                     var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_GAME_START, ntf);

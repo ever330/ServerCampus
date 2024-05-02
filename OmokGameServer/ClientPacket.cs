@@ -175,7 +175,7 @@ namespace OmokGameServer
     }
 
     [MemoryPackable]
-    public partial class NtfHeartBeatPacket
+    public partial class ReqHeartBeatPacket
     {
 
     }
