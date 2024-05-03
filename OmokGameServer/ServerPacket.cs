@@ -22,4 +22,10 @@ namespace OmokGameServer
     {
         public int CurrentIndex { get; set; }
     }
+
+    [MemoryPackable]
+    public partial class ReqSendCheckRoomPacket
+    {
+        public int CurrentIndex { get; set; }
+    }
 }

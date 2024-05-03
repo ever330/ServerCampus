@@ -146,13 +146,6 @@ namespace Omok.Packet
     }
 
     [MemoryPackable]
-    public partial class ReqTimeOutPacket
-    {
-        public int RoomNumber { get; set; }
-        public int Stone { get; set; }
-    }
-
-    [MemoryPackable]
     public partial class NtfTimeOutPacket
     {
         public int Stone { get; set; }
@@ -172,6 +165,12 @@ namespace Omok.Packet
 
     [MemoryPackable]
     public partial class ResHeartBeatPacket
+    {
+
+    }
+
+    [MemoryPackable]
+    public partial class NtfDrawPacket
     {
 
     }

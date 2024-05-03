@@ -85,5 +85,13 @@ namespace OmokGameServer
             _logger.Info($"{req.CurrentIndex} : 하트비트 전송");
             _userManager.CheckHeartBeat(req.CurrentIndex);
         }
+
+        public void ReqSendCheckRoom(OmokBinaryRequestInfo packet)
+        {
+            var req = MemoryPackSerializer.Deserialize<ReqSendCheckRoomPacket>(packet.Body);
+
+            _logger.Info($"{req.CurrentIndex} : 방 상태 조사");
+            _userManager.CheckHeartBeat(req.CurrentIndex);
+        }
     }
 }

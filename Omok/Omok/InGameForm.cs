@@ -63,7 +63,7 @@ namespace Omok
         bool _isGamePlaying = false;
         int _limitTime;
 
-        const int StartTimeLimit = 60;
+        const int StartTimeLimit = 30;
 
         public InGameForm()
         {
@@ -499,7 +499,7 @@ namespace Omok
                 case PACKET_ID.NTF_TIME_OUT:
                     {
                         var res = MemoryPackSerializer.Deserialize<NtfTimeOutPacket>(packet.Body);
-                        if ((STONE)res.Stone == _myStone)
+                        if ((STONE)res.Stone != _myStone)
                         {
                             _clientNetwork.NetworkMessageQ.Enqueue("상대방 시간 초과");
                             _limitTime = StartTimeLimit;
@@ -544,16 +544,6 @@ namespace Omok
             if (_limitTime <= 0)
             {
                 _limitTime = 0;
-                /// todo : 타임아웃 시 서버에게 패킷 전송.
-                /// 상대 턴인데 시간 초과되었을 경우 패킷 전송
-                if (!putBtn.Enabled)
-                {
-                    var req = new ReqTimeOutPacket();
-                    req.RoomNumber = _roomNumber;
-                    req.Stone = (int)_myStone;
-                    var body = MemoryPackSerializer.Serialize(req);
-                    _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_TIME_OUT, body));
-                }
             }
             limitTimeLabel.Text = _limitTime.ToString();
         }

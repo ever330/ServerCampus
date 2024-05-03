@@ -62,6 +62,7 @@ namespace OmokGameServer
         REQ_TIME_OUT = 1220,
         NTF_TIME_OUT = 1221,
         NTF_TIME_OUT_WIN = 1222,
+        NTF_DRAW = 1223,
 
         REQ_HEART_BEAT = 1300,
         RES_HEART_BEAT = 1301,
@@ -79,5 +80,6 @@ namespace OmokGameServer
 
         // INNER
         REQ_SEND_HEART_BEAT = 3000,
+        REQ_SEND_CHECK_ROOM = 3001,
     }
 }

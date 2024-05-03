@@ -322,7 +322,7 @@
             limitTimeLabel.Name = "limitTimeLabel";
             limitTimeLabel.Size = new Size(21, 15);
             limitTimeLabel.TabIndex = 30;
-            limitTimeLabel.Text = "60";
+            limitTimeLabel.Text = "30";
             // 
             // turnLabel
             // 

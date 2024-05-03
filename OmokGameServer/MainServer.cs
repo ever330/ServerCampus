@@ -36,7 +36,12 @@ namespace OmokGameServer
         Timer _heartBeatTimer;
 
         int _heartBeatIndex = 0;
-        const int _heartBeatInterval = 250;
+        const int HeartBeatInterval = 250;
+
+        Timer _checkRoomTimer;
+
+        int _checkRoomIndex = 0;
+        const int CheckRoomInterval = 250;
 
         public MainServer(IHostApplicationLifetime appLifetime, IOptions<ServerOption> serverConfig, ILogger<MainServer> logger)
             : base(new DefaultReceiveFilterFactory<ReceiveFilter, OmokBinaryRequestInfo>())
@@ -153,7 +158,8 @@ namespace OmokGameServer
             _dbProcessor.Init(_mainLogger, _userManager, _dbManager, SendData, Distribute);
             _dbProcessor.RegistHandlers();
 
-            _heartBeatTimer = new Timer(SendHeartBeat, null, 0, 250);
+            _heartBeatTimer = new Timer(SendHeartBeat, null, 0, HeartBeatInterval);
+            _checkRoomTimer = new Timer(SendCheckRoom, null, 0, CheckRoomInterval);
 
             _mainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
@@ -232,6 +238,24 @@ namespace OmokGameServer
             if (_heartBeatIndex >= 4)
             {
                 _heartBeatIndex = 0;
+            }
+        }
+
+        void SendCheckRoom(object o)
+        {
+            if (_userManager.GetUserCount() == 0)
+            {
+                return;
+            }
+            var pac = new ReqSendCheckRoomPacket();
+            pac.CurrentIndex = _checkRoomIndex;
+            var pacData = MemoryPackSerializer.Serialize(pac);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_SEND_CHECK_ROOM, pacData);
+            _packetProcessor.InsertPacket(req);
+            _checkRoomIndex++;
+            if (_checkRoomIndex >= 4)
+            {
+                _checkRoomIndex = 0;
             }
         }
 

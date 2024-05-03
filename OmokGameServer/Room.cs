@@ -35,6 +35,11 @@ namespace OmokGameServer
 
         OmokData _omokData = new OmokData();
 
+        public DateTime StartTime { get; set; }
+        public DateTime TurnTime { get; set; }
+
+        public int CurrentPlayerIndex;
+
         public ROOM_STATE RoomState { get; set; }
 
         public Room(int roomNumber, int roomUserMaxCount)
@@ -42,6 +47,11 @@ namespace OmokGameServer
             _roomNumber = roomNumber;
             _roomUserMaxCount = roomUserMaxCount;
             RoomState = ROOM_STATE.NONE;
+        }
+
+        public int GetRoomNumber()
+        {
+            return _roomNumber;
         }
 
         public void BoardClear()
@@ -77,6 +87,11 @@ namespace OmokGameServer
             {
                 _userList.Remove(user);
                 user.LeaveRoom();
+
+                if (_userList.Count == 0)
+                {
+                    RoomState = ROOM_STATE.NONE;
+                }
 
                 return ERROR_CODE.NONE;
             }
@@ -114,13 +129,30 @@ namespace OmokGameServer
             _userList[0].State = USER_STATE.PLAYING;
             _userList[1].Stone = STONE.WHITE;
             _userList[1].State = USER_STATE.PLAYING;
+            StartTime = DateTime.Now;
+            TurnTime = DateTime.Now;
+            CurrentPlayerIndex = 0;
 
             return _userList[0].UserId;
+        }
+
+        public void EndGame()
+        {
+            RoomState = ROOM_STATE.NONE;
         }
 
         public void PutStone(STONE stone, int x, int y)
         {
             _omokData.Board[x, y] = stone;
+            TurnTime = DateTime.Now;
+            if (CurrentPlayerIndex == 0)
+            {
+                CurrentPlayerIndex = 1;
+            }
+            else
+            {
+                CurrentPlayerIndex = 0;
+            }
         }
 
         public PUT_RESULT CheckStoneCount(STONE stone, int row, int col)
