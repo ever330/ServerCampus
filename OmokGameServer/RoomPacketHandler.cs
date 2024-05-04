@@ -86,7 +86,7 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqPutStonePacket>(packet.Body);
 
-            _roomManager.PutStone(_userManager.GetUser(packet.SessionId), req.PosX, req.PosY);
+            _roomManager.PutStone(req.RoomNumber, req.PosX, req.PosY);
         }
 
         public void ReqSendCheckRoom(OmokBinaryRequestInfo packet)

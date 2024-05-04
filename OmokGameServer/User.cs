@@ -15,21 +15,18 @@ namespace OmokGameServer
         public string SessionId { get; private set; }
         public string UserId { get; private set; }
         public int RoomNumber { get; private set; }
-        public USER_STATE State { get; set; }
-        public STONE Stone { get; set; }
+        public DateTime ConnectTime { get; set; }
         public DateTime HeartBeatTime { get; set; }
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
-        public int TimeOutCount { get; set; }
 
         public void Set(int userIndex, string sessionId)
         {
             _userIndex = userIndex;
             SessionId = sessionId;
-            State = USER_STATE.NONE;
-            Stone = STONE.NONE;
+            ConnectTime = DateTime.Now;
             HeartBeatTime = DateTime.Now;
-            TimeOutCount = 0;
+            UserId = "";
         }
 
         public void SetData(string userId, int winCount, int loseCount)

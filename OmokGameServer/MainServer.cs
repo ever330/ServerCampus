@@ -34,14 +34,16 @@ namespace OmokGameServer
         private readonly ILogger<MainServer> _appLogger;
 
         Timer _heartBeatTimer;
-
         int _heartBeatIndex = 0;
         const int HeartBeatInterval = 250;
 
         Timer _checkRoomTimer;
-
         int _checkRoomIndex = 0;
         const int CheckRoomInterval = 250;
+
+        Timer _checkSessionTimer;
+        int _checkSessionIndex = 0;
+        const int CheckSessionInterval = 250;
 
         public MainServer(IHostApplicationLifetime appLifetime, IOptions<ServerOption> serverConfig, ILogger<MainServer> logger)
             : base(new DefaultReceiveFilterFactory<ReceiveFilter, OmokBinaryRequestInfo>())
@@ -145,7 +147,7 @@ namespace OmokGameServer
             _dbManager = new DBManager(serverOpt);
 
             _userManager = new UserManager();
-            _userManager.Init(_dbManager, _serverOption.MaxConnectionNumber, SendData);
+            _userManager.Init(_dbManager, _serverOption.MaxConnectionNumber, SendData, DisconnectUser);
 
             _roomManager = new RoomManager();
             _roomManager.Init(_dbManager, _serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, InsertToDB);
@@ -160,6 +162,7 @@ namespace OmokGameServer
 
             _heartBeatTimer = new Timer(SendHeartBeat, null, 0, HeartBeatInterval);
             _checkRoomTimer = new Timer(SendCheckRoom, null, 0, CheckRoomInterval);
+            _checkSessionTimer = new Timer(SendCheckSession, null, 0, CheckSessionInterval);
 
             _mainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
@@ -259,6 +262,24 @@ namespace OmokGameServer
             }
         }
 
+        void SendCheckSession(object o)
+        {
+            if (_userManager.GetUserCount() == 0)
+            {
+                return;
+            }
+            var pac = new ReqSendCheckSessionPacket();
+            pac.CurrentIndex = _checkSessionIndex;
+            var pacData = MemoryPackSerializer.Serialize(pac);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_SEND_CHECK_SESSION, pacData);
+            _packetProcessor.InsertPacket(req);
+            _checkSessionIndex++;
+            if (_checkSessionIndex >= 4)
+            {
+                _checkSessionIndex = 0;
+            }
+        }
+
         public void InsertToDB(DBRequestInfo dbReq)
         {
             _dbProcessor.InsertPacket(dbReq);
@@ -267,6 +288,12 @@ namespace OmokGameServer
         public void Distribute(OmokBinaryRequestInfo req)
         {
             _packetProcessor.InsertPacket(req);
+        }
+
+        public void DisconnectUser(string sessionId)
+        {
+            var session = GetSessionByID(sessionId);
+            session.Close();
         }
     }
 

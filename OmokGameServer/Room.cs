@@ -29,7 +29,7 @@ namespace OmokGameServer
     public class Room
     {
         int _roomNumber;
-        List<User> _userList = new List<User>();
+        List<RoomUser> _userList = new List<RoomUser>();
 
         int _roomUserMaxCount = 0;
 
@@ -73,20 +73,24 @@ namespace OmokGameServer
             }
 
             user.EnterRoom(_roomNumber);
+            RoomUser newUser = new RoomUser();
+            newUser.SessionId = user.SessionId;
+            newUser.UserId = user.UserId;
+            newUser.State = USER_STATE.NONE;
+            newUser.TimeOutCount = 0;
 
-            _userList.Add(user);
+            _userList.Add(newUser);
 
             return ERROR_CODE.NONE;
         }
 
-        public ERROR_CODE LeaveRoom(string sessionId)
+        public ERROR_CODE LeaveRoom(string userId)
         {
-            var user = _userList.Find(x => x.SessionId  == sessionId);
+            var user = _userList.Find(x => x.UserId  == userId);
 
             if (user != null)
             {
                 _userList.Remove(user);
-                user.LeaveRoom();
 
                 if (_userList.Count == 0)
                 {
@@ -99,7 +103,7 @@ namespace OmokGameServer
             return ERROR_CODE.ROOM_LEAVE_ERROR;
         }
 
-        public List<User> GetUserList()
+        public List<RoomUser> GetUserList()
         {
             return _userList;
         }

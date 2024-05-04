@@ -184,4 +184,10 @@ namespace OmokGameServer
     {
 
     }
+
+    [MemoryPackable]
+    public partial class NtfSessionTimeLimitPacket
+    {
+
+    }
 }

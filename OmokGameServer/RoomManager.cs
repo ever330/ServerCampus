@@ -20,8 +20,8 @@ namespace OmokGameServer
         int _roomMaxCount = 0;
         int _roomUserMax = 0;
 
-        const int RoomGamingLimit = 60;
-        const int TurnLimit = 5;
+        const int RoomGamingLimitMinite = 60;
+        const int TurnLimitSecond = 5;
 
         public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> sendToDB)
         {
@@ -65,7 +65,7 @@ namespace OmokGameServer
 
                 for (int i = 0; i < users.Count; i++)
                 {
-                    if (user.SessionId != users[i].SessionId)
+                    if (user.UserId != users[i].UserId)
                     {
                         res.OtherUserId = users[i].UserId;
                     }
@@ -77,7 +77,6 @@ namespace OmokGameServer
                 var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_NEW_USER, ntf);
                 BroadCast(roomNumber, user.SessionId, ntfData);
             }
-            user.TimeOutCount = 0;
             var data = MemoryPackSerializer.Serialize(res);
             var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_ENTER_ROOM, data);
             return _sendFunc(user.SessionId, sendData);
@@ -86,6 +85,10 @@ namespace OmokGameServer
         public bool LeaveRoom(User user, int roomNumber)
         {
             var result = _roomList[roomNumber].LeaveRoom(user.SessionId);
+            if (result == ERROR_CODE.NONE)
+            {
+                user.LeaveRoom();
+            }
             _roomIndexQueue.Enqueue(roomNumber);
 
             var res = new ResLeaveRoomPacket();
@@ -130,7 +133,8 @@ namespace OmokGameServer
             {
                 var pac = MemoryPackSerializer.Deserialize<ReqReadyPacket>(packet);
 
-                user.State = USER_STATE.READY;
+                var curUser = _roomList[pac.RoomNumber].GetUserList().Find(x => x.UserId == user.UserId);
+                curUser.State = USER_STATE.READY;
 
                 _roomList[pac.RoomNumber].CheckRoomState();
 
@@ -165,7 +169,8 @@ namespace OmokGameServer
             {
                 var pac = MemoryPackSerializer.Deserialize<ReqNotReadyPacket>(packet);
 
-                user.State = USER_STATE.NONE;
+                var curUser = _roomList[pac.RoomNumber].GetUserList().Find(x => x.UserId == user.UserId);
+                curUser.State = USER_STATE.NONE;
 
                 var ntfPac = new NtfReadyStatePacket();
                 ntfPac.Id = user.UserId;
@@ -177,12 +182,14 @@ namespace OmokGameServer
             }
         }
 
-        public void PutStone(User user, int posX, int posY)
+        public void PutStone(int roomNumber, int posX, int posY)
         {
             /// 흑돌 쌍3 쌍4 6목 처리 및 승리 확인
-            var tempRoom = _roomList[user.RoomNumber];
+            var curRoom = _roomList[roomNumber];
 
-            var checkResult = tempRoom.CheckStoneCount(user.Stone, posX, posY);
+            var curUser = curRoom.GetUserList()[curRoom.CurrentPlayerIndex];
+            var curUserStone = curRoom.GetUserList()[curRoom.CurrentPlayerIndex].Stone;
+            var checkResult = curRoom.CheckStoneCount(curUserStone, posX, posY);
 
             if (checkResult == PUT_RESULT.ERROR)
             {
@@ -190,60 +197,60 @@ namespace OmokGameServer
                 errorPac.Result = false;
                 var error = MemoryPackSerializer.Serialize(errorPac);
                 var errorData = ClientPacket.MakeClientPacket(PACKET_ID.RES_PUT_STONE, error);
-                _sendFunc(user.SessionId, errorData);
+                _sendFunc(curUser.SessionId, errorData);
                 return;
             }
             else if (checkResult == PUT_RESULT.NONE)
             {
-                tempRoom.PutStone(user.Stone, posX, posY);
-                user.TimeOutCount = 0;
+                curRoom.PutStone(curUserStone, posX, posY);
+                curUser.TimeOutCount = 0;
 
                 var resPac = new ResPutStonePacket();
                 resPac.Result = true;
                 var res = MemoryPackSerializer.Serialize(resPac);
                 var resData = ClientPacket.MakeClientPacket(PACKET_ID.RES_PUT_STONE, res);
-                _sendFunc(user.SessionId, resData);
+                _sendFunc(curUser.SessionId, resData);
 
                 var ntfPac = new NtfPutStonePacket();
-                ntfPac.Stone = (int)user.Stone;
+                ntfPac.Stone = (int)curUserStone;
                 ntfPac.PosX = posX;
                 ntfPac.PosY = posY;
                 var ntf = MemoryPackSerializer.Serialize(ntfPac);
                 var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_PUT_STONE, ntf);
-                BroadCast(user.RoomNumber, user.SessionId, ntfData);
+                BroadCast(roomNumber, curUser.SessionId, ntfData);
             }
             else if (checkResult == PUT_RESULT.WIN)
             {
                 var winPac = new NtfWinPacket();
-                winPac.Stone = (int)user.Stone;
+                winPac.Stone = (int)curUserStone;
                 winPac.PosX = posX;
                 winPac.PosY = posY;
-                winPac.Id = user.UserId;
+                winPac.Id = curUser.UserId;
                 var win = MemoryPackSerializer.Serialize(winPac);
                 var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_WIN_GAME, win);
-                BroadCast(user.RoomNumber, null, winData);
-                user.TimeOutCount = 0;
+                BroadCast(roomNumber, null, winData);
+                curUser.TimeOutCount = 0;
 
                 var winUser = new ReqUpdateWinLose();
-                winUser.UserId = user.UserId;
+                winUser.UserId = curUser.UserId;
                 winUser.Result = true;
 
-                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(winUser)));
+                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, curUser.SessionId, MemoryPackSerializer.Serialize(winUser)));
 
-                foreach (var tempUser in tempRoom.GetUserList())
+                foreach (var tempUser in curRoom.GetUserList())
                 {
-                    if (user != tempUser)
+                    if (curUser.UserId != tempUser.UserId)
                     {
                         var loseUser = new ReqUpdateWinLose();
                         loseUser.UserId = tempUser.UserId;
                         loseUser.Result = false;
 
-                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, user.SessionId, MemoryPackSerializer.Serialize(loseUser)));
+                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, curUser.SessionId, MemoryPackSerializer.Serialize(loseUser)));
 
                         tempUser.TimeOutCount = 0;
                     }
                 }
-                tempRoom.EndGame();
+                curRoom.EndGame();
             }
         }
 
@@ -252,13 +259,13 @@ namespace OmokGameServer
             int counter = 0;
             foreach (var room in _roomList)
             {
-                if (counter >= checkRoomIndex * (_roomMaxCount / 4) && counter < (checkRoomIndex + 1) * (_roomMaxCount / 4))
+                if (counter >= checkRoomIndex * ((float)_roomMaxCount / 4) && counter < (checkRoomIndex + 1) * ((float)_roomMaxCount / 4))
                 {
                     if (room.RoomState != ROOM_STATE.PLAYING)
                         continue;
 
                     var difMinite = DateTime.Now - room.StartTime;
-                    if (difMinite.TotalMinutes > RoomGamingLimit)
+                    if (difMinite.TotalMinutes > RoomGamingLimitMinite)
                     {
                         var draw = new NtfDrawPacket();
                         var ntf = MemoryPackSerializer.Serialize(draw);
@@ -268,7 +275,7 @@ namespace OmokGameServer
                     }
 
                     var difSecond = DateTime.Now - room.TurnTime;
-                    if (difSecond.TotalSeconds > TurnLimit)
+                    if (difSecond.TotalSeconds > TurnLimitSecond)
                     {
                         var userList = room.GetUserList();
                         userList[room.CurrentPlayerIndex].TimeOutCount++;

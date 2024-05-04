@@ -66,6 +66,7 @@ namespace OmokGameServer
 
         REQ_HEART_BEAT = 1300,
         RES_HEART_BEAT = 1301,
+        NTF_SESSION_TIME_LIMIT = 1302,
 
         // MYSQL
         REQ_UPDATE_RESULT = 2000,
@@ -81,5 +82,6 @@ namespace OmokGameServer
         // INNER
         REQ_SEND_HEART_BEAT = 3000,
         REQ_SEND_CHECK_ROOM = 3001,
+        REQ_SEND_CHECK_SESSION = 3002,
     }
 }

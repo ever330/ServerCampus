@@ -17,6 +17,7 @@ namespace OmokGameServer
             packetHandlers.Add((short)PACKET_ID.RES_USER_DATA, ResUserData);
             packetHandlers.Add((short)PACKET_ID.RES_HEART_BEAT, ResHeartBeat);
             packetHandlers.Add((short)PACKET_ID.REQ_SEND_HEART_BEAT, ReqSendHeartBeat);
+            packetHandlers.Add((short)PACKET_ID.REQ_SEND_CHECK_SESSION, ReqSendCheckSession);
         }
 
         public void ReqUserLogin(OmokBinaryRequestInfo packet)
@@ -81,17 +82,13 @@ namespace OmokGameServer
         public void ReqSendHeartBeat(OmokBinaryRequestInfo packet)
         {
             var req = MemoryPackSerializer.Deserialize<ReqSendHeartBeatPacket>(packet.Body);
-
-            _logger.Info($"{req.CurrentIndex} : 하트비트 전송");
             _userManager.CheckHeartBeat(req.CurrentIndex);
         }
 
-        public void ReqSendCheckRoom(OmokBinaryRequestInfo packet)
+        public void ReqSendCheckSession(OmokBinaryRequestInfo packet)
         {
-            var req = MemoryPackSerializer.Deserialize<ReqSendCheckRoomPacket>(packet.Body);
-
-            _logger.Info($"{req.CurrentIndex} : 방 상태 조사");
-            _userManager.CheckHeartBeat(req.CurrentIndex);
+            var req = MemoryPackSerializer.Deserialize<ReqSendCheckSessionPacket>(packet.Body);
+            _userManager.CheckSession(req.CurrentIndex);
         }
     }
 }
