@@ -2,7 +2,7 @@
 
 namespace APIServer.Models
 {
-    public class ReqLoginToAPI
+    public class ReqLoginToGame
     {
         [Required]
         [Length(1, 50)]

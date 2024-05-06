@@ -72,10 +72,10 @@ namespace Omok
             _mailBoxForm = new MailBoxForm();
         }
 
-        public void Init(string id)
+        public void Init(string id, string authToken, string ip, int port)
         {
             _clientNetwork = new ClientNetwork();
-            _clientNetwork.Connect("127.0.0.1", 3030);
+            _clientNetwork.Connect(ip, port);
 
             _packetBufferManager = new PacketBufferManager(PacketDefine.PACKET_BUFFER_SIZE, PacketDefine.PACKET_HEADER);
 
@@ -84,7 +84,7 @@ namespace Omok
             _userInfo = new UserInfo
             {
                 Email = id,
-                AuthToken = "1234",
+                AuthToken = authToken,
                 Id = id,
                 Level = 1,
                 Exp = 0,
@@ -108,7 +108,7 @@ namespace Omok
             backGroundTimer.Tick += new EventHandler(BackGroundProcess);
             backGroundTimer.Interval = 100;
             backGroundTimer.Start();
-            ShowDialog();
+            //ShowDialog();
         }
 
         private void InGame_FormClosing(object sender, FormClosingEventArgs e)

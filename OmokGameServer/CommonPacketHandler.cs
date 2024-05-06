@@ -75,7 +75,6 @@ namespace OmokGameServer
 
         public void ResHeartBeat(OmokBinaryRequestInfo packet)
         {
-            _logger.Info($"{packet.SessionId} : 하트비트 도착");
             _userManager.GetUser(packet.SessionId).HeartBeatTime = DateTime.Now;
         }
 

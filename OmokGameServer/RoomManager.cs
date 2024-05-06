@@ -21,7 +21,7 @@ namespace OmokGameServer
         int _roomUserMax = 0;
 
         const int RoomGamingLimitMinite = 60;
-        const int TurnLimitSecond = 5;
+        const int TurnLimitSecond = 30;
 
         public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> sendToDB)
         {
@@ -84,7 +84,7 @@ namespace OmokGameServer
 
         public bool LeaveRoom(User user, int roomNumber)
         {
-            var result = _roomList[roomNumber].LeaveRoom(user.SessionId);
+            var result = _roomList[roomNumber].LeaveRoom(user.UserId);
             if (result == ERROR_CODE.NONE)
             {
                 user.LeaveRoom();

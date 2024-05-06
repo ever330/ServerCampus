@@ -26,7 +26,7 @@ namespace APIServer.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<ResLoginToGame> Login([FromBody] ReqLoginToAPI request)
+        public async Task<ResLoginToGame> Login([FromBody] ReqLoginToGame request)
         {
             var res = await TryVerifyToken(request.Id, request.AuthToken);
 
@@ -58,6 +58,8 @@ namespace APIServer.Controllers
             resLogin.WinCount = checkRes.Item2.WinCount;
             resLogin.LoseCount = checkRes.Item2.LoseCount;
             resLogin.Money = checkRes.Item2.Money;
+            resLogin.Ip = "127.0.0.1";
+            resLogin.Port = 3030;
 
             return resLogin;
         }
@@ -66,7 +68,7 @@ namespace APIServer.Controllers
         {
             var request = new ReqVerifyAuthToken
             {
-                Id = id,
+                Email = id,
                 AuthToken = token,
             };
 

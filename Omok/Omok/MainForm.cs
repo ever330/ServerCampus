@@ -126,7 +126,7 @@ namespace Omok
 
             var request = new ReqLoginToGame
             {
-                Email = _userInfo.Email,
+                Id = _userInfo.Email,
                 AuthToken = _userInfo.AuthToken
             };
 
@@ -151,15 +151,21 @@ namespace Omok
 
             if (res.Result == ErrorCode.None)
             {
+                _userInfo.Level = res.Level;
+                _userInfo.Exp = res.Exp;
+                _userInfo.WinCount = res.WinCount;
+                _userInfo.LoseCount = res.LoseCount;
+                _userInfo.Money = res.Money;
                 richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
-                _inGameForm.SetUserInfo(_userInfo);
+                _inGameForm.Init(_userInfo.Email, _userInfo.AuthToken, res.Ip, res.Port);
+                //_inGameForm.SetUserInfo(_userInfo);
                 _inGameForm.ShowDialog();
             }
         }
 
         private void guestBtn_Click(object sender, EventArgs e)
         {
-            _inGameForm.Init(emailTextBox.Text);
+            //_inGameForm.Init(emailTextBox.Text);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace OmokGameServer
             return _roomNumber;
         }
 
-        public void BoardClear()
+        void BoardClear()
         {
             for (int x = 0; x < 19; x++)
             {
@@ -143,6 +143,7 @@ namespace OmokGameServer
         public void EndGame()
         {
             RoomState = ROOM_STATE.NONE;
+            BoardClear();
         }
 
         public void PutStone(STONE stone, int x, int y)

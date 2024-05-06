@@ -92,7 +92,6 @@ namespace OmokGameServer
         public void ReqSendCheckRoom(OmokBinaryRequestInfo packet)
         {
             var req = MemoryPackSerializer.Deserialize<ReqSendCheckRoomPacket>(packet.Body);
-            _logger.Info($"{req.CurrentIndex} 방 상태 확인 ");
 
             _roomManager.CheckRoomState(req.CurrentIndex);
         }

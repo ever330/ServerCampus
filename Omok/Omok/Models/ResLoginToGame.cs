@@ -14,5 +14,7 @@ namespace Omok.Models
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
         public int Money { get; set; }
+        public string Ip { get; set; }
+        public int Port { get; set; }
     }
 }
