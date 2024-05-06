@@ -1,17 +1,17 @@
 # Todo List
 
----
+
 #### Web API (계정 서버)
 [x] 계정생성
 [x] 로그인
----
+
 #### Web API (게임 서버)
 [x] 로그인
 [x] UserGameData 생성
 [x] 출석체크
 [x] 우편함 데이터
 [ ] 우편함 수령
----
+
 #### SuperSocketLite (게임 서버)
 [x] 로그인
 [x] 방 입장
