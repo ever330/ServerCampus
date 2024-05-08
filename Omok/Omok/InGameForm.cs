@@ -108,7 +108,6 @@ namespace Omok
             backGroundTimer.Tick += new EventHandler(BackGroundProcess);
             backGroundTimer.Interval = 100;
             backGroundTimer.Start();
-            //ShowDialog();
         }
 
         private void InGame_FormClosing(object sender, FormClosingEventArgs e)

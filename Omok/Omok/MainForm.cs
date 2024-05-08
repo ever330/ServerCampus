@@ -162,10 +162,5 @@ namespace Omok
                 _inGameForm.ShowDialog();
             }
         }
-
-        private void guestBtn_Click(object sender, EventArgs e)
-        {
-            //_inGameForm.Init(emailTextBox.Text);
-        }
     }
 }

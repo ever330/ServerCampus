@@ -22,7 +22,6 @@ namespace OmokGameServer
         CommonPacketHandler _lobbyPacketHandler = new CommonPacketHandler();
         RoomPacketHandler _roomPacketHandler = new RoomPacketHandler();
 
-
         public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc, Action<DBRequestInfo> sendDB)
         {
             _mainLogger = mainLogger;
@@ -74,11 +73,6 @@ namespace OmokGameServer
                     _mainLogger.Error($"PacketProcessor Error : {ex.ToString()}");
                 }
             }
-        }
-
-        void CheckHeartBeat(object o)
-        {
-
         }
     }
 }

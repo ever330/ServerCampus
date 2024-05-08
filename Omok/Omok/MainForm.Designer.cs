@@ -35,7 +35,6 @@
             passwordLabel = new Label();
             richTextBox1 = new RichTextBox();
             toCreateAccountFormBtn = new Button();
-            guestBtn = new Button();
             SuspendLayout();
             // 
             // loginBtn
@@ -100,22 +99,11 @@
             toCreateAccountFormBtn.UseVisualStyleBackColor = true;
             toCreateAccountFormBtn.Click += toCreateAccountFormBtn_Click;
             // 
-            // guestBtn
-            // 
-            guestBtn.Location = new Point(167, 12);
-            guestBtn.Name = "guestBtn";
-            guestBtn.Size = new Size(125, 23);
-            guestBtn.TabIndex = 8;
-            guestBtn.Text = "게스트로 시작";
-            guestBtn.UseVisualStyleBackColor = true;
-            guestBtn.Click += guestBtn_Click;
-            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(424, 303);
-            Controls.Add(guestBtn);
             Controls.Add(toCreateAccountFormBtn);
             Controls.Add(richTextBox1);
             Controls.Add(passwordLabel);
@@ -139,6 +127,5 @@
         private Label passwordLabel;
         private RichTextBox richTextBox1;
         private Button toCreateAccountFormBtn;
-        private Button guestBtn;
     }
 }
