@@ -158,9 +158,23 @@ namespace Omok
                 _userInfo.Money = res.Money;
                 richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
                 _inGameForm.Init(_userInfo.Email, _userInfo.AuthToken, res.Ip, res.Port);
-                //_inGameForm.SetUserInfo(_userInfo);
                 _inGameForm.ShowDialog();
             }
+        }
+
+        private void testBtn_Click(object sender, EventArgs e)
+        {
+            _userInfo.Level = 1;
+            _userInfo.Exp = 0;
+            _userInfo.WinCount = 0;
+            _userInfo.LoseCount = 0;
+            _userInfo.Money = 0;
+            richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
+            Random r = new Random();
+            int randomNum = r.Next(1, 1000000);
+            string id = "Guest" + randomNum;
+            _inGameForm.Init(id, "1234", "10.192.8.206", 3030);
+            _inGameForm.ShowDialog();
         }
     }
 }
