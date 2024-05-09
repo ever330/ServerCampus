@@ -152,7 +152,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Attendance/attendance", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.206:5292/api/Attendance/attendance", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -195,7 +195,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://localhost:5292/api/GetMail/getMail", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.206:5292/api/GetMail/getMail", request);
 
             if (!response.IsSuccessStatusCode)
             {

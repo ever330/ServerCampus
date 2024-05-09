@@ -4,6 +4,8 @@ using ZLogger.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://localhost:5229");
+
 IConfiguration configuration = builder.Configuration;
 
 builder.Services.AddControllers();

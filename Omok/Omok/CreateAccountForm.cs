@@ -57,7 +57,7 @@ namespace Omok
                 Password = encryptPassword
             };
 
-            var response = await client.PostAsJsonAsync("http://localhost:5229/api/CreateAccount/create", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.206:5229/api/CreateAccount/create", request);
 
 
             ResCreateAccount? res = await response.Content.ReadFromJsonAsync<ResCreateAccount>();
