@@ -30,7 +30,7 @@ namespace OmokGameServer
             checkToken.UserId = req.Id;
             checkToken.AuthToken = req.AuthToken;
 
-            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, packet.SessionId, MemoryPackSerializer.Serialize(checkToken)));
+            //_sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, packet.SessionId, MemoryPackSerializer.Serialize(checkToken)));
 
             var getUserData = new ReqUserData();
             getUserData.UserId = req.Id;
@@ -73,7 +73,13 @@ namespace OmokGameServer
 
         public void ReqHeartBeat(OmokBinaryRequestInfo packet)
         {
-            _userManager.GetUser(packet.SessionId).HeartBeatTime = DateTime.Now;
+            var user = _userManager.GetUser(packet.SessionId);
+            if (user == null)
+            {
+                _logger.Error($"{packet.SessionId} 하트비트 유저 없음");
+                return;
+            }
+            user.HeartBeatTime = DateTime.Now;
 
             var res = new ResHeartBeatPacket();
             var resData = MemoryPackSerializer.Serialize(res);
