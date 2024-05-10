@@ -13,11 +13,11 @@ namespace OmokGameServer
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
             packetHandlers.Add((short)PACKET_ID.REQ_LOGIN, ReqUserLogin);
-            packetHandlers.Add((short)PACKET_ID.RES_SET_TOKEN, ResSetToken);
+            packetHandlers.Add((short)PACKET_ID.RES_CHECK_AUTHTOKEN, ResCheckToken);
             packetHandlers.Add((short)PACKET_ID.RES_USER_DATA, ResUserData);
-            packetHandlers.Add((short)PACKET_ID.RES_HEART_BEAT, ResHeartBeat);
-            packetHandlers.Add((short)PACKET_ID.REQ_SEND_HEART_BEAT, ReqSendHeartBeat);
-            packetHandlers.Add((short)PACKET_ID.REQ_SEND_CHECK_SESSION, ReqSendCheckSession);
+            packetHandlers.Add((short)PACKET_ID.REQ_HEART_BEAT, ReqHeartBeat);
+            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_HEART_BEAT, ReqCheckHeartBeat);
+            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_SESSION, ReqCheckSession);
         }
 
         public void ReqUserLogin(OmokBinaryRequestInfo packet)
@@ -26,11 +26,11 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqLoginPacket>(packet.Body);
 
-            var setToken = new ReqSetToken();
-            setToken.UserId = req.Id;
-            setToken.AuthToken = req.AuthToken;
+            var checkToken = new ReqCheckAuthToken();
+            checkToken.UserId = req.Id;
+            checkToken.AuthToken = req.AuthToken;
 
-            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_SET_TOKEN, packet.SessionId, MemoryPackSerializer.Serialize(setToken)));
+            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, packet.SessionId, MemoryPackSerializer.Serialize(checkToken)));
 
             var getUserData = new ReqUserData();
             getUserData.UserId = req.Id;
@@ -38,12 +38,11 @@ namespace OmokGameServer
             _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_USER_DATA, packet.SessionId, MemoryPackSerializer.Serialize(getUserData)));
         }
 
-        public void ResSetToken(OmokBinaryRequestInfo packet)
+        public void ResCheckToken(OmokBinaryRequestInfo packet)
         {
-            var resSet = MemoryPackSerializer.Deserialize<ResSetToken>(packet.Body);
+            var resSet = MemoryPackSerializer.Deserialize<ResCheckAuthToken>(packet.Body);
 
-
-            if (!resSet.Result && !_userManager.GetUsers().ContainsKey(packet.SessionId))
+            if (!resSet.Result && _userManager.GetUser(packet.SessionId) != null)
             {
                 _userManager.RemoveUser(packet.SessionId);
                 var res = new ResLoginPacket();
@@ -52,14 +51,13 @@ namespace OmokGameServer
                 var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
                 _sendFunc(packet.SessionId, sendData);
             }
-
         }
 
         public void ResUserData(OmokBinaryRequestInfo packet)
         {
             var resUser = MemoryPackSerializer.Deserialize<ResUserData>(packet.Body);
 
-            if (!resUser.Result && !_userManager.GetUsers().ContainsKey(packet.SessionId))
+            if (!resUser.Result && _userManager.GetUser(packet.SessionId) != null)
             {
                 _userManager.RemoveUser(packet.SessionId);
                 var res = new ResLoginPacket();
@@ -73,20 +71,25 @@ namespace OmokGameServer
             _userManager.UserLogin(packet.SessionId, resUser.UserId, resUser.WinCount, resUser.LoseCount);
         }
 
-        public void ResHeartBeat(OmokBinaryRequestInfo packet)
+        public void ReqHeartBeat(OmokBinaryRequestInfo packet)
         {
             _userManager.GetUser(packet.SessionId).HeartBeatTime = DateTime.Now;
+
+            var res = new ResHeartBeatPacket();
+            var resData = MemoryPackSerializer.Serialize(res);
+            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_HEART_BEAT, resData);
+            _sendFunc(packet.SessionId, sendData);
         }
 
-        public void ReqSendHeartBeat(OmokBinaryRequestInfo packet)
+        public void ReqCheckHeartBeat(OmokBinaryRequestInfo packet)
         {
-            var req = MemoryPackSerializer.Deserialize<ReqSendHeartBeatPacket>(packet.Body);
+            var req = MemoryPackSerializer.Deserialize<ReqCheckHeartBeatPacket>(packet.Body);
             _userManager.CheckHeartBeat(req.CurrentIndex);
         }
 
-        public void ReqSendCheckSession(OmokBinaryRequestInfo packet)
+        public void ReqCheckSession(OmokBinaryRequestInfo packet)
         {
-            var req = MemoryPackSerializer.Deserialize<ReqSendCheckSessionPacket>(packet.Body);
+            var req = MemoryPackSerializer.Deserialize<ReqCheckSessionPacket>(packet.Body);
             _userManager.CheckSession(req.CurrentIndex);
         }
     }

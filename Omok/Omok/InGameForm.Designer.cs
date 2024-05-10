@@ -59,6 +59,7 @@
             limitTimeLabel = new Label();
             limitTimer = new System.Windows.Forms.Timer(components);
             turnLabel = new Label();
+            heartBeatTimer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // idTextLabel
@@ -413,5 +414,6 @@
         private Label limitTimeLabel;
         private System.Windows.Forms.Timer limitTimer;
         private Label turnLabel;
+        private System.Windows.Forms.Timer heartBeatTimer;
     }
 }

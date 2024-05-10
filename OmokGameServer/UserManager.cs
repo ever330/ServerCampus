@@ -10,13 +10,15 @@ namespace OmokGameServer
 {
     public class UserManager
     {
-        Dictionary<string, User> _userDict = new Dictionary<string, User>();
+        //Dictionary<string, User> _userDict = new Dictionary<string, User>();
+        List<User> _userList = new List<User>();
         int _maxUserCount = 0;
         int _userIndex = 0;
         Func<string, byte[], bool> _sendFunc;
         Action<string> _disconnect;
         DBManager _dbManager;
         Queue<string> _removeUserQueue = new Queue<string>();
+        int _userConnectCount = 0;
 
         const int HeartBeatLimitSecond = 5;
         const int SessionConnectLimitMinite = 5;
@@ -27,31 +29,42 @@ namespace OmokGameServer
             _maxUserCount = maxUserCount;
             _sendFunc = sendFunc;
             _disconnect = disconnect;
+
+            for (int i = 0; i < maxUserCount; i++)
+            {
+                User user = new User(_userIndex);
+                _userIndex++;
+            }
         }
 
         public ERROR_CODE SetNewUser(string sessionId)
         {
-            if (_userDict.Count >= _maxUserCount)
+            if (_userConnectCount >= _maxUserCount)
             {
                 return ERROR_CODE.USER_COUNT_MAX;
             }
 
-            User user = new User();
-            user.Set(_userIndex, sessionId);
-            _userIndex++;
-            _userDict.Add(sessionId, user);
-
+            for (int i = 0; i < _maxUserCount; i++)
+            {
+                if (_userList[i].SessionId == "")
+                {
+                    _userList[i].Set(sessionId);
+                    break;
+                }
+            }
+            _userConnectCount++;
             return ERROR_CODE.NONE;
         }
 
         public ERROR_CODE SetUserData(string userId, string sessionId, int winCount, int loseCount)
         {
-            if (!_userDict.ContainsKey(sessionId))
+            User? user = _userList.Find(x => x.SessionId == sessionId);
+            if (user == null)
             {
                 return ERROR_CODE.USER_NOT_EXIST;
             }
 
-            _userDict[sessionId].SetData(userId, winCount, loseCount);
+            user.SetData(userId, winCount, loseCount);
 
             var res = new ResLoginPacket();
             res.Result = true;
@@ -62,28 +75,29 @@ namespace OmokGameServer
             return ERROR_CODE.NONE;
         }
 
-        public User GetUser(string sessionId)
+        public User? GetUser(string sessionId)
         {
-            User user = null;
-            _userDict.TryGetValue(sessionId, out user);
+            User? user = _userList.Find(x => x.SessionId == sessionId);
             return user;
         }
 
         public ERROR_CODE RemoveUser(string sessionId)
         {
-            if (!_userDict.ContainsKey(sessionId))
+            User? user = _userList.Find(x => x.SessionId == sessionId);
+            if (user == null)
             {
                 return ERROR_CODE.USER_NOT_EXIST;
             }
 
-            _userDict.Remove(sessionId);
+            user.ResetData();
+            _userConnectCount--;
 
             return ERROR_CODE.NONE;
         }
 
         public int GetUserCount()
         {
-            return _userDict.Count;
+            return _userConnectCount;
         }
 
         public ERROR_CODE UserLogin(string sessionId, string userId, int winCount, int loseCount)
@@ -103,7 +117,7 @@ namespace OmokGameServer
 
         bool LoginDuplicationCheck(string userId)
         {
-            foreach (var user in _userDict.Values)
+            foreach (var user in _userList)
             {
                 if (user.UserId == userId)
                 {
@@ -113,53 +127,37 @@ namespace OmokGameServer
             return false;
         }
 
-        public Dictionary<string, User> GetUsers()
-        {
-            return _userDict;
-        }
-
         public void CheckHeartBeat(int heartBeatIndex)
         {
-            int counter = 0;
-            foreach (var user in _userDict)
+            for (int i = heartBeatIndex * (_maxUserCount / 4); i < (heartBeatIndex + 1) * (_maxUserCount / 4); i++)
             {
-                if (counter >= heartBeatIndex * ((float)_maxUserCount / 4) && counter < (heartBeatIndex + 1) * ((float)_maxUserCount / 4))
+                var userHeartBeat = _userList[i].HeartBeatTime;
+                var dif = DateTime.Now - userHeartBeat;
+                if (dif.TotalSeconds >= HeartBeatLimitSecond)
                 {
-                    var userHeartBeat = user.Value.HeartBeatTime;
-                    var dif = DateTime.Now - userHeartBeat;
-                    if (dif.TotalSeconds >= HeartBeatLimitSecond)
-                    {
-                        _removeUserQueue.Enqueue(user.Key);
-                        continue;
-                    }
-                    var packet = new ReqHeartBeatPacket();
-                    var req = MemoryPackSerializer.Serialize(packet);
-                    var reqData = ClientPacket.MakeClientPacket(PACKET_ID.REQ_HEART_BEAT, req);
-                    _sendFunc(user.Key, reqData);
+                    _disconnect(_userList[i].SessionId);
+                    RemoveUser(_userList[i].SessionId);
                 }
-                counter++;
             }
         }
 
         public void CheckSession(int checkSessionIndex)
         {
-            int counter = 0;
-            foreach (var user in _userDict)
+            for (int i = checkSessionIndex * (_maxUserCount / 4); i < (checkSessionIndex + 1) * (_maxUserCount / 4); i++)
             {
-                if (user.Value.UserId != "" && counter >= checkSessionIndex * ((float)_maxUserCount / 4) && counter < (checkSessionIndex + 1) * ((float)_maxUserCount / 4))
+                if (_userList[i].UserId == "")
                 {
-                    var dif = DateTime.Now - user.Value.ConnectTime;
+                    var dif = DateTime.Now - _userList[i].ConnectTime;
                     if (dif.TotalMinutes >= SessionConnectLimitMinite)
                     {
                         var packet = new NtfSessionTimeLimitPacket();
                         var ntf = MemoryPackSerializer.Serialize(packet);
                         var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_SESSION_TIME_LIMIT, ntf);
-                        _sendFunc(user.Key, ntfData);
-                        RemoveUser(user.Key);
-                        _disconnect(user.Key);
+                        _sendFunc(_userList[i].SessionId, ntfData);
+                        _disconnect(_userList[i].SessionId);
+                        RemoveUser(_userList[i].SessionId);
                     }
                 }
-                counter++;
             }
         }
     }

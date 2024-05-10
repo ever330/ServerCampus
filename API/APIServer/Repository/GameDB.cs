@@ -36,7 +36,7 @@
         {
             try
             {
-                var count = await _queryFactory.Query("user_game_data").InsertAsync(new
+                var count = await _queryFactory.Query("userGameData").InsertAsync(new
                 {
                     id = id,
                     level = 1,
@@ -62,7 +62,7 @@
         {
             try
             {
-                var userData = await _queryFactory.Query("user_game_data").Select().Where("id", id).FirstOrDefaultAsync<UserGameData>();
+                var userData = await _queryFactory.Query("userGameData").Select().Where("id", id).FirstOrDefaultAsync<UserGameData>();
 
                 if (userData == null || userData.Level == 0)
                 {
@@ -80,9 +80,9 @@
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("userGameData").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
-                var data = await _queryFactory.Query("user_daily_attendance").Select().WhereIn("uid", new List<object> { subQuery.uid }).Where("attendance_date", DateTime.Now.AddDays(-1)).FirstOrDefaultAsync<UserDailyAttendance>();
+                var data = await _queryFactory.Query("userDailyAttendance").Select().WhereIn("uid", new List<object> { subQuery.uid }).Where("attendanceDate", DateTime.Now.AddDays(-1)).FirstOrDefaultAsync<UserDailyAttendance>();
 
                 UserDailyAttendance attendance = new UserDailyAttendance();
                 attendance.AttendanceDate = DateTime.Today;
@@ -96,7 +96,7 @@
                     attendance.ConsecutiveAttendance = data.ConsecutiveAttendance + 1;
                 }
 
-                var count = await _queryFactory.Query("user_daily_attendance").InsertAsync(new
+                var count = await _queryFactory.Query("userDailyAttendance").InsertAsync(new
                 {
                     uid = subQuery.uid,
                     attendance_date = attendance.AttendanceDate,
@@ -120,9 +120,9 @@
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("userGameData").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
-                var todayCheck = await _queryFactory.Query("user_daily_attendance").Select().WhereIn("uid", subQuery.uid).Where("attendance_date", DateTime.Now).FirstOrDefaultAsync();
+                var todayCheck = await _queryFactory.Query("userDailyAttendance").Select().WhereIn("uid", subQuery.uid).Where("attendanceDate", DateTime.Now).FirstOrDefaultAsync();
 
                 if (todayCheck != 0)
                 {
@@ -141,14 +141,14 @@
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("userGameData").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
                 if (subQuery == null)
                 {
                     return ERROR_CODE.PostMailError;
                 }
 
-                var count = await _queryFactory.Query("user_mailbox").InsertAsync(new
+                var count = await _queryFactory.Query("userMailbox").InsertAsync(new
                 {
                     uid = subQuery.uid,
                     mail_name = mailName,
@@ -173,9 +173,9 @@
         {
             try
             {
-                var subQuery = await _queryFactory.Query("user_game_data").Select("uid").Where("id", id).FirstOrDefaultAsync();
+                var subQuery = await _queryFactory.Query("userGameData").Select("uid").Where("id", id).FirstOrDefaultAsync();
 
-                Query query = new Query("user_mailbox").Where("uid", subQuery.uid);
+                Query query = new Query("userMailbox").Where("uid", subQuery.uid);
 
                 // 쿼리 실행
                 IEnumerable<dynamic> results = await _queryFactory.FromQuery(query).GetAsync();

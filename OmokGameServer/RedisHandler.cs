@@ -14,30 +14,7 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<DBRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_SET_TOKEN, SetAuthToken);
             packetHandlers.Add((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, CheckAuthToken);
-        }
-
-        public void SetAuthToken(DBRequestInfo req)
-        {
-            var setToken = MemoryPackSerializer.Deserialize<ReqSetToken>(req.Body);
-            var result = _dbManager.SetAuthToken(setToken.UserId, setToken.AuthToken);
-
-            var ntfLogin = new ResSetToken();
-            ntfLogin.UserId = setToken.UserId;
-            ntfLogin.AuthToken = setToken.AuthToken;
-            if (result != ERROR_CODE.NONE)
-            {
-                ntfLogin.Result = false;
-            }
-            else
-            {
-                ntfLogin.Result = true;
-            }
-            var ntfData = MemoryPackSerializer.Serialize(ntfLogin);
-            var reqInfo = new OmokBinaryRequestInfo((short)(ntfData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_SET_TOKEN, ntfData);
-            reqInfo.SessionId = req.SessionId;
-            _sendToPP(reqInfo);
         }
 
         public void CheckAuthToken(DBRequestInfo req)
@@ -45,10 +22,24 @@ namespace OmokGameServer
             var checkToken = MemoryPackSerializer.Deserialize<ReqCheckAuthToken>(req.Body);
             var result = _dbManager.CheckAuthToken(checkToken.UserId, checkToken.AuthToken);
 
+            var res = new ResCheckAuthToken();
+            res.UserId = checkToken.UserId;
+            res.AuthToken = checkToken.AuthToken;
+
             if (result != ERROR_CODE.NONE)
             {
                 _logger.Error($"{checkToken.UserId} : 인증 토큰 검사 에러");
+                res.Result = false;
             }
+            else
+            {
+                res.Result = true;
+            }
+
+            var resData = MemoryPackSerializer.Serialize(res);
+            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_CHECK_AUTHTOKEN, resData);
+            reqInfo.SessionId = req.SessionId;
+            _sendToPP(reqInfo);
         }
     }
 }

@@ -74,14 +74,12 @@ namespace OmokGameServer
         RES_USER_DATA = 2002,
 
         // REDIS
-        REQ_SET_TOKEN = 2101,
-        RES_SET_TOKEN = 2102,
-        REQ_CHECK_AUTHTOKEN = 2103,
-        RES_CHECK_AUTHTOKEN = 2104,
+        REQ_CHECK_AUTHTOKEN = 2101,
+        RES_CHECK_AUTHTOKEN = 2102,
 
         // INNER
-        REQ_SEND_HEART_BEAT = 3000,
-        REQ_SEND_CHECK_ROOM = 3001,
-        REQ_SEND_CHECK_SESSION = 3002,
+        REQ_CHECK_HEART_BEAT = 3000,
+        REQ_CHECK_ROOM = 3001,
+        REQ_CHECK_SESSION = 3002,
     }
 }

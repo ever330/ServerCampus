@@ -40,7 +40,7 @@ namespace HiveServer.Repository
                 string salt = Security.GetRandomSalt();
                 string encryptPassword = Security.Hasing(password, salt);
 
-                var count = await _queryFactory.Query("hive_users").InsertAsync(new
+                var count = await _queryFactory.Query("hiveUsers").InsertAsync(new
                 {
                     email = email,
                     password = encryptPassword,
@@ -62,7 +62,7 @@ namespace HiveServer.Repository
 
         public async Task<ErrorCode> AccountLogin(string email, string password)
         {
-            var userInfo = await _queryFactory.Query("hive_users").Select().Where(new
+            var userInfo = await _queryFactory.Query("hiveUsers").Select().Where(new
             {
                 Email = email
             }).FirstOrDefaultAsync<AccountInfo>();

@@ -18,7 +18,7 @@ namespace OmokGameServer
             packetHandlers.Add((short)PACKET_ID.REQ_READY, ReqReady);
             packetHandlers.Add((short)PACKET_ID.REQ_NOT_READY, ReqNotReady);
             packetHandlers.Add((short)PACKET_ID.REQ_PUT_STONE, ReqPutStone);
-            packetHandlers.Add((short)PACKET_ID.REQ_SEND_CHECK_ROOM, ReqSendCheckRoom);
+            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_ROOM, ReqCheckRoom);
         }
 
         public void ReqEnterRoom(OmokBinaryRequestInfo packet)
@@ -89,9 +89,9 @@ namespace OmokGameServer
             _roomManager.PutStone(req.RoomNumber, req.PosX, req.PosY);
         }
 
-        public void ReqSendCheckRoom(OmokBinaryRequestInfo packet)
+        public void ReqCheckRoom(OmokBinaryRequestInfo packet)
         {
-            var req = MemoryPackSerializer.Deserialize<ReqSendCheckRoomPacket>(packet.Body);
+            var req = MemoryPackSerializer.Deserialize<ReqCheckRoomPacket>(packet.Body);
 
             _roomManager.CheckRoomState(req.CurrentIndex);
         }

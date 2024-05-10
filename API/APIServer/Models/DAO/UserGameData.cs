@@ -2,7 +2,7 @@
 
 namespace APIServer.Models.DAO
 {
-    [Table("user_game_data")]
+    [Table("userGameData")]
     public class UserGameData
     {
         [Column("id")]

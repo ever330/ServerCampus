@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APIServer.Models.DAO
 {
-    [Table("user_mailbox")]
+    [Table("userMailbox")]
     public class UserMailbox
     {
         [Key]

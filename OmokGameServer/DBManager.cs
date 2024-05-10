@@ -79,28 +79,6 @@ namespace OmokGameServer
             }
         }
 
-        public ERROR_CODE SetAuthToken(string id, string authToken)
-        {
-            try
-            {
-                RedisUserInfo newUser = new RedisUserInfo
-                {
-                    Id = id,
-                    AuthToken = authToken
-                };
-
-                var defaultExpiry = TimeSpan.FromDays(1);
-                _redis = new RedisString<RedisUserInfo>(_redisConnection, "UID" + id, defaultExpiry);
-                _redis.SetAsync(newUser).Wait();
-
-                return ERROR_CODE.NONE;
-            }
-            catch
-            {
-                return ERROR_CODE.SET_GAME_SERVER_TOKEN_ERROR;
-            }
-        }
-
         public ERROR_CODE CheckAuthToken(string id, string authToken)
         {
 

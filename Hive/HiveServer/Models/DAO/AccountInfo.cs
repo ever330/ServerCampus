@@ -2,7 +2,7 @@
 
 namespace HiveServer.Models.DAO
 {
-    [Table("hive_users")]
+    [Table("hiveUsers")]
     public class AccountInfo
     {
         [Column("email")]

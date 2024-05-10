@@ -160,9 +160,9 @@ namespace OmokGameServer
             _dbProcessor.Init(_mainLogger, _userManager, _dbManager, SendData, Distribute);
             _dbProcessor.RegistHandlers();
 
-            _heartBeatTimer = new Timer(SendHeartBeat, null, 0, HeartBeatInterval);
-            _checkRoomTimer = new Timer(SendCheckRoom, null, 0, CheckRoomInterval);
-            _checkSessionTimer = new Timer(SendCheckSession, null, 0, CheckSessionInterval);
+            _heartBeatTimer = new Timer(CheckHeartBeat, null, 0, HeartBeatInterval);
+            _checkRoomTimer = new Timer(CheckRoom, null, 0, CheckRoomInterval);
+            _checkSessionTimer = new Timer(CheckSession, null, 0, CheckSessionInterval);
 
             _mainLogger.Info("CreateComponent - Success");
             return ERROR_CODE.NONE;
@@ -226,16 +226,16 @@ namespace OmokGameServer
             _packetProcessor.InsertPacket(reqInfo);
         }
 
-        void SendHeartBeat(object o)
+        void CheckHeartBeat(object o)
         {
             if (_userManager.GetUserCount() == 0)
             {
                 return;
             }
-            var pac = new ReqSendHeartBeatPacket();
+            var pac = new ReqCheckHeartBeatPacket();
             pac.CurrentIndex = _heartBeatIndex;
             var pacData = MemoryPackSerializer.Serialize(pac);
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_SEND_HEART_BEAT, pacData);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_HEART_BEAT, pacData);
             _packetProcessor.InsertPacket(req);
             _heartBeatIndex++;
             if (_heartBeatIndex >= 4)
@@ -244,16 +244,16 @@ namespace OmokGameServer
             }
         }
 
-        void SendCheckRoom(object o)
+        void CheckRoom(object o)
         {
             if (_userManager.GetUserCount() == 0)
             {
                 return;
             }
-            var pac = new ReqSendCheckRoomPacket();
+            var pac = new ReqCheckRoomPacket();
             pac.CurrentIndex = _checkRoomIndex;
             var pacData = MemoryPackSerializer.Serialize(pac);
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_SEND_CHECK_ROOM, pacData);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_CHECK_ROOM, pacData);
             _packetProcessor.InsertPacket(req);
             _checkRoomIndex++;
             if (_checkRoomIndex >= 4)
@@ -262,16 +262,16 @@ namespace OmokGameServer
             }
         }
 
-        void SendCheckSession(object o)
+        void CheckSession(object o)
         {
             if (_userManager.GetUserCount() == 0)
             {
                 return;
             }
-            var pac = new ReqSendCheckSessionPacket();
+            var pac = new ReqCheckSessionPacket();
             pac.CurrentIndex = _checkSessionIndex;
             var pacData = MemoryPackSerializer.Serialize(pac);
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_SEND_CHECK_SESSION, pacData);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_CHECK_SESSION, pacData);
             _packetProcessor.InsertPacket(req);
             _checkSessionIndex++;
             if (_checkSessionIndex >= 4)

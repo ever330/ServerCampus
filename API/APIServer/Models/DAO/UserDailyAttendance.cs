@@ -2,7 +2,7 @@
 
 namespace APIServer.Models.DAO
 {
-    [Table("user_daily_attendance")]
+    [Table("userDailyAttendance")]
     public class UserDailyAttendance
     {
         [Column("attendanceDate")]

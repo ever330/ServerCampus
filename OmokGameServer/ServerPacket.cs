@@ -18,19 +18,19 @@ namespace OmokGameServer
     }
 
     [MemoryPackable]
-    public partial class ReqSendHeartBeatPacket
+    public partial class ReqCheckHeartBeatPacket
     {
         public int CurrentIndex { get; set; }
     }
 
     [MemoryPackable]
-    public partial class ReqSendCheckRoomPacket
+    public partial class ReqCheckRoomPacket
     {
         public int CurrentIndex { get; set; }
     }
 
     [MemoryPackable]
-    public partial class ReqSendCheckSessionPacket
+    public partial class ReqCheckSessionPacket
     {
         public int CurrentIndex { get; set; }
     }

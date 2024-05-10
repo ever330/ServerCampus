@@ -30,25 +30,18 @@ namespace OmokGameServer
     }
 
     [MemoryPackable]
-    public partial class ReqSetToken
-    {
-        public string UserId { get; set; }
-        public string AuthToken { get; set; }
-    }
-
-    [MemoryPackable]
-    public partial class ResSetToken
-    {
-        public string UserId { get; set; }
-        public string AuthToken { get; set; }
-        public bool Result { get; set; }
-    }
-
-    [MemoryPackable]
     public partial class ReqCheckAuthToken
     {
         public string UserId { get; set; }
         public string AuthToken { get; set; }
+    }
+
+    [MemoryPackable]
+    public partial class ResCheckAuthToken
+    {
+        public string UserId { get; set; }
+        public string AuthToken { get; set; }
+        public bool Result { get; set; }
     }
 
     [MemoryPackable]

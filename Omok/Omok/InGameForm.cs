@@ -65,6 +65,9 @@ namespace Omok
 
         const int StartTimeLimit = 30;
 
+        DateTime _serverHeartBeatTime;
+        const int ServerHeartBeatTimeLimit = 5;
+
         public InGameForm()
         {
             InitializeComponent();
@@ -108,6 +111,10 @@ namespace Omok
             backGroundTimer.Tick += new EventHandler(BackGroundProcess);
             backGroundTimer.Interval = 100;
             backGroundTimer.Start();
+
+            heartBeatTimer.Tick += new EventHandler(SendHeartBeat);
+            heartBeatTimer.Interval = 1000;
+            heartBeatTimer.Start();
         }
 
         private void InGame_FormClosing(object sender, FormClosingEventArgs e)
@@ -486,12 +493,10 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.REQ_HEART_BEAT:
+                case PACKET_ID.RES_HEART_BEAT:
                     {
-                        var reqHeartBeat = MemoryPackSerializer.Deserialize<ReqHeartBeatPacket>(packet.Body);
-                        var resHeartBeat = new ResHeartBeatPacket();
-                        var res = MemoryPackSerializer.Serialize(resHeartBeat);
-                        _sendQueue.Enqueue(MakeSendData(PACKET_ID.RES_HEART_BEAT, res));
+                        var reqHeartBeat = MemoryPackSerializer.Deserialize<ResHeartBeatPacket>(packet.Body);
+                        _serverHeartBeatTime = DateTime.Now;
                     }
                     break;
 
@@ -823,6 +828,26 @@ namespace Omok
 
                 _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_NOT_READY, body));
             }
+        }
+
+        void SendHeartBeat(object sender, EventArgs e)
+        {
+            if (!_isNetworkRunning)
+            {
+                return;
+            }
+
+            var dif = DateTime.Now - _serverHeartBeatTime;
+            if (dif.TotalSeconds > ServerHeartBeatTimeLimit)
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("서버와의 접속이 끊어졌습니다.");
+                _clientNetwork.Close();
+            }
+
+            var req = new ReqHeartBeatPacket();
+            var body = MemoryPackSerializer.Serialize(req);
+
+            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_HEART_BEAT, body));
         }
     }
 }
