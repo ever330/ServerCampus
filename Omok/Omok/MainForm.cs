@@ -173,7 +173,7 @@ namespace Omok
             Random r = new Random();
             int randomNum = r.Next(1, 1000000);
             string id = "Guest" + randomNum;
-            _inGameForm.Init(id, "1234", "10.192.8.206", 3030);
+            _inGameForm.Init(id, "1234", "10.192.8.223", 3030);
             _inGameForm.ShowDialog();
         }
     }

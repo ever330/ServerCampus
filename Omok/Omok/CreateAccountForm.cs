@@ -59,7 +59,6 @@ namespace Omok
 
             var response = await client.PostAsJsonAsync("http://10.192.8.223:5229/api/CreateAccount/create", request);
 
-
             ResCreateAccount? res = await response.Content.ReadFromJsonAsync<ResCreateAccount>();
 
             if (res == null)

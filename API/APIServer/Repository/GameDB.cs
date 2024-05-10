@@ -41,8 +41,8 @@
                     id = id,
                     level = 1,
                     exp = 0,
-                    win_count = 0,
-                    lose_count = 0
+                    winCount = 0,
+                    loseCount = 0
                 });
 
                 if (count != 1)
