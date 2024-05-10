@@ -58,7 +58,7 @@ namespace APIServer.Controllers
             resLogin.WinCount = checkRes.Item2.WinCount;
             resLogin.LoseCount = checkRes.Item2.LoseCount;
             resLogin.Money = checkRes.Item2.Money;
-            resLogin.Ip = "127.0.0.1";
+            resLogin.Ip = "10.192.8.223";
             resLogin.Port = 3030;
 
             return resLogin;
@@ -74,7 +74,7 @@ namespace APIServer.Controllers
 
             var client = new HttpClient();
 
-            var response = await client.PostAsJsonAsync("http://localhost:5229/api/VerifyToken/verify", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5229/api/VerifyToken/verify", request);
 
             if (!response.IsSuccessStatusCode)
             {
