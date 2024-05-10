@@ -20,7 +20,7 @@ namespace OmokGameServer
         public void CheckAuthToken(DBRequestInfo req)
         {
             var checkToken = MemoryPackSerializer.Deserialize<ReqCheckAuthToken>(req.Body);
-            var result = _dbManager.CheckAuthToken(checkToken.UserId, checkToken.AuthToken);
+            var result = _dbManager.CheckAuthToken(checkToken.UserId, checkToken.AuthToken, _logger);
 
             var res = new ResCheckAuthToken();
             res.UserId = checkToken.UserId;

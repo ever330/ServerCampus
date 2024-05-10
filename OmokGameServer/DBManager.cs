@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using SuperSocket.SocketBase.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -79,7 +80,7 @@ namespace OmokGameServer
             }
         }
 
-        public ERROR_CODE CheckAuthToken(string id, string authToken)
+        public ERROR_CODE CheckAuthToken(string id, string authToken, ILog logger)
         {
 
             var defaultExpiry = TimeSpan.FromDays(1);
@@ -88,7 +89,7 @@ namespace OmokGameServer
             try
             {
                 var result = _redis.GetAsync();
-
+                logger.Info($"기존 토큰 {result.Result.Value.AuthToken}, 비교 토큰 {authToken}");
                 if (authToken == result.Result.Value.AuthToken)
                 {
                     return ERROR_CODE.NONE;

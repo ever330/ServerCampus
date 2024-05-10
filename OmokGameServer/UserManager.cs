@@ -34,6 +34,7 @@ namespace OmokGameServer
             {
                 User user = new User(_userIndex);
                 _userIndex++;
+                _userList.Add(user);
             }
         }
 
