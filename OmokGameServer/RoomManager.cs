@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OmokGameServer
 {
@@ -12,10 +13,9 @@ namespace OmokGameServer
     {
         List<Room> _roomList = new List<Room>();
         Queue<int> _roomIndexQueue = new Queue<int>();
-        DBManager _dbManager;
 
         Func<string, byte[], bool> _sendFunc;
-        Action<DBRequestInfo> _sendToDB;
+        Action<DBRequestInfo> _reqToGameDB;
 
         int _roomMaxCount = 0;
         int _roomUserMax = 0;
@@ -23,9 +23,8 @@ namespace OmokGameServer
         const int RoomGamingLimitMinite = 60;
         const int TurnLimitSecond = 30;
 
-        public void Init(DBManager dbManager, int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> sendToDB)
+        public void Init(int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> reqToGameDB)
         {
-            _dbManager = dbManager;
             _roomMaxCount = roomMaxCount;
             _roomUserMax = roomUserMax;
             for (int i = 0; i < _roomMaxCount; i++)
@@ -35,7 +34,7 @@ namespace OmokGameServer
                 _roomIndexQueue.Enqueue(i);
             }
             _sendFunc = sendFunc;
-            _sendToDB = sendToDB;
+            _reqToGameDB = reqToGameDB;
         }
 
         public bool EnterRoom(User user)
@@ -184,13 +183,13 @@ namespace OmokGameServer
 
         public void PutStone(int roomNumber, int posX, int posY)
         {
-            /// 흑돌 쌍3 쌍4 6목 처리 및 승리 확인
             var curRoom = _roomList[roomNumber];
 
             var curUser = curRoom.GetUserList()[curRoom.CurrentPlayerIndex];
             var curUserStone = curRoom.GetUserList()[curRoom.CurrentPlayerIndex].Stone;
             var checkResult = curRoom.CheckStoneCount(curUserStone, posX, posY);
 
+            // 놓을 수 없는 곳에 놓았을 경우
             if (checkResult == PUT_RESULT.ERROR)
             {
                 var errorPac = new ResPutStonePacket();
@@ -219,6 +218,7 @@ namespace OmokGameServer
                 var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_PUT_STONE, ntf);
                 BroadCast(roomNumber, curUser.SessionId, ntfData);
             }
+            // 돌을 놓아서 게임 승리 시
             else if (checkResult == PUT_RESULT.WIN)
             {
                 var winPac = new NtfWinPacket();
@@ -229,113 +229,59 @@ namespace OmokGameServer
                 var win = MemoryPackSerializer.Serialize(winPac);
                 var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_WIN_GAME, win);
                 BroadCast(roomNumber, null, winData);
-                curUser.TimeOutCount = 0;
 
-                var winUser = new ReqUpdateWinLose();
-                winUser.UserId = curUser.UserId;
-                winUser.Result = true;
-
-                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, curUser.SessionId, MemoryPackSerializer.Serialize(winUser)));
-
-                foreach (var tempUser in curRoom.GetUserList())
-                {
-                    if (curUser.UserId != tempUser.UserId)
-                    {
-                        var loseUser = new ReqUpdateWinLose();
-                        loseUser.UserId = tempUser.UserId;
-                        loseUser.Result = false;
-
-                        _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, curUser.SessionId, MemoryPackSerializer.Serialize(loseUser)));
-
-                        tempUser.TimeOutCount = 0;
-                    }
-                }
-                curRoom.EndGame();
+                curRoom.EndGame(_reqToGameDB, curRoom.CurrentPlayerIndex);
             }
         }
 
         public void CheckRoomState(int checkRoomIndex)
         {
-            int counter = 0;
-            foreach (var room in _roomList)
+            for (int i = (checkRoomIndex * _roomMaxCount) / 4; i < ((checkRoomIndex + 1) * _roomMaxCount) / 4; i++)
             {
-                if (counter >= checkRoomIndex * ((float)_roomMaxCount / 4) && counter < (checkRoomIndex + 1) * ((float)_roomMaxCount / 4))
+                if (_roomList[i].RoomState != ROOM_STATE.PLAYING)
+                    continue;
+
+                var difMinite = DateTime.Now - _roomList[i].StartTime;
+                if (difMinite.TotalMinutes > RoomGamingLimitMinite)
                 {
-                    if (room.RoomState != ROOM_STATE.PLAYING)
-                        continue;
+                    var draw = new NtfDrawPacket();
+                    var ntf = MemoryPackSerializer.Serialize(draw);
+                    var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_DRAW, ntf);
+                    BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
+                    continue;
+                }
 
-                    var difMinite = DateTime.Now - room.StartTime;
-                    if (difMinite.TotalMinutes > RoomGamingLimitMinite)
+                var difSecond = DateTime.Now - _roomList[i].TurnTime;
+                if (difSecond.TotalSeconds > TurnLimitSecond)
+                {
+                    var users = _roomList[i].GetUserList();
+                    _roomList[i].TimeOut();
+                    if (users[_roomList[i].CurrentPlayerIndex].TimeOutCount >= 6)
                     {
-                        var draw = new NtfDrawPacket();
-                        var ntf = MemoryPackSerializer.Serialize(draw);
-                        var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_DRAW, ntf);
-                        BroadCast(room.GetRoomNumber(), null, ntfData);
-                        continue;
+                        var winPac = new NtfTimeOutWinPacket();
+                        if (_roomList[i].CurrentPlayerIndex == 0)
+                        {
+                            winPac.Id = users[1].UserId;
+                            _roomList[i].EndGame(_reqToGameDB, 1);
+                        }
+                        else
+                        {
+                            winPac.Id = users[0].UserId;
+                            _roomList[i].EndGame(_reqToGameDB, 0);
+                        }
+                        var win = MemoryPackSerializer.Serialize(winPac);
+                        var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT_WIN, win);
+                        BroadCast(_roomList[i].GetRoomNumber(), null, winData);
                     }
-
-                    var difSecond = DateTime.Now - room.TurnTime;
-                    if (difSecond.TotalSeconds > TurnLimitSecond)
+                    else
                     {
-                        var userList = room.GetUserList();
-                        userList[room.CurrentPlayerIndex].TimeOutCount++;
-                        if (userList[room.CurrentPlayerIndex].TimeOutCount >= 6)
-                        {
-                            var winUser = new ReqUpdateWinLose();
-                            winUser.Result = true;
-
-                            var loseUser = new ReqUpdateWinLose();
-                            loseUser.Result = false;
-
-                            var winPac = new NtfTimeOutWinPacket();
-                            if (room.CurrentPlayerIndex == 0)
-                            {
-                                winPac.Id = userList[1].UserId;
-                                winUser.UserId = userList[1].UserId;
-                                loseUser.UserId = userList[0].UserId;
-
-                                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, userList[1].SessionId, MemoryPackSerializer.Serialize(winUser)));
-
-                                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, userList[0].SessionId, MemoryPackSerializer.Serialize(loseUser)));
-                            }
-                            else
-                            {
-                                winPac.Id = userList[0].UserId;
-                                winUser.UserId = userList[0].UserId;
-                                loseUser.UserId = userList[1].UserId;
-
-                                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, userList[0].SessionId, MemoryPackSerializer.Serialize(winUser)));
-
-                                _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, userList[1].SessionId, MemoryPackSerializer.Serialize(loseUser)));
-                            }
-
-                            var win = MemoryPackSerializer.Serialize(winPac);
-                            var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT_WIN, win);
-                            BroadCast(room.GetRoomNumber(), null, winData);
-                            userList[0].TimeOutCount = 0;
-                            userList[1].TimeOutCount = 0;
-                        }
-                        else
-                        {
-                            var timeOut = new NtfTimeOutPacket();
-                            timeOut.Stone = (int)userList[room.CurrentPlayerIndex].Stone;
-                            var ntf = MemoryPackSerializer.Serialize(timeOut);
-                            var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT, ntf);
-                            BroadCast(room.GetRoomNumber(), null, ntfData);
-                        }
-
-                        room.TurnTime = DateTime.Now;
-                        if (room.CurrentPlayerIndex == 0)
-                        {
-                            room.CurrentPlayerIndex = 1;
-                        }
-                        else
-                        {
-                            room.CurrentPlayerIndex = 0;
-                        }
+                        var timeOut = new NtfTimeOutPacket();
+                        timeOut.Stone = (int)users[_roomList[i].CurrentPlayerIndex].Stone;
+                        var ntf = MemoryPackSerializer.Serialize(timeOut);
+                        var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT, ntf);
+                        BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
                     }
                 }
-                counter++;
             }
         }
     }

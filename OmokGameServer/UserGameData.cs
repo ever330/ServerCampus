@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OmokGameServer
 {
-    [Table("user_game_data")]
+    [Table("userGameData")]
     public class UserGameData
     {
         [Column("id")]

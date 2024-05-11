@@ -24,11 +24,13 @@ namespace OmokGameServer
         IServerConfig _networkConfig;
         
         PacketProcessor _packetProcessor;
-        DBProcessor _dbProcessor;
+        GameDBProcessor _gameDBProcessor;
+        RedisDBProcessor _redisDBProcessor;
 
         UserManager _userManager;
         RoomManager _roomManager;
-        DBManager _dbManager;
+        GameDB _gameDB;
+        RedisDB _redisDB;
 
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly ILogger<MainServer> _appLogger;
@@ -144,21 +146,26 @@ namespace OmokGameServer
 
         public ERROR_CODE CreateComponent(ServerOption serverOpt)
         {
-            _dbManager = new DBManager(serverOpt);
+            _gameDB = new GameDB();
+            _redisDB = new RedisDB();
 
             _userManager = new UserManager();
-            _userManager.Init(_dbManager, _serverOption.MaxConnectionNumber, SendData, DisconnectUser);
+            _userManager.Init(_serverOption.MaxConnectionNumber, SendData, DisconnectUser, ReqToGameDB, ReqToRedisDB);
 
             _roomManager = new RoomManager();
-            _roomManager.Init(_dbManager, _serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, InsertToDB);
+            _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, ReqToGameDB);
 
             _packetProcessor = new PacketProcessor();
-            _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData, InsertToDB);
+            _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData);
             _packetProcessor.RegistHandlers();
 
-            _dbProcessor = new DBProcessor();
-            _dbProcessor.Init(_mainLogger, _userManager, _dbManager, SendData, Distribute);
-            _dbProcessor.RegistHandlers();
+            _gameDBProcessor = new GameDBProcessor();
+            _gameDBProcessor.Init(_mainLogger, _gameDB, SendData, Distribute, _serverOption.GameDBMaxThreadCount, _serverOption.GameDB);
+            _gameDBProcessor.RegistHandlers();
+
+            _redisDBProcessor = new RedisDBProcessor();
+            _redisDBProcessor.Init(_mainLogger, _redisDB, SendData, Distribute, _serverOption.RedisDBMaxThreadCount, _serverOption.RedisDB);
+            _redisDBProcessor.RegistHandlers();
 
             _heartBeatTimer = new Timer(CheckHeartBeat, null, 0, HeartBeatInterval);
             _checkRoomTimer = new Timer(CheckRoom, null, 0, CheckRoomInterval);
@@ -235,7 +242,7 @@ namespace OmokGameServer
             var pac = new ReqCheckHeartBeatPacket();
             pac.CurrentIndex = _heartBeatIndex;
             var pacData = MemoryPackSerializer.Serialize(pac);
-            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_HEART_BEAT, pacData);
+            OmokBinaryRequestInfo req = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.REQ_CHECK_HEART_BEAT, pacData);
             _packetProcessor.InsertPacket(req);
             _heartBeatIndex++;
             if (_heartBeatIndex >= 4)
@@ -280,9 +287,14 @@ namespace OmokGameServer
             }
         }
 
-        public void InsertToDB(DBRequestInfo dbReq)
+        public void ReqToGameDB(DBRequestInfo dbReq)
         {
-            _dbProcessor.InsertPacket(dbReq);
+            _gameDBProcessor.InsertPacket(dbReq);
+        }
+
+        public void ReqToRedisDB(DBRequestInfo dbReq)
+        {
+            _redisDBProcessor.InsertPacket(dbReq);
         }
 
         public void Distribute(OmokBinaryRequestInfo req)

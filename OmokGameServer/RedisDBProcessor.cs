@@ -1,34 +1,43 @@
-﻿using System;
+﻿using CloudStructures;
+using MySqlConnector;
+using SqlKata.Compilers;
+using SqlKata.Execution;
+using SuperSocket.SocketBase.Logging;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using SuperSocket.SocketBase.Logging;
 
 namespace OmokGameServer
 {
-    public class DBProcessor
+    public class RedisDBProcessor
     {
         bool _isThreadRunning = false;
-        Thread _processThread;
+        List<Thread> _threads = new List<Thread>();
         ILog _mainLogger;
 
         BufferBlock<DBRequestInfo> _packetBuffer = new BufferBlock<DBRequestInfo>();
-        Dictionary<short, Action<DBRequestInfo>> _handlerDict = new Dictionary<short, Action<DBRequestInfo>>();
+        Dictionary<short, Action<RedisConnection, DBRequestInfo>> _handlerDict = new Dictionary<short, Action<RedisConnection, DBRequestInfo>>();
 
-        RedisHandler _redisHandler = new RedisHandler();
-        MySqlHandler _mySqlHandler = new MySqlHandler();
+        RedisDBHandler _redisDBHandler = new RedisDBHandler();
+        string _redisDBConnectionString;
 
-        public void Init(ILog mainLogger, UserManager userManager, DBManager dbManager, Func<string, byte[], bool> sendFunc, Action<OmokBinaryRequestInfo> sendToPP)
+        public void Init(ILog mainLogger, RedisDB redisDB, Func<string, byte[], bool> sendFunc, Action<OmokBinaryRequestInfo> sendToPP, int maxThreadCount, string redisDBConStr)
         {
             _mainLogger = mainLogger;
-            _redisHandler.Init(userManager, dbManager, mainLogger, sendFunc, sendToPP);
-            _mySqlHandler.Init(userManager, dbManager, mainLogger, sendFunc, sendToPP);
+            _redisDBHandler.Init(redisDB, mainLogger, sendFunc, sendToPP);
             _isThreadRunning = true;
-            _processThread = new Thread(Process);
-            _processThread.Start();
+            _redisDBConnectionString = redisDBConStr;
+
+
+            for (int i = 0; i < maxThreadCount; i++)
+            {
+                var thread = new Thread(Process);
+                thread.Start();
+            }
         }
 
         public void Destroy()
@@ -39,8 +48,7 @@ namespace OmokGameServer
 
         public void RegistHandlers()
         {
-            _redisHandler.RegistPacketHandler(_handlerDict);
-            _mySqlHandler.RegistPacketHandler(_handlerDict);
+            _redisDBHandler.RegistPacketHandler(_handlerDict);
         }
 
         public void InsertPacket(DBRequestInfo req)
@@ -50,6 +58,9 @@ namespace OmokGameServer
 
         void Process()
         {
+            var conf = new RedisConfig("HiveUsers", _redisDBConnectionString);
+            var connection = new RedisConnection(conf);
+
             while (_isThreadRunning)
             {
                 try
@@ -58,7 +69,7 @@ namespace OmokGameServer
 
                     if (_handlerDict.ContainsKey(packet.PacketId))
                     {
-                        _handlerDict[packet.PacketId](packet);
+                        _handlerDict[packet.PacketId](connection, packet);
                     }
                     else
                     {

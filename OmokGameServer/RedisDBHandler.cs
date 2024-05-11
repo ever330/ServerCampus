@@ -1,26 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CloudStructures;
 using MemoryPack;
 using SuperSocket.SocketBase.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OmokGameServer
 {
-    public class RedisHandler : DBHandler
+    public class RedisDBHandler
     {
-        public void RegistPacketHandler(Dictionary<short, Action<DBRequestInfo>> packetHandlers)
+        RedisDB _redisDB;
+        ILog _logger;
+        Action<OmokBinaryRequestInfo> _sendToPP;
+
+        public void Init(RedisDB redisDB, ILog logger, Func<string, byte[], bool> sendFunc, Action<OmokBinaryRequestInfo> sendToPP)
+        {
+            _redisDB = redisDB;
+            _logger = logger;
+            _sendToPP = sendToPP;
+        }
+
+        public void RegistPacketHandler(Dictionary<short, Action<RedisConnection, DBRequestInfo>> packetHandlers)
         {
             packetHandlers.Add((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, CheckAuthToken);
         }
 
-        public void CheckAuthToken(DBRequestInfo req)
+        public void CheckAuthToken(RedisConnection redisConnection, DBRequestInfo req)
         {
             var checkToken = MemoryPackSerializer.Deserialize<ReqCheckAuthToken>(req.Body);
-            var result = _dbManager.CheckAuthToken(checkToken.UserId, checkToken.AuthToken, _logger);
+
+            // 테스트를 위한 임시 토큰 저장
+            _redisDB.SetAuthToken(redisConnection, checkToken.UserId, checkToken.AuthToken);
+
+            var result = _redisDB.CheckAuthToken(redisConnection, checkToken.UserId, checkToken.AuthToken, _logger);
 
             var res = new ResCheckAuthToken();
             res.UserId = checkToken.UserId;
@@ -38,7 +52,6 @@ namespace OmokGameServer
 
             var resData = MemoryPackSerializer.Serialize(res);
             var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_CHECK_AUTHTOKEN, resData);
-            reqInfo.SessionId = req.SessionId;
             _sendToPP(reqInfo);
         }
     }

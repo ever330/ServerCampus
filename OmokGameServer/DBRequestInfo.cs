@@ -9,12 +9,11 @@ namespace OmokGameServer
 {
     public class DBRequest
     {
-        public static DBRequestInfo MakeRequest(short packetId, string sessionId, byte[] body)
+        public static DBRequestInfo MakeRequest(short packetId, byte[] body)
         {
             DBRequestInfo dbReq = new DBRequestInfo
             {
                 PacketId = packetId,
-                SessionId = sessionId,
                 Body = body
             };
 
@@ -25,7 +24,6 @@ namespace OmokGameServer
     public class DBRequestInfo
     {
         public short PacketId { get; set; }
-        public string SessionId { get; set; }
         public byte[] Body { get; set; }
     }
 
@@ -63,6 +61,7 @@ namespace OmokGameServer
     public partial class ReqUpdateWinLose
     {
         public string UserId { get; set; }
-        public bool Result { get; set; }
+        public int WinCount { get; set; }
+        public int LoseCount { get; set; }
     }
 }

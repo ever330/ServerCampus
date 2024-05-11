@@ -169,11 +169,8 @@ namespace Omok
             _userInfo.WinCount = 0;
             _userInfo.LoseCount = 0;
             _userInfo.Money = 0;
-            richTextBox1.Text += "게임서버 로그인이 완료되었습니다.\n";
-            Random r = new Random();
-            int randomNum = r.Next(1, 1000000);
-            string id = "Guest" + randomNum;
-            _inGameForm.Init(id, "1234", "10.192.8.223", 3030);
+            //_inGameForm.Init(id, "1234", "10.192.8.223", 3030);
+            _inGameForm.Init(emailTextBox.Text, "1234", "172.30.1.100", 3030);
             _inGameForm.ShowDialog();
         }
     }

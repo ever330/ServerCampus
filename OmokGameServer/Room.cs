@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MemoryPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -67,7 +68,7 @@ namespace OmokGameServer
 
         public ERROR_CODE EnterRoom(User user)
         {
-            if (_userList.Count >= _roomUserMaxCount) 
+            if (_userList.Count >= _roomUserMaxCount)
             {
                 return ERROR_CODE.ROOM_USER_MAX;
             }
@@ -78,6 +79,8 @@ namespace OmokGameServer
             newUser.UserId = user.UserId;
             newUser.State = USER_STATE.NONE;
             newUser.TimeOutCount = 0;
+            newUser.WinCount = user.WinCount;
+            newUser.LoseCount = user.LoseCount;
 
             _userList.Add(newUser);
 
@@ -86,7 +89,7 @@ namespace OmokGameServer
 
         public ERROR_CODE LeaveRoom(string userId)
         {
-            var user = _userList.Find(x => x.UserId  == userId);
+            var user = _userList.Find(x => x.UserId == userId);
 
             if (user != null)
             {
@@ -140,10 +143,48 @@ namespace OmokGameServer
             return _userList[0].UserId;
         }
 
-        public void EndGame()
+        public void EndGame(Action<DBRequestInfo> reqToGameDB, int winPlayerIndex)
         {
+            var winUser = new ReqUpdateWinLose();
+
+            var loseUser = new ReqUpdateWinLose();
+            if (winPlayerIndex == 0)
+            {
+                winUser.UserId = _userList[0].UserId;
+                loseUser.UserId = _userList[1].UserId;
+
+                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(winUser)));
+
+                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(loseUser)));
+            }
+            else
+            {
+                winUser.UserId = _userList[1].UserId;
+                loseUser.UserId = _userList[0].UserId;
+
+                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(winUser)));
+
+                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(loseUser)));
+            }
+            _userList[0].TimeOutCount = 0;
+            _userList[1].TimeOutCount = 0;
             RoomState = ROOM_STATE.NONE;
             BoardClear();
+        }
+
+        public void TimeOut()
+        {
+            _userList[CurrentPlayerIndex].TimeOutCount++;
+            if (CurrentPlayerIndex == 0)
+            {
+                CurrentPlayerIndex = 1;
+            }
+            else
+            {
+                CurrentPlayerIndex = 0;
+            }
+
+            TurnTime = DateTime.Now;
         }
 
         public void PutStone(STONE stone, int x, int y)
@@ -158,6 +199,11 @@ namespace OmokGameServer
             {
                 CurrentPlayerIndex = 0;
             }
+        }
+
+        public void GameEnd(string winPlayer)
+        {
+
         }
 
         public PUT_RESULT CheckStoneCount(STONE stone, int row, int col)
@@ -188,7 +234,7 @@ namespace OmokGameServer
                 var diaCheck1 = BlackStoneCheck(row, col, 1, 1, stone);
                 var diaCheck2 = BlackStoneCheck(row, col, 1, -1, stone);
 
-                if ((colCheck.Item1 == LINE_STATE.OPEN && rowCheck.Item1 == LINE_STATE.OPEN 
+                if ((colCheck.Item1 == LINE_STATE.OPEN && rowCheck.Item1 == LINE_STATE.OPEN
                     && colCheck.Item2 == rowCheck.Item2 && (rowCheck.Item2 == 3 || rowCheck.Item2 == 4))
                     || (colCheck.Item1 == LINE_STATE.OPEN && diaCheck1.Item1 == LINE_STATE.OPEN
                     && colCheck.Item2 == diaCheck1.Item2 && (diaCheck1.Item2 == 3 || diaCheck1.Item2 == 4))
@@ -217,7 +263,7 @@ namespace OmokGameServer
             LINE_STATE lineState2 = LINE_STATE.CLOSE;
 
             STONE prevStone = stone;
-            
+
             // check 33
             for (int i = 1; i <= 6; i++)
             {
@@ -259,7 +305,7 @@ namespace OmokGameServer
 
                 prevStone = _omokData.Board[r, c];
             }
-            
+
             for (int i = -1; i >= -6; i--)
             {
                 int r = row + i * dRow;
@@ -414,7 +460,7 @@ namespace OmokGameServer
                     return (LINE_STATE.OPEN, 4);
                 }
             }
-            
+
             return (LINE_STATE.OPEN, myStoneCount);
         }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MemoryPack;
+using CloudStructures.Structures;
 
 namespace OmokGameServer
 {
@@ -26,30 +27,22 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqLoginPacket>(packet.Body);
 
-            var checkToken = new ReqCheckAuthToken();
-            checkToken.UserId = req.Id;
-            checkToken.AuthToken = req.AuthToken;
-
-            //_sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, packet.SessionId, MemoryPackSerializer.Serialize(checkToken)));
-
-            var getUserData = new ReqUserData();
-            getUserData.UserId = req.Id;
-
-            _sendToDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_USER_DATA, packet.SessionId, MemoryPackSerializer.Serialize(getUserData)));
+            _userManager.UserLogin(packet.SessionId, req.Id, req.AuthToken);
         }
 
         public void ResCheckToken(OmokBinaryRequestInfo packet)
         {
             var resSet = MemoryPackSerializer.Deserialize<ResCheckAuthToken>(packet.Body);
 
-            if (!resSet.Result && _userManager.GetUser(packet.SessionId) != null)
+            var user = _userManager.GetUserByUserId(resSet.UserId);
+            if (!resSet.Result && user != null)
             {
-                _userManager.RemoveUser(packet.SessionId);
+                _userManager.RemoveUser(user.SessionId);
                 var res = new ResLoginPacket();
                 res.Result = resSet.Result;
                 var resData = MemoryPackSerializer.Serialize(res);
                 var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
-                _sendFunc(packet.SessionId, sendData);
+                _sendFunc(user.SessionId, sendData);
             }
         }
 
@@ -57,23 +50,24 @@ namespace OmokGameServer
         {
             var resUser = MemoryPackSerializer.Deserialize<ResUserData>(packet.Body);
 
-            if (!resUser.Result && _userManager.GetUser(packet.SessionId) != null)
+            var user = _userManager.GetUserByUserId(resUser.UserId);
+            if (!resUser.Result && user != null)
             {
-                _userManager.RemoveUser(packet.SessionId);
+                _userManager.RemoveUser(user.SessionId);
                 var res = new ResLoginPacket();
                 res.Result = resUser.Result; 
                 var resData = MemoryPackSerializer.Serialize(res);
                 var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
-                _sendFunc(packet.SessionId, sendData);
+                _sendFunc(user.SessionId, sendData);
                 return;
             }
 
-            _userManager.UserLogin(packet.SessionId, resUser.UserId, resUser.WinCount, resUser.LoseCount);
+            _userManager.SetUserData(user.SessionId, resUser.WinCount, resUser.LoseCount);
         }
 
         public void ReqHeartBeat(OmokBinaryRequestInfo packet)
         {
-            var user = _userManager.GetUser(packet.SessionId);
+            var user = _userManager.GetUserBySessionId(packet.SessionId);
             if (user == null)
             {
                 _logger.Error($"{packet.SessionId} 하트비트 유저 없음");

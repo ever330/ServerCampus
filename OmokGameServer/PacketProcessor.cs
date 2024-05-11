@@ -22,12 +22,12 @@ namespace OmokGameServer
         CommonPacketHandler _lobbyPacketHandler = new CommonPacketHandler();
         RoomPacketHandler _roomPacketHandler = new RoomPacketHandler();
 
-        public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc, Action<DBRequestInfo> sendDB)
+        public void Init(ILog mainLogger, UserManager userManager, RoomManager roomManager, Func<string, byte[], bool> sendDataFunc)
         {
             _mainLogger = mainLogger;
-            _serverPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
-            _lobbyPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
-            _roomPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc, sendDB);
+            _serverPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
+            _lobbyPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
+            _roomPacketHandler.Init(userManager, roomManager, mainLogger, sendDataFunc);
             _isThreadRunning = true;
             _processThread= new Thread(Process);
             _processThread.Start();

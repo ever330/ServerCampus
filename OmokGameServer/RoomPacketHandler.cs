@@ -27,7 +27,7 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
 
-            var result = _roomManager.EnterRoom(_userManager.GetUser(packet.SessionId));
+            var result = _roomManager.EnterRoom(_userManager.GetUserBySessionId(packet.SessionId));
 
             if (!result)
             {
@@ -41,7 +41,7 @@ namespace OmokGameServer
 
             var req = MemoryPackSerializer.Deserialize<ReqLeaveRoomPacket>(packet.Body);
 
-            var result = _roomManager.LeaveRoom(_userManager.GetUser(packet.SessionId), req.RoomNumber);
+            var result = _roomManager.LeaveRoom(_userManager.GetUserBySessionId(packet.SessionId), req.RoomNumber);
 
             if (!result)
             {
@@ -55,7 +55,7 @@ namespace OmokGameServer
 
             _logger.Info($"{packet.SessionId} 채팅 수신 : {req.Chat}");
 
-            var tempUser = _userManager.GetUser(packet.SessionId);
+            var tempUser = _userManager.GetUserBySessionId(packet.SessionId);
             var chatPacket = new NtfChatPacket();
             chatPacket.Id = tempUser.UserId;
             chatPacket.Chat = req.Chat;
@@ -70,14 +70,14 @@ namespace OmokGameServer
         {
             _logger.Info($"{packet.SessionId} 준비 완료 수신");
 
-            _roomManager.UserStateChange(_userManager.GetUser(packet.SessionId), PACKET_ID.REQ_READY, packet.Body);
+            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PACKET_ID.REQ_READY, packet.Body);
         }
 
         public void ReqNotReady(OmokBinaryRequestInfo packet)
         {
             _logger.Info($"{packet.SessionId} 준비 해제 수신");
 
-            _roomManager.UserStateChange(_userManager.GetUser(packet.SessionId), PACKET_ID.REQ_NOT_READY, packet.Body);
+            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PACKET_ID.REQ_NOT_READY, packet.Body);
         }
 
         public void ReqPutStone(OmokBinaryRequestInfo packet)

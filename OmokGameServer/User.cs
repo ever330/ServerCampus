@@ -13,7 +13,7 @@ namespace OmokGameServer
     {
         int _userIndex;
         public string SessionId { get; private set; }
-        public string UserId { get; private set; }
+        public string UserId { get; set; }
         public int RoomNumber { get; private set; }
         public DateTime ConnectTime { get; set; }
         public DateTime HeartBeatTime { get; set; }
@@ -24,6 +24,7 @@ namespace OmokGameServer
         {
             _userIndex = userIndex;
             SessionId = "";
+            UserId = "";
             RoomNumber = -1;
         }
 
@@ -32,12 +33,10 @@ namespace OmokGameServer
             SessionId = sessionId;
             ConnectTime = DateTime.Now;
             HeartBeatTime = DateTime.Now;
-            UserId = "";
         }
 
-        public void SetData(string userId, int winCount, int loseCount)
+        public void SetData(int winCount, int loseCount)
         {
-            UserId = userId;
             WinCount = winCount;
             LoseCount = loseCount;
         }

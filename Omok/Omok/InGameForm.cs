@@ -232,6 +232,7 @@ namespace Omok
             var req = new ReqLoginPacket();
             req.Id = _userInfo.Id;
             req.AuthToken = _userInfo.AuthToken;
+            _serverHeartBeatTime = DateTime.Now;
 
             var reqData = MemoryPackSerializer.Serialize(req);
 
@@ -490,6 +491,10 @@ namespace Omok
                         readyBtn.Enabled = true;
                         _clientNetwork.NetworkMessageQ.Enqueue("게임 종료");
                         limitTimer.Stop();
+                        _state = USER_STATE.NONE;
+                        BoardClear();
+                        omokPanel.Refresh();
+                        InitializeBoard();
                     }
                     break;
 
@@ -533,6 +538,10 @@ namespace Omok
                         readyBtn.Enabled = true;
                         _clientNetwork.NetworkMessageQ.Enqueue("게임 종료");
                         limitTimer.Stop();
+                        _state = USER_STATE.NONE;
+                        BoardClear();
+                        omokPanel.Refresh();
+                        InitializeBoard();
                     }
                     break;
 
@@ -770,6 +779,17 @@ namespace Omok
             {
                 _graphics.FillEllipse(_wBrush, r);
                 _board[x, y] = STONE.WHITE;
+            }
+        }
+
+        void BoardClear()
+        {
+            for (int x = 0; x < 19; x++)
+            {
+                for (int y = 0; y < 19; y++)
+                {
+                    _board[x, y] = STONE.NONE;
+                }
             }
         }
 

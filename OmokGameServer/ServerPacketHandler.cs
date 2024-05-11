@@ -26,7 +26,7 @@ namespace OmokGameServer
         {
             _logger.Info($"{packet.SessionId} 접속 종료");
 
-            var user = _userManager.GetUser(packet.SessionId);
+            var user = _userManager.GetUserBySessionId(packet.SessionId);
             if (user != null )
             {
                 var result =  _userManager.RemoveUser(packet.SessionId);

@@ -10,25 +10,26 @@ namespace OmokGameServer
 {
     public class UserManager
     {
-        //Dictionary<string, User> _userDict = new Dictionary<string, User>();
         List<User> _userList = new List<User>();
         int _maxUserCount = 0;
         int _userIndex = 0;
         Func<string, byte[], bool> _sendFunc;
         Action<string> _disconnect;
-        DBManager _dbManager;
+        Action<DBRequestInfo> _reqToGameDB;
+        Action<DBRequestInfo> _reqToRedisDB;
         Queue<string> _removeUserQueue = new Queue<string>();
         int _userConnectCount = 0;
 
         const int HeartBeatLimitSecond = 5;
         const int SessionConnectLimitMinite = 5;
 
-        public void Init(DBManager dbManager, int maxUserCount, Func<string, byte[], bool> sendFunc, Action<string> disconnect)
+        public void Init(int maxUserCount, Func<string, byte[], bool> sendFunc, Action<string> disconnect, Action<DBRequestInfo> reqToGameDB, Action<DBRequestInfo> reqToRedisDB)
         {
-            _dbManager = dbManager;
             _maxUserCount = maxUserCount;
             _sendFunc = sendFunc;
             _disconnect = disconnect;
+            _reqToGameDB = reqToGameDB;
+            _reqToRedisDB = reqToRedisDB;
 
             for (int i = 0; i < maxUserCount; i++)
             {
@@ -36,6 +37,34 @@ namespace OmokGameServer
                 _userIndex++;
                 _userList.Add(user);
             }
+        }
+
+        public ERROR_CODE UserLogin(string sessionId, string id, string authToken)
+        {
+            var user = _userList.Find(x => x.SessionId == sessionId);
+
+            var result = ERROR_CODE.NONE;
+
+            if (LoginDuplicationCheck(id))
+            {
+                result = ERROR_CODE.USER_ALREADY_EXIST;
+            }
+            else
+            {
+                user.UserId = id;
+
+                var checkToken = new ReqCheckAuthToken();
+                checkToken.UserId = id;
+                checkToken.AuthToken = authToken;
+
+                _reqToRedisDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, MemoryPackSerializer.Serialize(checkToken)));
+
+                var getUserData = new ReqUserData();
+                getUserData.UserId = id;
+
+                _reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_USER_DATA, MemoryPackSerializer.Serialize(getUserData)));
+            }
+            return result;
         }
 
         public ERROR_CODE SetNewUser(string sessionId)
@@ -57,7 +86,7 @@ namespace OmokGameServer
             return ERROR_CODE.NONE;
         }
 
-        public ERROR_CODE SetUserData(string userId, string sessionId, int winCount, int loseCount)
+        public ERROR_CODE SetUserData(string sessionId, int winCount, int loseCount)
         {
             User? user = _userList.Find(x => x.SessionId == sessionId);
             if (user == null)
@@ -65,7 +94,7 @@ namespace OmokGameServer
                 return ERROR_CODE.USER_NOT_EXIST;
             }
 
-            user.SetData(userId, winCount, loseCount);
+            user.SetData(winCount, loseCount);
 
             var res = new ResLoginPacket();
             res.Result = true;
@@ -76,9 +105,15 @@ namespace OmokGameServer
             return ERROR_CODE.NONE;
         }
 
-        public User? GetUser(string sessionId)
+        public User? GetUserBySessionId(string sessionId)
         {
             User? user = _userList.Find(x => x.SessionId == sessionId);
+            return user;
+        }
+
+        public User? GetUserByUserId(string userId)
+        {
+            User? user = _userList.Find(x => x.UserId == userId);
             return user;
         }
 
@@ -101,21 +136,6 @@ namespace OmokGameServer
             return _userConnectCount;
         }
 
-        public ERROR_CODE UserLogin(string sessionId, string userId, int winCount, int loseCount)
-        {
-            var result = ERROR_CODE.NONE;
-
-            if (LoginDuplicationCheck(userId))
-            {
-                result = ERROR_CODE.USER_ALREADY_EXIST;
-            }
-            else
-            {
-                result = SetUserData(userId, sessionId, winCount, loseCount);
-            }
-            return result;
-        }
-
         bool LoginDuplicationCheck(string userId)
         {
             foreach (var user in _userList)
@@ -130,8 +150,13 @@ namespace OmokGameServer
 
         public void CheckHeartBeat(int heartBeatIndex)
         {
-            for (int i = heartBeatIndex * (_maxUserCount / 4); i < (heartBeatIndex + 1) * (_maxUserCount / 4); i++)
+            for (int i = (heartBeatIndex * _maxUserCount) / 4; i < ((heartBeatIndex + 1) * _maxUserCount) / 4; i++)
             {
+                if (_userList[i].UserId == "")
+                {
+                    continue;
+                }
+
                 var userHeartBeat = _userList[i].HeartBeatTime;
                 var dif = DateTime.Now - userHeartBeat;
                 if (dif.TotalSeconds >= HeartBeatLimitSecond)
@@ -144,9 +169,9 @@ namespace OmokGameServer
 
         public void CheckSession(int checkSessionIndex)
         {
-            for (int i = checkSessionIndex * (_maxUserCount / 4); i < (checkSessionIndex + 1) * (_maxUserCount / 4); i++)
+            for (int i = (checkSessionIndex * _maxUserCount) / 4; i < ((checkSessionIndex + 1) * _maxUserCount) / 4; i++)
             {
-                if (_userList[i].UserId == "")
+                if (_userList[i].UserId == "" && _userList[i].SessionId != "")
                 {
                     var dif = DateTime.Now - _userList[i].ConnectTime;
                     if (dif.TotalMinutes >= SessionConnectLimitMinite)
