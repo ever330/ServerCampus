@@ -16,13 +16,13 @@ namespace OmokGameServer
         {
             try
             {
-                var userData = queryFactory.Query("userGameData").Select().Where("id", id).FirstOrDefaultAsync<UserGameData>();
+                var userData = queryFactory.Query("userGameData").Select().Where("id", id).FirstOrDefault<UserGameData>();
 
                 if (userData == null)
                 {
                     return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.USER_DATA_NOT_EXIST, null);
                 }
-                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.NONE, userData.Result);
+                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.NONE, userData);
             }
             catch
             {
@@ -30,25 +30,25 @@ namespace OmokGameServer
             }
         }
 
-        public ERROR_CODE UpdateGameResult(QueryFactory queryFactory, string id, int winCount, int loseCount)
+        public ERROR_CODE UpdateGameResult(QueryFactory queryFactory, string id, int win, int lose)
         {
             try
             {
-                var userData = queryFactory.Query("userGameData").Where("id", id).UpdateAsync(new
+                var count = queryFactory.Query("userGameData").Where("id", id).Update(new
                 {
-                    winCunt = winCount,
-                    loseCount = loseCount
+                    winCount = win,
+                    loseCount = lose
                 });
 
-                if (userData == null)
+                if (count == 0)
                 {
-                    return ERROR_CODE.USER_DATA_NOT_EXIST;
+                    return ERROR_CODE.UPDATE_USER_INFO_ERROR;
                 }
                 return ERROR_CODE.NONE;
             }
             catch
             {
-                return ERROR_CODE.GET_USER_DATA_ERROR;
+                return ERROR_CODE.UPDATE_USER_INFO_ERROR;
             }
         }
     }
