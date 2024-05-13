@@ -42,11 +42,11 @@ namespace APIServer.Controllers
             }
 
             _logger.ZLogInformation($"{request.Id} : 토큰 유효");
-            _redisDB.SetAuthToken(request.Id, request.AuthToken);
+            var result = await _redisDB.SetAuthToken(request.Id, request.AuthToken);
 
             var checkRes = await CheckUserData(request.Id);
 
-            if (resLogin.Result != ERROR_CODE.None || checkRes.Item2 == null)
+            if (resLogin.Result != ERROR_CODE.None || checkRes.Item2 == null || result != ERROR_CODE.None)
             {
                 _logger.ZLogError($"{request.Id} : 유저 데이터 생성 실패");
                 return resLogin;
