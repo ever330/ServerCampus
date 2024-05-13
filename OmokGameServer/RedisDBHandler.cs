@@ -31,9 +31,6 @@ namespace OmokGameServer
         {
             var checkToken = MemoryPackSerializer.Deserialize<ReqCheckAuthToken>(req.Body);
 
-            // 테스트를 위한 임시 토큰 저장
-            _redisDB.SetAuthToken(redisConnection, checkToken.UserId, checkToken.AuthToken);
-
             var result = _redisDB.CheckAuthToken(redisConnection, checkToken.UserId, checkToken.AuthToken, _logger);
 
             var res = new ResCheckAuthToken();
