@@ -42,8 +42,8 @@ namespace OmokGameServer
 
         ReqEnterRoom = 1201,
         ResEnterRoom = 1202,
-        ResLeaveRoom = 1203,
-        ReqLeaveRoom = 1204,
+        ReqLeaveRoom = 1203,
+        ResLeaveRoom = 1204,
         ReqRoomChat = 1205,
         NtfRoomChat = 1206,
         NtfNewUser = 1207,
