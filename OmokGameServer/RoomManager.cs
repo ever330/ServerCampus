@@ -100,7 +100,7 @@ namespace OmokGameServer
             res.Result = true;
 
             var data = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PacketId.ReqLeaveRoom, data);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.ResLeaveRoom, data);
             _sendFunc(user.SessionId, sendData);
 
             var ntfLeave = new NtfLeaveUserPacket();

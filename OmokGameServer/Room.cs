@@ -113,6 +113,11 @@ namespace OmokGameServer
 
         public void CheckRoomState()
         {
+            if (_userList.Count < 2)
+            {
+                return;
+            }
+
             bool isAllReady = true;
 
             for (int i = 0; i < _userList.Count; i++)
