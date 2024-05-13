@@ -41,12 +41,18 @@ namespace APIServer.Controllers
                 return resLogin;
             }
 
-            _logger.ZLogInformation($"{request.Id} : 토큰 유효");
+            _logger.ZLogInformation($"{request.Id} : 토큰 유효 {request.AuthToken}");
             var result = await _redisDB.SetAuthToken(request.Id, request.AuthToken);
+
+            if (result != ERROR_CODE.None)
+            {
+                _logger.ZLogError($"{request.Id} : 유저 토큰 셋팅 실패");
+                return resLogin;
+            }
 
             var checkRes = await CheckUserData(request.Id);
 
-            if (resLogin.Result != ERROR_CODE.None || checkRes.Item2 == null || result != ERROR_CODE.None)
+            if (resLogin.Result != ERROR_CODE.None || checkRes.Item2 == null)
             {
                 _logger.ZLogError($"{request.Id} : 유저 데이터 생성 실패");
                 return resLogin;
