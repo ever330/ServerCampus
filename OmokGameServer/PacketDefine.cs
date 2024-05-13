@@ -8,78 +8,78 @@ namespace OmokGameServer
 {
     public class PacketDefine
     {
-        public const short PACKET_HEADER = 4;
+        public const short PacketHeader = 4;
     }
 
-    public enum ERROR_CODE : short
+    public enum ErrorCode : short
     {
-        NONE = 0,
+        None = 0,
 
         // DB 관련
-        SET_GAME_SERVER_TOKEN_ERROR = 1000,
-        CHECK_TOKEN_ERROR = 1001,
-        UPDATE_USER_INFO_ERROR = 1002,
-        USER_DATA_NOT_EXIST = 1003,
-        GET_USER_DATA_ERROR = 1004,
+        SetGameServerTokenError = 1000,
+        CheckTokenError = 1001,
+        UpdateUserInfoError = 1002,
+        UserDataNotExist = 1003,
+        GetUserDataError = 1004,
 
         // 게임 서버 접속 관련
-        USER_COUNT_MAX = 3001,
-        USER_NOT_EXIST = 3002,
-        USER_ALREADY_EXIST = 3003,
+        UserCountMax = 3001,
+        UserNotExist = 3002,
+        UserAlreadyExist = 3003,
 
         // 방 관련
-        ROOM_USER_MAX = 3101,
-        ROOM_LEAVE_ERROR = 3202,
+        RoomUserMax = 3101,
+        RoomLeaveError = 3202,
     }
 
-    public enum PACKET_ID : short
+    public enum PacketId : short
     {
-        SESSION_CONNECT = 1001,
-        SESSION_DISCONNECT = 1002,
+        SessionConnect = 1001,
+        SessionDisconnect = 1002,
 
-        REQ_LOGIN = 1101,
-        RES_LOGIN = 1102,
+        ReqLogin = 1101,
+        ResLogin = 1102,
 
-        REQ_ENTER_ROOM = 1201,
-        RES_ENTER_ROOM = 1202,
-        REQ_LEAVE_ROOM = 1203,
-        RES_LEAVE_ROOM = 1204,
-        REQ_ROOM_CHAT = 1205,
-        NTF_ROOM_CHAT = 1206,
-        NTF_NEW_USER = 1207,
-        NTF_LEAVE_USER = 1208,
-        NTF_ROOM_USERS = 1209,
-        REQ_READY = 1210,
-        RES_READY = 1211,
-        REQ_NOT_READY = 1212,
-        RES_NOT_READY = 1213,
-        NTF_READY_STATE = 1214,
-        NTF_GAME_START = 1215,
-        REQ_PUT_STONE = 1216,
-        RES_PUT_STONE = 1217,
-        NTF_PUT_STONE = 1218,
-        NTF_WIN_GAME = 1219,
-        REQ_TIME_OUT = 1220,
-        NTF_TIME_OUT = 1221,
-        NTF_TIME_OUT_WIN = 1222,
-        NTF_DRAW = 1223,
+        ReqEnterRoom = 1201,
+        ResEnterRoom = 1202,
+        ResLeaveRoom = 1203,
+        ReqLeaveRoom = 1204,
+        ReqRoomChat = 1205,
+        NtfRoomChat = 1206,
+        NtfNewUser = 1207,
+        NtfLeaveUser = 1208,
+        NtfRoomUsers = 1209,
+        ReqReady = 1210,
+        ResReady = 1211,
+        ReqNotReady = 1212,
+        ResNotReady = 1213,
+        NtfReadyState = 1214,
+        NtfGameStart = 1215,
+        ReqPutStone = 1216,
+        ResPutStone = 1217,
+        NtfPutStone = 1218,
+        NtfWinGame = 1219,
+        ReqTimeOut = 1220,
+        NtfTimeOut = 1221,
+        NtfTimeOutWin = 1222,
+        NtfDraw = 1223,
 
-        REQ_HEART_BEAT = 1300,
-        RES_HEART_BEAT = 1301,
-        NTF_SESSION_TIME_LIMIT = 1302,
+        ReqHeartBeat = 1300,
+        ResHeartBeat = 1301,
+        NtfSessionTimeLimit = 1302,
 
         // MYSQL
-        REQ_UPDATE_RESULT = 2000,
-        REQ_USER_DATA = 2001,
-        RES_USER_DATA = 2002,
+        ReqUpdateResult = 2000,
+        ReqUserData = 2001,
+        ResUserData = 2002,
 
         // REDIS
-        REQ_CHECK_AUTHTOKEN = 2101,
-        RES_CHECK_AUTHTOKEN = 2102,
+        ReqCheckAuthToken = 2101,
+        ResCheckAuthToken = 2102,
 
         // INNER
-        REQ_CHECK_HEART_BEAT = 3000,
-        REQ_CHECK_ROOM = 3001,
-        REQ_CHECK_SESSION = 3002,
+        ReqCheckHeartBeat = 3000,
+        ReqCheckRoom = 3001,
+        ReqCheckSession = 3002,
     }
 }

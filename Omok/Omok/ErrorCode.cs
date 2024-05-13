@@ -31,12 +31,12 @@ namespace Omok
 
 
         // 게임 서버 접속 관련
-        USER_COUNT_MAX = 3001,
-        USER_NOT_EXIST = 3002,
-        USER_LOGIN_ERROR = 3003,
+        UserCountMax = 3001,
+        UserNotExist = 3002,
+        UserLoginError = 3003,
 
         // 방 관련
-        ROOM_USER_MAX = 3101,
-        ROOM_LEAVE_ERROR = 3202,
+        RoomUserMax = 3101,
+        RoomLeaveError = 3202,
     }
 }

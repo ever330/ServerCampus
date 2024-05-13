@@ -19,7 +19,7 @@ namespace APIServer.Repository
             _connection.GetConnection().Close();
         }
 
-        public ERROR_CODE SetAuthToken(string id, string authToken)
+        public async Task<ERROR_CODE> SetAuthToken(string id, string authToken)
         {
             try
             {
@@ -31,7 +31,7 @@ namespace APIServer.Repository
 
                 var defaultExpiry = TimeSpan.FromDays(1);
                 _redis = new RedisString<RedisUserInfo>(_connection, "UID" + id, defaultExpiry);
-                _redis.SetAsync(newUser).Wait();
+                await _redis.SetAsync(newUser);
 
                 return ERROR_CODE.None;
             }

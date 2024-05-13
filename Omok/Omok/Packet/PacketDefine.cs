@@ -8,44 +8,44 @@ namespace Omok.Packet
 {
     public class PacketDefine
     {
-        public const short PACKET_HEADER = 4;
+        public const short PacketHeader = 4;
 
-        public const int PACKET_BUFFER_SIZE = 2048;
+        public const int PacketBufferSize = 2048;
     }
 
-    public enum PACKET_ID : short
+    public enum PacketId : short
     {
-        SESSION_CONNECT = 1001,
-        SESSION_DISCONNECT = 1002,
+        SessionConnect = 1001,
+        SessionDisconnect = 1002,
 
-        REQ_LOGIN = 1101,
-        RES_LOGIN = 1102,
+        ReqLogin = 1101,
+        ResLogin = 1102,
 
-        REQ_ENTER_ROOM = 1201,
-        RES_ENTER_ROOM = 1202,
-        REQ_LEAVE_ROOM = 1203,
-        RES_LEAVE_ROOM = 1204,
-        REQ_ROOM_CHAT = 1205,
-        NTF_ROOM_CHAT = 1206,
-        NTF_NEW_USER = 1207,
-        NTF_LEAVE_USER = 1208,
-        NTF_ROOM_USERS = 1209,
-        REQ_READY = 1210,
-        RES_READY = 1211,
-        REQ_NOT_READY = 1212,
-        RES_NOT_READY = 1213,
-        NTF_READY_STATE = 1214,
-        NTF_GAME_START = 1215,
-        REQ_PUT_STONE = 1216,
-        RES_PUT_STONE = 1217,
-        NTF_PUT_STONE = 1218,
-        NTF_WIN_GAME = 1219,
-        REQ_TIME_OUT = 1220,
-        NTF_TIME_OUT = 1221,
-        NTF_TIME_OUT_WIN = 1222,
-        NTF_DRAW = 1223,
+        ReqEnterRoom = 1201,
+        ResEnterRoom = 1202,
+        ReqLeaveRoom = 1203,
+        ResLeaveRoom = 1204,
+        ReqRoomChat = 1205,
+        NtfRoomChat = 1206,
+        NtfNewUser = 1207,
+        NtfLeaveUser = 1208,
+        NtfRoomUsers = 1209,
+        ReqReady = 1210,
+        ResReady = 1211,
+        ReqNotReady = 1212,
+        ResNotReady = 1213,
+        NtfReadyState = 1214,
+        NtfGameStart = 1215,
+        ReqPutStone = 1216,
+        ResPutStone = 1217,
+        NtfPutStone = 1218,
+        NtfWinGame = 1219,
+        ReqTimeOut = 1220,
+        NtfTimeOut = 1221,
+        NtfTimeOutWin = 1222,
+        NtfDraw = 1223,
 
-        REQ_HEART_BEAT = 1300,
-        RES_HEART_BEAT = 1301,
+        ReqHeartBeat = 1300,
+        ResHeartBeat = 1301,
     }
 }

@@ -12,13 +12,13 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_ENTER_ROOM, ReqEnterRoom);
-            packetHandlers.Add((short)PACKET_ID.REQ_LEAVE_ROOM, ReqLeaveRoom);
-            packetHandlers.Add((short)PACKET_ID.REQ_ROOM_CHAT, ReqChat);
-            packetHandlers.Add((short)PACKET_ID.REQ_READY, ReqReady);
-            packetHandlers.Add((short)PACKET_ID.REQ_NOT_READY, ReqNotReady);
-            packetHandlers.Add((short)PACKET_ID.REQ_PUT_STONE, ReqPutStone);
-            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_ROOM, ReqCheckRoom);
+            packetHandlers.Add((short)PacketId.ReqEnterRoom, ReqEnterRoom);
+            packetHandlers.Add((short)PacketId.ReqLeaveRoom, ReqLeaveRoom);
+            packetHandlers.Add((short)PacketId.ReqRoomChat, ReqChat);
+            packetHandlers.Add((short)PacketId.ReqReady, ReqReady);
+            packetHandlers.Add((short)PacketId.ReqNotReady, ReqNotReady);
+            packetHandlers.Add((short)PacketId.ReqPutStone, ReqPutStone);
+            packetHandlers.Add((short)PacketId.ReqCheckRoom, ReqCheckRoom);
         }
 
         public void ReqEnterRoom(OmokBinaryRequestInfo packet)
@@ -61,7 +61,7 @@ namespace OmokGameServer
             chatPacket.Chat = req.Chat;
 
             var data = MemoryPackSerializer.Serialize(chatPacket);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_ROOM_CHAT, data);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.NtfRoomChat, data);
 
             _roomManager.BroadCast(tempUser.RoomNumber, packet.SessionId, sendData);
         }
@@ -70,14 +70,14 @@ namespace OmokGameServer
         {
             _logger.Info($"{packet.SessionId} 준비 완료 수신");
 
-            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PACKET_ID.REQ_READY, packet.Body);
+            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PacketId.ReqReady, packet.Body);
         }
 
         public void ReqNotReady(OmokBinaryRequestInfo packet)
         {
             _logger.Info($"{packet.SessionId} 준비 해제 수신");
 
-            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PACKET_ID.REQ_NOT_READY, packet.Body);
+            _roomManager.UserStateChange(_userManager.GetUserBySessionId(packet.SessionId), PacketId.ReqNotReady, packet.Body);
         }
 
         public void ReqPutStone(OmokBinaryRequestInfo packet)

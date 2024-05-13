@@ -10,9 +10,9 @@ namespace OmokGameServer
 {
     public class ClientPacket
     {
-        public static byte[] MakeClientPacket(PACKET_ID packetId, byte[] body)
+        public static byte[] MakeClientPacket(PacketId packetId, byte[] body)
         {
-            short packetSize = (short)(PacketDefine.PACKET_HEADER + body.Length);
+            short packetSize = (short)(PacketDefine.PacketHeader + body.Length);
 
             var sendData = new byte[packetSize];
             FastBinaryWrite.Int16(sendData, 0, packetSize);

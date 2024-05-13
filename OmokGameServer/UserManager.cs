@@ -39,15 +39,15 @@ namespace OmokGameServer
             }
         }
 
-        public ERROR_CODE UserLogin(string sessionId, string id, string authToken)
+        public ErrorCode UserLogin(string sessionId, string id, string authToken)
         {
             var user = _userList.Find(x => x.SessionId == sessionId);
 
-            var result = ERROR_CODE.NONE;
+            var result = ErrorCode.None;
 
             if (LoginDuplicationCheck(id))
             {
-                result = ERROR_CODE.USER_ALREADY_EXIST;
+                result = ErrorCode.UserAlreadyExist;
             }
             else
             {
@@ -57,21 +57,21 @@ namespace OmokGameServer
                 checkToken.UserId = id;
                 checkToken.AuthToken = authToken;
 
-                _reqToRedisDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, MemoryPackSerializer.Serialize(checkToken)));
+                _reqToRedisDB(DBRequest.MakeRequest((short)PacketId.ReqCheckAuthToken, MemoryPackSerializer.Serialize(checkToken)));
 
                 var getUserData = new ReqUserData();
                 getUserData.UserId = id;
 
-                _reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_USER_DATA, MemoryPackSerializer.Serialize(getUserData)));
+                _reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUserData, MemoryPackSerializer.Serialize(getUserData)));
             }
             return result;
         }
 
-        public ERROR_CODE SetNewUser(string sessionId)
+        public ErrorCode SetNewUser(string sessionId)
         {
             if (_userConnectCount >= _maxUserCount)
             {
-                return ERROR_CODE.USER_COUNT_MAX;
+                return ErrorCode.UserCountMax;
             }
 
             for (int i = 0; i < _maxUserCount; i++)
@@ -83,15 +83,15 @@ namespace OmokGameServer
                 }
             }
             _userConnectCount++;
-            return ERROR_CODE.NONE;
+            return ErrorCode.None;
         }
 
-        public ERROR_CODE SetUserData(string sessionId, int winCount, int loseCount)
+        public ErrorCode SetUserData(string sessionId, int winCount, int loseCount)
         {
             User? user = _userList.Find(x => x.SessionId == sessionId);
             if (user == null)
             {
-                return ERROR_CODE.USER_NOT_EXIST;
+                return ErrorCode.UserNotExist;
             }
 
             user.SetData(winCount, loseCount);
@@ -99,10 +99,10 @@ namespace OmokGameServer
             var res = new ResLoginPacket();
             res.Result = true;
             var data = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, data);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.ResLogin, data);
             _sendFunc(sessionId, sendData);
 
-            return ERROR_CODE.NONE;
+            return ErrorCode.None;
         }
 
         public User? GetUserBySessionId(string sessionId)
@@ -117,18 +117,18 @@ namespace OmokGameServer
             return user;
         }
 
-        public ERROR_CODE RemoveUser(string sessionId)
+        public ErrorCode RemoveUser(string sessionId)
         {
             User? user = _userList.Find(x => x.SessionId == sessionId);
             if (user == null)
             {
-                return ERROR_CODE.USER_NOT_EXIST;
+                return ErrorCode.UserNotExist;
             }
 
             user.ResetData();
             _userConnectCount--;
 
-            return ERROR_CODE.NONE;
+            return ErrorCode.None;
         }
 
         public int GetUserCount()
@@ -178,7 +178,7 @@ namespace OmokGameServer
                     {
                         var packet = new NtfSessionTimeLimitPacket();
                         var ntf = MemoryPackSerializer.Serialize(packet);
-                        var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_SESSION_TIME_LIMIT, ntf);
+                        var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfSessionTimeLimit, ntf);
                         _sendFunc(_userList[i].SessionId, ntfData);
                         _disconnect(_userList[i].SessionId);
                         RemoveUser(_userList[i].SessionId);

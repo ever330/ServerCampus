@@ -12,7 +12,7 @@ namespace OmokGameServer
 {
     public class GameDB
     {
-        public Tuple<ERROR_CODE, UserGameData?> GetUserData(QueryFactory queryFactory, string id)
+        public Tuple<ErrorCode, UserGameData?> GetUserData(QueryFactory queryFactory, string id)
         {
             try
             {
@@ -20,17 +20,17 @@ namespace OmokGameServer
 
                 if (userData == null)
                 {
-                    return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.USER_DATA_NOT_EXIST, null);
+                    return new Tuple<ErrorCode, UserGameData?>(ErrorCode.UserDataNotExist, null);
                 }
-                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.NONE, userData);
+                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.None, userData);
             }
             catch
             {
-                return new Tuple<ERROR_CODE, UserGameData?>(ERROR_CODE.GET_USER_DATA_ERROR, null);
+                return new Tuple<ErrorCode, UserGameData?>(ErrorCode.GetUserDataError, null);
             }
         }
 
-        public ERROR_CODE UpdateGameResult(QueryFactory queryFactory, string id, int win, int lose)
+        public ErrorCode UpdateGameResult(QueryFactory queryFactory, string id, int win, int lose)
         {
             try
             {
@@ -42,13 +42,13 @@ namespace OmokGameServer
 
                 if (count == 0)
                 {
-                    return ERROR_CODE.UPDATE_USER_INFO_ERROR;
+                    return ErrorCode.UpdateUserInfoError;
                 }
-                return ERROR_CODE.NONE;
+                return ErrorCode.None;
             }
             catch
             {
-                return ERROR_CODE.UPDATE_USER_INFO_ERROR;
+                return ErrorCode.UpdateUserInfoError;
             }
         }
     }

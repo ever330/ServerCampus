@@ -47,7 +47,7 @@ namespace OmokGameServer
             else
             {
                 int roomNumber = _roomIndexQueue.Peek();
-                var enterRes = ERROR_CODE.NONE;
+                var enterRes = ErrorCode.None;
                 var users = _roomList[roomNumber].GetUserList();
                 if (users.Count >= _roomUserMax)
                 {
@@ -73,18 +73,18 @@ namespace OmokGameServer
                 var ntfPacket = new NtfNewUserPacket();
                 ntfPacket.Id = user.UserId;
                 var ntf = MemoryPackSerializer.Serialize(ntfPacket);
-                var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_NEW_USER, ntf);
+                var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfNewUser, ntf);
                 BroadCast(roomNumber, user.SessionId, ntfData);
             }
             var data = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_ENTER_ROOM, data);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, data);
             return _sendFunc(user.SessionId, sendData);
         }
 
         public bool LeaveRoom(User user, int roomNumber)
         {
             var result = _roomList[roomNumber].LeaveRoom(user.UserId);
-            if (result == ERROR_CODE.NONE)
+            if (result == ErrorCode.None)
             {
                 user.LeaveRoom();
             }
@@ -92,7 +92,7 @@ namespace OmokGameServer
 
             var res = new ResLeaveRoomPacket();
 
-            if (result != ERROR_CODE.NONE)
+            if (result != ErrorCode.None)
             {
                 res.Result = false;
                 return false;
@@ -100,13 +100,13 @@ namespace OmokGameServer
             res.Result = true;
 
             var data = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LEAVE_ROOM, data);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.ReqLeaveRoom, data);
             _sendFunc(user.SessionId, sendData);
 
             var ntfLeave = new NtfLeaveUserPacket();
             ntfLeave.Id = user.UserId;
             var ntf = MemoryPackSerializer.Serialize(ntfLeave);
-            var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_LEAVE_USER, ntf);
+            var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfLeaveUser, ntf);
             BroadCast(roomNumber, user.SessionId, ntfData);
 
             return true;
@@ -126,9 +126,9 @@ namespace OmokGameServer
             }
         }
 
-        public void UserStateChange(User user, PACKET_ID packetId, byte[] packet)
+        public void UserStateChange(User user, PacketId packetId, byte[] packet)
         {
-            if (packetId == PACKET_ID.REQ_READY)
+            if (packetId == PacketId.ReqReady)
             {
                 var pac = MemoryPackSerializer.Deserialize<ReqReadyPacket>(packet);
 
@@ -142,14 +142,14 @@ namespace OmokGameServer
                     var resPac = new ResReadyPacket();
                     resPac.Result = true;
                     var res = MemoryPackSerializer.Serialize(resPac);
-                    var resData = ClientPacket.MakeClientPacket(PACKET_ID.RES_READY, res);
+                    var resData = ClientPacket.MakeClientPacket(PacketId.ResReady, res);
                     _sendFunc(user.SessionId, resData);
 
                     var ntfPac = new NtfReadyStatePacket();
                     ntfPac.Id = user.UserId;
                     ntfPac.Result = true;
                     var ntf = MemoryPackSerializer.Serialize(ntfPac);
-                    var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_READY_STATE, ntf);
+                    var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfReadyState, ntf);
 
                     BroadCast(pac.RoomNumber, user.SessionId, ntfData);
                 }
@@ -159,7 +159,7 @@ namespace OmokGameServer
                     startPac.StartPlayer = _roomList[pac.RoomNumber].GameStart();
 
                     var ntf = MemoryPackSerializer.Serialize(startPac);
-                    var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_GAME_START, ntf);
+                    var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfGameStart, ntf);
 
                     BroadCast(pac.RoomNumber, null, ntfData);
                 }
@@ -175,7 +175,7 @@ namespace OmokGameServer
                 ntfPac.Id = user.UserId;
                 ntfPac.Result = false;
                 var ntf = MemoryPackSerializer.Serialize(ntfPac);
-                var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_READY_STATE, ntf);
+                var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfReadyState, ntf);
 
                 BroadCast(pac.RoomNumber, user.SessionId, ntfData);
             }
@@ -195,7 +195,7 @@ namespace OmokGameServer
                 var errorPac = new ResPutStonePacket();
                 errorPac.Result = false;
                 var error = MemoryPackSerializer.Serialize(errorPac);
-                var errorData = ClientPacket.MakeClientPacket(PACKET_ID.RES_PUT_STONE, error);
+                var errorData = ClientPacket.MakeClientPacket(PacketId.ResPutStone, error);
                 _sendFunc(curUser.SessionId, errorData);
                 return;
             }
@@ -207,7 +207,7 @@ namespace OmokGameServer
                 var resPac = new ResPutStonePacket();
                 resPac.Result = true;
                 var res = MemoryPackSerializer.Serialize(resPac);
-                var resData = ClientPacket.MakeClientPacket(PACKET_ID.RES_PUT_STONE, res);
+                var resData = ClientPacket.MakeClientPacket(PacketId.ResPutStone, res);
                 _sendFunc(curUser.SessionId, resData);
 
                 var ntfPac = new NtfPutStonePacket();
@@ -215,7 +215,7 @@ namespace OmokGameServer
                 ntfPac.PosX = posX;
                 ntfPac.PosY = posY;
                 var ntf = MemoryPackSerializer.Serialize(ntfPac);
-                var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_PUT_STONE, ntf);
+                var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfPutStone, ntf);
                 BroadCast(roomNumber, curUser.SessionId, ntfData);
             }
             // 돌을 놓아서 게임 승리 시
@@ -227,7 +227,7 @@ namespace OmokGameServer
                 winPac.PosY = posY;
                 winPac.Id = curUser.UserId;
                 var win = MemoryPackSerializer.Serialize(winPac);
-                var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_WIN_GAME, win);
+                var winData = ClientPacket.MakeClientPacket(PacketId.NtfWinGame, win);
                 BroadCast(roomNumber, null, winData);
 
                 curRoom.EndGame(_reqToGameDB, curRoom.CurrentPlayerIndex);
@@ -246,7 +246,7 @@ namespace OmokGameServer
                 {
                     var draw = new NtfDrawPacket();
                     var ntf = MemoryPackSerializer.Serialize(draw);
-                    var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_DRAW, ntf);
+                    var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfDraw, ntf);
                     BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
                     continue;
                 }
@@ -270,7 +270,7 @@ namespace OmokGameServer
                             _roomList[i].EndGame(_reqToGameDB, 0);
                         }
                         var win = MemoryPackSerializer.Serialize(winPac);
-                        var winData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT_WIN, win);
+                        var winData = ClientPacket.MakeClientPacket(PacketId.NtfTimeOutWin, win);
                         BroadCast(_roomList[i].GetRoomNumber(), null, winData);
                     }
                     else
@@ -278,7 +278,7 @@ namespace OmokGameServer
                         var timeOut = new NtfTimeOutPacket();
                         timeOut.Stone = (int)users[_roomList[i].CurrentPlayerIndex].Stone;
                         var ntf = MemoryPackSerializer.Serialize(timeOut);
-                        var ntfData = ClientPacket.MakeClientPacket(PACKET_ID.NTF_TIME_OUT, ntf);
+                        var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfTimeOut, ntf);
                         BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
                     }
                 }

@@ -24,7 +24,7 @@ namespace OmokGameServer
 
         public void RegistPacketHandler(Dictionary<short, Action<RedisConnection, DBRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_AUTHTOKEN, CheckAuthToken);
+            packetHandlers.Add((short)PacketId.ReqCheckAuthToken, CheckAuthToken);
         }
 
         public void CheckAuthToken(RedisConnection redisConnection, DBRequestInfo req)
@@ -37,7 +37,7 @@ namespace OmokGameServer
             res.UserId = checkToken.UserId;
             res.AuthToken = checkToken.AuthToken;
 
-            if (result != ERROR_CODE.NONE)
+            if (result != ErrorCode.None)
             {
                 _logger.Error($"{checkToken.UserId} : 인증 토큰 검사 에러");
                 res.Result = false;
@@ -48,7 +48,7 @@ namespace OmokGameServer
             }
 
             var resData = MemoryPackSerializer.Serialize(res);
-            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_CHECK_AUTHTOKEN, resData);
+            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PacketId.ResCheckAuthToken, resData);
             _sendToPP(reqInfo);
         }
     }

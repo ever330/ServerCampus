@@ -66,11 +66,11 @@ namespace OmokGameServer
             }
         }
 
-        public ERROR_CODE EnterRoom(User user)
+        public ErrorCode EnterRoom(User user)
         {
             if (_userList.Count >= _roomUserMaxCount)
             {
-                return ERROR_CODE.ROOM_USER_MAX;
+                return ErrorCode.RoomUserMax;
             }
 
             user.EnterRoom(_roomNumber);
@@ -84,10 +84,10 @@ namespace OmokGameServer
 
             _userList.Add(newUser);
 
-            return ERROR_CODE.NONE;
+            return ErrorCode.None;
         }
 
-        public ERROR_CODE LeaveRoom(string userId)
+        public ErrorCode LeaveRoom(string userId)
         {
             var user = _userList.Find(x => x.UserId == userId);
 
@@ -100,10 +100,10 @@ namespace OmokGameServer
                     RoomState = ROOM_STATE.NONE;
                 }
 
-                return ERROR_CODE.NONE;
+                return ErrorCode.None;
             }
 
-            return ERROR_CODE.ROOM_LEAVE_ERROR;
+            return ErrorCode.RoomLeaveError;
         }
 
         public List<RoomUser> GetUserList()
@@ -153,18 +153,18 @@ namespace OmokGameServer
                 winUser.UserId = _userList[0].UserId;
                 loseUser.UserId = _userList[1].UserId;
 
-                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(winUser)));
+                reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(winUser)));
 
-                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(loseUser)));
+                reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(loseUser)));
             }
             else
             {
                 winUser.UserId = _userList[1].UserId;
                 loseUser.UserId = _userList[0].UserId;
 
-                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(winUser)));
+                reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(winUser)));
 
-                reqToGameDB(DBRequest.MakeRequest((short)PACKET_ID.REQ_UPDATE_RESULT, MemoryPackSerializer.Serialize(loseUser)));
+                reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(loseUser)));
             }
             _userList[0].TimeOutCount = 0;
             _userList[1].TimeOutCount = 0;

@@ -36,6 +36,10 @@ namespace HiveServer.Controllers
             {
                 _logger.ZLogError($"{0} : 토큰 검증 에러 발생", request.Email);
             }
+            else
+            {
+                _logger.ZLogInformation($"토큰 검증 성공 : {request.Email}");
+            }
 
             return res;
         }

@@ -80,7 +80,7 @@ namespace Omok
             _clientNetwork = new ClientNetwork();
             _clientNetwork.Connect(ip, port);
 
-            _packetBufferManager = new PacketBufferManager(PacketDefine.PACKET_BUFFER_SIZE, PacketDefine.PACKET_HEADER);
+            _packetBufferManager = new PacketBufferManager(PacketDefine.PacketBufferSize, PacketDefine.PacketHeader);
 
             _isNetworkRunning = true;
 
@@ -164,6 +164,7 @@ namespace Omok
             if (!response.IsSuccessStatusCode)
             {
                 MessageBox.Show("출석체크 오류가 발생하였습니다. 상태 코드 : " + response.StatusCode);
+                return;
             }
 
             var res = await response.Content.ReadFromJsonAsync<ResDailyAttendance>();
@@ -236,7 +237,7 @@ namespace Omok
 
             var reqData = MemoryPackSerializer.Serialize(req);
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_LOGIN, reqData));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqLogin, reqData));
         }
 
         void SendProcess()
@@ -287,7 +288,7 @@ namespace Omok
                     var packet = new ClientPacket();
                     packet.PacketSize = FastBinaryRead.Int16(pac, 0);
                     packet.PacketId = FastBinaryRead.Int16(pac, 2);
-                    packet.Body = FastBinaryRead.Bytes(pac, PacketDefine.PACKET_HEADER, packet.PacketSize - PacketDefine.PACKET_HEADER);
+                    packet.Body = FastBinaryRead.Bytes(pac, PacketDefine.PacketHeader, packet.PacketSize - PacketDefine.PacketHeader);
 
                     lock (((System.Collections.ICollection)_recvQueue).SyncRoot)
                     {
@@ -332,16 +333,16 @@ namespace Omok
 
         void PacketAnalysis(ClientPacket packet)
         {
-            switch ((PACKET_ID)packet.PacketId)
+            switch ((PacketId)packet.PacketId)
             {
-                case PACKET_ID.RES_LOGIN:
+                case PacketId.ResLogin:
                     {
                         var loginPacket = MemoryPackSerializer.Deserialize<ResLoginPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue($"로그인 결과 : {loginPacket.Result}");
                     }
                     break;
 
-                case PACKET_ID.RES_ENTER_ROOM:
+                case PacketId.ResEnterRoom:
                     {
                         var enterRoomPacket = MemoryPackSerializer.Deserialize<ResEnterRoomPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {enterRoomPacket.RoomNumber}");
@@ -353,7 +354,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.RES_LEAVE_ROOM:
+                case PacketId.ResLeaveRoom:
                     {
                         var leaveRoomPacket = MemoryPackSerializer.Deserialize<ResLeaveRoomPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue("방 퇴장");
@@ -365,7 +366,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_NEW_USER:
+                case PacketId.NtfNewUser:
                     {
                         var leaveRoomPacket = MemoryPackSerializer.Deserialize<NtfNewUserPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue("새 유저 입장");
@@ -374,7 +375,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.RES_READY:
+                case PacketId.ResReady:
                     {
                         var resReadyPac = MemoryPackSerializer.Deserialize<ResReadyPacket>(packet.Body);
                         if (resReadyPac.Result)
@@ -386,7 +387,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.RES_NOT_READY:
+                case PacketId.ResNotReady:
                     {
                         var resReadyPac = MemoryPackSerializer.Deserialize<ResNotReadyPacket>(packet.Body);
                         if (resReadyPac.Result)
@@ -398,7 +399,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_READY_STATE:
+                case PacketId.NtfReadyState:
                     {
                         var readyStatePacket = MemoryPackSerializer.Deserialize<NtfReadyStatePacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue("상대방 상태 변경");
@@ -413,7 +414,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_ROOM_CHAT:
+                case PacketId.NtfRoomChat:
                     {
                         var chatPacket = MemoryPackSerializer.Deserialize<NtfChatPacket>(packet.Body);
                         chatRTB.AppendText($"{chatPacket.Id} : {chatPacket.Chat}\n");
@@ -422,7 +423,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_GAME_START:
+                case PacketId.NtfGameStart:
                     {
                         var startPacket = MemoryPackSerializer.Deserialize<NtfGameStartPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue("게임 시작");
@@ -449,7 +450,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.RES_PUT_STONE:
+                case PacketId.ResPutStone:
                     {
                         var putPacket = MemoryPackSerializer.Deserialize<ResPutStonePacket>(packet.Body);
                         if (putPacket.Result)
@@ -469,7 +470,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_PUT_STONE:
+                case PacketId.NtfPutStone:
                     {
                         _limitTime = StartTimeLimit;
                         turnLabel.Text = "내차례";
@@ -479,7 +480,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_WIN_GAME:
+                case PacketId.NtfWinGame:
                     {
                         var winPacket = MemoryPackSerializer.Deserialize<NtfWinPacket>(packet.Body);
                         SelectClear(_selectedX, _selectedY);
@@ -498,14 +499,14 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.RES_HEART_BEAT:
+                case PacketId.ResHeartBeat:
                     {
                         var reqHeartBeat = MemoryPackSerializer.Deserialize<ResHeartBeatPacket>(packet.Body);
                         _serverHeartBeatTime = DateTime.Now;
                     }
                     break;
 
-                case PACKET_ID.NTF_TIME_OUT:
+                case PacketId.NtfTimeOut:
                     {
                         var res = MemoryPackSerializer.Deserialize<NtfTimeOutPacket>(packet.Body);
                         if ((STONE)res.Stone != _myStone)
@@ -528,7 +529,7 @@ namespace Omok
                     }
                     break;
 
-                case PACKET_ID.NTF_TIME_OUT_WIN:
+                case PacketId.NtfTimeOutWin:
                     {
                         var res = MemoryPackSerializer.Deserialize<NtfTimeOutWinPacket>(packet.Body);
                         MessageBox.Show($"시간 초과 누적으로 게임 종료!\n승자 : {res.Id}");
@@ -572,17 +573,17 @@ namespace Omok
             var req = new ReqEnterRoomPacket();
             var body = MemoryPackSerializer.Serialize(req);
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_ENTER_ROOM, body));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
         }
 
-        byte[] MakeSendData(PACKET_ID packetId, byte[] body)
+        byte[] MakeSendData(PacketId packetId, byte[] body)
         {
-            var packetSize = (short)(PacketDefine.PACKET_HEADER + body.Length);
+            var packetSize = (short)(PacketDefine.PacketHeader + body.Length);
 
             var sendData = new byte[packetSize];
             FastBinaryWrite.Int16(sendData, 0, packetSize);
             FastBinaryWrite.Int16(sendData, 2, (short)packetId);
-            Array.Copy(body, 0, sendData, PacketDefine.PACKET_HEADER, body.Length);
+            Array.Copy(body, 0, sendData, PacketDefine.PacketHeader, body.Length);
 
             return sendData;
         }
@@ -608,7 +609,7 @@ namespace Omok
             req.Chat = chatTextBox.Text;
             chatTextBox.Clear();
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_ROOM_CHAT, MemoryPackSerializer.Serialize(req)));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqRoomChat, MemoryPackSerializer.Serialize(req)));
         }
 
         private void InitializeBoard()
@@ -806,7 +807,7 @@ namespace Omok
 
             var body = MemoryPackSerializer.Serialize(req);
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_LEAVE_ROOM, body));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqLeaveRoom, body));
         }
 
         private void putBtn_Click(object sender, EventArgs e)
@@ -824,7 +825,7 @@ namespace Omok
 
             var body = MemoryPackSerializer.Serialize(req);
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_PUT_STONE, body));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqPutStone, body));
             putBtn.Enabled = false;
         }
 
@@ -837,7 +838,7 @@ namespace Omok
 
                 var body = MemoryPackSerializer.Serialize(req);
 
-                _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_READY, body));
+                _sendQueue.Enqueue(MakeSendData(PacketId.ReqReady, body));
             }
             else if (_state == USER_STATE.READY)
             {
@@ -846,7 +847,7 @@ namespace Omok
 
                 var body = MemoryPackSerializer.Serialize(req);
 
-                _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_NOT_READY, body));
+                _sendQueue.Enqueue(MakeSendData(PacketId.ReqNotReady, body));
             }
         }
 
@@ -867,7 +868,7 @@ namespace Omok
             var req = new ReqHeartBeatPacket();
             var body = MemoryPackSerializer.Serialize(req);
 
-            _sendQueue.Enqueue(MakeSendData(PACKET_ID.REQ_HEART_BEAT, body));
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqHeartBeat, body));
         }
     }
 }

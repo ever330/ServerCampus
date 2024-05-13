@@ -24,8 +24,8 @@ namespace OmokGameServer
 
         public void RegistPacketHandler(Dictionary<short, Action<QueryFactory, DBRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_UPDATE_RESULT, UpdateGameResult);
-            packetHandlers.Add((short)PACKET_ID.REQ_USER_DATA, GetUserData);
+            packetHandlers.Add((short)PacketId.ReqUpdateResult, UpdateGameResult);
+            packetHandlers.Add((short)PacketId.ReqUserData, GetUserData);
         }
 
         public void UpdateGameResult(QueryFactory queryFactory, DBRequestInfo req)
@@ -34,7 +34,7 @@ namespace OmokGameServer
 
             var updateResult = _gameDB.UpdateGameResult(queryFactory, gameResult.UserId, gameResult.WinCount, gameResult.LoseCount);
 
-            if (updateResult != ERROR_CODE.NONE)
+            if (updateResult != ErrorCode.None)
             {
                 _logger.Error($"{gameResult.UserId} 게임 결과 업데이트 에러 : {updateResult}");
             }
@@ -47,7 +47,7 @@ namespace OmokGameServer
 
             var res = new ResUserData();
             res.UserId = get.UserId;
-            if (userData.Item1 != ERROR_CODE.NONE || userData.Item2 == null)
+            if (userData.Item1 != ErrorCode.None || userData.Item2 == null)
             {
                 res.Result = false;
             }
@@ -59,7 +59,7 @@ namespace OmokGameServer
             }
 
             var resData = MemoryPackSerializer.Serialize(res);
-            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PACKET_ID.RES_USER_DATA, resData);
+            var reqInfo = new OmokBinaryRequestInfo((short)(resData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PacketId.ResUserData, resData);
             _sendToPP(reqInfo);
         }
     }

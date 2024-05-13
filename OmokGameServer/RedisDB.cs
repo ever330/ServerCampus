@@ -14,7 +14,7 @@ namespace OmokGameServer
     {
         RedisString<RedisUserInfo> _redis;
 
-        public ERROR_CODE SetAuthToken(RedisConnection redisConnection, string id, string authToken)
+        public ErrorCode SetAuthToken(RedisConnection redisConnection, string id, string authToken)
         {
             try
             {
@@ -28,15 +28,15 @@ namespace OmokGameServer
                 _redis = new RedisString<RedisUserInfo>(redisConnection, "UID" + id, defaultExpiry);
                 _redis.SetAsync(newUser).Wait();
 
-                return ERROR_CODE.NONE;
+                return ErrorCode.None;
             }
             catch
             {
-                return ERROR_CODE.CHECK_TOKEN_ERROR;
+                return ErrorCode.CheckTokenError;
             }
         }
 
-        public ERROR_CODE CheckAuthToken(RedisConnection redisConnection, string id, string authToken, ILog logger)
+        public ErrorCode CheckAuthToken(RedisConnection redisConnection, string id, string authToken, ILog logger)
         {
             try
             {
@@ -47,16 +47,16 @@ namespace OmokGameServer
                 logger.Info($"기존 토큰 {result.Result.Value.AuthToken}, 비교 토큰 {authToken}");
                 if (authToken == result.Result.Value.AuthToken)
                 {
-                    return ERROR_CODE.NONE;
+                    return ErrorCode.None;
                 }
                 else
                 {
-                    return ERROR_CODE.CHECK_TOKEN_ERROR;
+                    return ErrorCode.CheckTokenError;
                 }
             }
             catch
             {
-                return ERROR_CODE.CHECK_TOKEN_ERROR;
+                return ErrorCode.CheckTokenError;
             }
         }
     }

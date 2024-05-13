@@ -65,6 +65,12 @@ namespace OmokGameServer
             {
                 try
                 {
+                    if (!connection.GetConnection().IsConnected)
+                    {
+                        connection = new RedisConnection(conf);
+                        _mainLogger.Info("RedisConnection 연결 종료로 인한 재생성");
+                    }
+
                     var packet = _packetBuffer.Receive();
 
                     if (_handlerDict.ContainsKey(packet.PacketId))

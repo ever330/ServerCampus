@@ -12,8 +12,8 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.SESSION_CONNECT, NtfSessionConnected);
-            packetHandlers.Add((short)PACKET_ID.SESSION_DISCONNECT, NtfSessionDisconnected);
+            packetHandlers.Add((short)PacketId.SessionConnect, NtfSessionConnected);
+            packetHandlers.Add((short)PacketId.SessionDisconnect, NtfSessionDisconnected);
         }
 
         public void NtfSessionConnected(OmokBinaryRequestInfo packet)
@@ -31,7 +31,7 @@ namespace OmokGameServer
             {
                 var result =  _userManager.RemoveUser(packet.SessionId);
 
-                if (result != ERROR_CODE.NONE)
+                if (result != ErrorCode.None)
                 {
                     _logger.Error($"{packet.SessionId} 접속 종료 에러");
                 }

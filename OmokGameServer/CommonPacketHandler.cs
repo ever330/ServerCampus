@@ -13,12 +13,12 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PACKET_ID.REQ_LOGIN, ReqUserLogin);
-            packetHandlers.Add((short)PACKET_ID.RES_CHECK_AUTHTOKEN, ResCheckToken);
-            packetHandlers.Add((short)PACKET_ID.RES_USER_DATA, ResUserData);
-            packetHandlers.Add((short)PACKET_ID.REQ_HEART_BEAT, ReqHeartBeat);
-            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_HEART_BEAT, ReqCheckHeartBeat);
-            packetHandlers.Add((short)PACKET_ID.REQ_CHECK_SESSION, ReqCheckSession);
+            packetHandlers.Add((short)PacketId.ReqLogin, ReqUserLogin);
+            packetHandlers.Add((short)PacketId.ResCheckAuthToken, ResCheckToken);
+            packetHandlers.Add((short)PacketId.ResUserData, ResUserData);
+            packetHandlers.Add((short)PacketId.ReqHeartBeat, ReqHeartBeat);
+            packetHandlers.Add((short)PacketId.ReqCheckHeartBeat, ReqCheckHeartBeat);
+            packetHandlers.Add((short)PacketId.ReqCheckSession, ReqCheckSession);
         }
 
         public void ReqUserLogin(OmokBinaryRequestInfo packet)
@@ -41,7 +41,7 @@ namespace OmokGameServer
                 var res = new ResLoginPacket();
                 res.Result = resSet.Result;
                 var resData = MemoryPackSerializer.Serialize(res);
-                var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
+                var sendData = ClientPacket.MakeClientPacket(PacketId.ResLogin, resData);
                 _sendFunc(user.SessionId, sendData);
             }
         }
@@ -57,7 +57,7 @@ namespace OmokGameServer
                 var res = new ResLoginPacket();
                 res.Result = resUser.Result; 
                 var resData = MemoryPackSerializer.Serialize(res);
-                var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_LOGIN, resData);
+                var sendData = ClientPacket.MakeClientPacket(PacketId.ResLogin, resData);
                 _sendFunc(user.SessionId, sendData);
                 return;
             }
@@ -77,7 +77,7 @@ namespace OmokGameServer
 
             var res = new ResHeartBeatPacket();
             var resData = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PACKET_ID.RES_HEART_BEAT, resData);
+            var sendData = ClientPacket.MakeClientPacket(PacketId.ResHeartBeat, resData);
             _sendFunc(packet.SessionId, sendData);
         }
 
