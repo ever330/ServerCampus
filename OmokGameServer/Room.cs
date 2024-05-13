@@ -156,7 +156,12 @@ namespace OmokGameServer
             if (winPlayerIndex == 0)
             {
                 winUser.UserId = _userList[0].UserId;
+                winUser.WinCount = _userList[0].WinCount + 1;
+                winUser.LoseCount = _userList[0].LoseCount;
+
                 loseUser.UserId = _userList[1].UserId;
+                loseUser.WinCount = _userList[1].WinCount;
+                loseUser.LoseCount = _userList[1].LoseCount + 1;
 
                 reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(winUser)));
 
@@ -165,7 +170,12 @@ namespace OmokGameServer
             else
             {
                 winUser.UserId = _userList[1].UserId;
+                winUser.WinCount = _userList[1].WinCount + 1;
+                winUser.LoseCount = _userList[1].LoseCount;
+
                 loseUser.UserId = _userList[0].UserId;
+                loseUser.WinCount = _userList[0].WinCount;
+                loseUser.LoseCount = _userList[0].LoseCount + 1;
 
                 reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(winUser)));
 
