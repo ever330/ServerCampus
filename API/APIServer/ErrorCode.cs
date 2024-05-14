@@ -1,6 +1,6 @@
 ﻿namespace APIServer
 {
-    public enum ERROR_CODE
+    public enum ErrorCode
     {
         None = 0,
 
