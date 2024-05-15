@@ -1,4 +1,4 @@
-﻿namespace MatchServer.Models
+﻿namespace Omok.Models
 {
     public class ResCheckMatching
     {

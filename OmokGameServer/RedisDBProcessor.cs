@@ -58,7 +58,7 @@ namespace OmokGameServer
 
         void Process()
         {
-            var conf = new RedisConfig("HiveUsers", _redisDBConnectionString);
+            var conf = new RedisConfig("OmokUser", _redisDBConnectionString);
             var connection = new RedisConnection(conf);
 
             while (_isThreadRunning)

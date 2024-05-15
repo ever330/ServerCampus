@@ -1,4 +1,4 @@
-﻿namespace MatchServer.Models
+﻿namespace APIServer.Models
 {
     public class ResCheckMatching
     {

@@ -12,28 +12,29 @@ namespace OmokGameServer
     {
         public void RegistPacketHandler(Dictionary<short, Action<OmokBinaryRequestInfo>> packetHandlers)
         {
-            packetHandlers.Add((short)PacketId.ReqEnterRoom, ReqEnterRoom);
+            //packetHandlers.Add((short)PacketId.ReqEnterRoom, ReqEnterRoom);
             packetHandlers.Add((short)PacketId.ReqLeaveRoom, ReqLeaveRoom);
             packetHandlers.Add((short)PacketId.ReqRoomChat, ReqChat);
             packetHandlers.Add((short)PacketId.ReqReady, ReqReady);
             packetHandlers.Add((short)PacketId.ReqNotReady, ReqNotReady);
             packetHandlers.Add((short)PacketId.ReqPutStone, ReqPutStone);
             packetHandlers.Add((short)PacketId.ReqCheckRoom, ReqCheckRoom);
+            packetHandlers.Add((short)PacketId.ReqMatchUsersEnter, ReqMatchUsersEnter);
         }
 
-        public void ReqEnterRoom(OmokBinaryRequestInfo packet)
-        {
-            _logger.Info($"{packet.SessionId} 방 입장 시도");
+        //public void ReqEnterRoom(OmokBinaryRequestInfo packet)
+        //{
+        //    _logger.Info($"{packet.SessionId} 방 입장 시도");
 
-            var req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
+        //    var req = MemoryPackSerializer.Deserialize<ReqEnterRoomPacket>(packet.Body);
 
-            var result = _roomManager.EnterRoom(_userManager.GetUserBySessionId(packet.SessionId));
+        //    var result = _roomManager.EnterRoom(_userManager.GetUserBySessionId(packet.SessionId));
 
-            if (!result)
-            {
-                _logger.Error($"{packet.SessionId} 방 입장 실패");
-            }
-        }
+        //    if (!result)
+        //    {
+        //        _logger.Error($"{packet.SessionId} 방 입장 실패");
+        //    }
+        //}
 
         public void ReqLeaveRoom(OmokBinaryRequestInfo packet)
         {
@@ -94,6 +95,21 @@ namespace OmokGameServer
             var req = MemoryPackSerializer.Deserialize<ReqCheckRoomPacket>(packet.Body);
 
             _roomManager.CheckRoomState(req.CurrentIndex);
+        }
+
+        public void ReqMatchUsersEnter(OmokBinaryRequestInfo packet)
+        {
+            var req = MemoryPackSerializer.Deserialize<ReqMatchUsersEnterPacket>(packet.Body);
+
+            var userA = _userManager.GetUserByUserId(req.UserA);
+            var userB = _userManager.GetUserByUserId(req.UserB);
+
+            var result = _roomManager.MatchUsers(userA, userB, req.RoomNumber);
+
+            if (result != ErrorCode.None)
+            {
+                _logger.Error($"유저 방 매칭 실패");
+            }
         }
     }
 }

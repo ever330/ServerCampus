@@ -81,5 +81,6 @@ namespace OmokGameServer
         ReqCheckHeartBeat = 3000,
         ReqCheckRoom = 3001,
         ReqCheckSession = 3002,
+        ReqMatchUsersEnter = 3003,
     }
 }

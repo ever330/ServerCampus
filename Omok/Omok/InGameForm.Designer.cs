@@ -40,7 +40,7 @@
             winLoseLabel = new Label();
             mailboxBtn = new Button();
             netMessageRTB = new RichTextBox();
-            enterRoomBtn = new Button();
+            reqMatcingBtn = new Button();
             roomNumberLabel = new Label();
             roomNumberText = new Label();
             backGroundTimer = new System.Windows.Forms.Timer(components);
@@ -60,6 +60,7 @@
             limitTimer = new System.Windows.Forms.Timer(components);
             turnLabel = new Label();
             heartBeatTimer = new System.Windows.Forms.Timer(components);
+            checkMatchingTimer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // idTextLabel
@@ -165,15 +166,15 @@
             netMessageRTB.TabIndex = 13;
             netMessageRTB.Text = "";
             // 
-            // enterRoomBtn
+            // reqMatcingBtn
             // 
-            enterRoomBtn.Location = new Point(12, 40);
-            enterRoomBtn.Name = "enterRoomBtn";
-            enterRoomBtn.Size = new Size(75, 23);
-            enterRoomBtn.TabIndex = 14;
-            enterRoomBtn.Text = "방 입장";
-            enterRoomBtn.UseVisualStyleBackColor = true;
-            enterRoomBtn.Click += enterRoomBtn_Click;
+            reqMatcingBtn.Location = new Point(12, 40);
+            reqMatcingBtn.Name = "reqMatcingBtn";
+            reqMatcingBtn.Size = new Size(75, 23);
+            reqMatcingBtn.TabIndex = 14;
+            reqMatcingBtn.Text = "매칭 요청";
+            reqMatcingBtn.UseVisualStyleBackColor = true;
+            reqMatcingBtn.Click += reqMatchingBtn_Click;
             // 
             // roomNumberLabel
             // 
@@ -355,7 +356,7 @@
             Controls.Add(chatTextBox);
             Controls.Add(roomNumberText);
             Controls.Add(roomNumberLabel);
-            Controls.Add(enterRoomBtn);
+            Controls.Add(reqMatcingBtn);
             Controls.Add(netMessageRTB);
             Controls.Add(mailboxBtn);
             Controls.Add(winLoseLabel);
@@ -388,7 +389,7 @@
         private Label winLoseLabel;
         private Button mailboxBtn;
         private RichTextBox netMessageRTB;
-        private Button enterRoomBtn;
+        private Button reqMatcingBtn;
         private Label roomNumberLabel;
         private Label roomNumberText;
         private System.Windows.Forms.Timer backGroundTimer;
@@ -408,5 +409,6 @@
         private System.Windows.Forms.Timer limitTimer;
         private Label turnLabel;
         private System.Windows.Forms.Timer heartBeatTimer;
+        private System.Windows.Forms.Timer checkMatchingTimer;
     }
 }

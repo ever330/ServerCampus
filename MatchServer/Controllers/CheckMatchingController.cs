@@ -30,7 +30,9 @@ namespace MatchServer.Controllers
             {
                 res.MatchResult = ErrorCode.None;
                 res.ServerAddress = comp.ServerAddress;
+                res.Port = comp.Port;
                 res.RoomNumber = comp.RoomNumber;
+                res.OtherUserId = comp.OtherUserId;
             }
 
             return res;

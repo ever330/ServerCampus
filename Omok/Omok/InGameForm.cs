@@ -68,6 +68,8 @@ namespace Omok
         DateTime _serverHeartBeatTime;
         const int ServerHeartBeatTimeLimit = 5;
 
+        bool _isMatching = false;
+
         public InGameForm()
         {
             InitializeComponent();
@@ -75,15 +77,8 @@ namespace Omok
             _mailBoxForm = new MailBoxForm();
         }
 
-        public void Init(string id, string authToken, string ip, int port)
+        public void Init(string id, string authToken)
         {
-            _clientNetwork = new ClientNetwork();
-            _clientNetwork.Connect(ip, port);
-
-            _packetBufferManager = new PacketBufferManager(PacketDefine.PacketBufferSize, PacketDefine.PacketHeader);
-
-            _isNetworkRunning = true;
-
             _userInfo = new UserInfo
             {
                 Email = id,
@@ -96,9 +91,22 @@ namespace Omok
                 Money = 0
             };
 
-            TryLoginToOmokServer();
-
             SetUserInfo(_userInfo);
+
+            checkMatchingTimer.Tick += new EventHandler(CheckMatching);
+            checkMatchingTimer.Interval = 1000;
+        }
+
+        void Connect(string ip, int port)
+        {
+            _clientNetwork = new ClientNetwork();
+            _clientNetwork.Connect(ip, port);
+
+            _packetBufferManager = new PacketBufferManager(PacketDefine.PacketBufferSize, PacketDefine.PacketHeader);
+
+            _isNetworkRunning = true;
+
+            TryLoginToOmokServer();
 
             _recvThread = new Thread(ReceiveProcess);
             _recvThread.Start();
@@ -562,7 +570,7 @@ namespace Omok
             limitTimeLabel.Text = _limitTime.ToString();
         }
 
-        private void enterRoomBtn_Click(object sender, EventArgs e)
+        private async void reqMatchingBtn_Click(object sender, EventArgs e)
         {
             if (_roomNumber != -1)
             {
@@ -570,10 +578,39 @@ namespace Omok
                 return;
             }
 
-            var req = new ReqEnterRoomPacket();
-            var body = MemoryPackSerializer.Serialize(req);
+            if (_isMatching)
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("매칭이 진행중 입니다.");
+                return;
+            }
 
-            _sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
+            var request = new ReqMatching();
+            request.Id = _userInfo.Id;
+
+            var client = new HttpClient();
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/RequestMatching/matching", request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                MessageBox.Show("매칭 요청 실패. 상태 코드 : " + response.StatusCode);
+                return;
+            }
+
+            var res = await response.Content.ReadFromJsonAsync<ResMatching>();
+
+            if (res.Result != ErrorCode.None)
+            {
+                MessageBox.Show("매칭 요청 실패.");
+                return;
+            }
+
+            _isMatching = true;
+            checkMatchingTimer.Start();
+
+            //var req = new ReqEnterRoomPacket();
+            //var body = MemoryPackSerializer.Serialize(req);
+
+            //_sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
         }
 
         byte[] MakeSendData(PacketId packetId, byte[] body)
@@ -869,6 +906,45 @@ namespace Omok
             var body = MemoryPackSerializer.Serialize(req);
 
             _sendQueue.Enqueue(MakeSendData(PacketId.ReqHeartBeat, body));
+        }
+
+        void CheckMatching(object sender, EventArgs e)
+        {
+            if (!_isMatching)
+            {
+                return;
+            }
+
+            var request = new ReqCheckMatching();
+            request.Id = _userInfo.Id;
+
+            var client = new HttpClient();
+            var response = client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
+
+            if (!response.Result.IsSuccessStatusCode)
+            {
+                MessageBox.Show("매칭 검사 실패. 상태 코드 : " + response.Result.StatusCode);
+                return;
+            }
+
+            var res = response.Result.Content.ReadFromJsonAsync<ResCheckMatching>();
+
+            if (res.Result.MatchResult != ErrorCode.None)
+            {
+                MessageBox.Show("매칭 검사 실패.");
+                return;
+            }
+
+            _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {res.Result.RoomNumber}");
+            roomNumberText.Text = res.Result.RoomNumber.ToString();
+            _roomNumber = res.Result.RoomNumber;
+            otherUserTextLabel.Text = res.Result.OtherUserId;
+            _otherUserId = res.Result.OtherUserId;
+            InitializeBoard();
+            Connect(res.Result.ServerAddress, res.Result.Port);
+
+            _isMatching = false;
+            checkMatchingTimer.Stop();
         }
     }
 }

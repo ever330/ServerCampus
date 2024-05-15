@@ -27,6 +27,8 @@ namespace OmokGameServer
         GameDBProcessor _gameDBProcessor;
         RedisDBProcessor _redisDBProcessor;
 
+        MatchWorker _matchWorker;
+
         UserManager _userManager;
         RoomManager _roomManager;
         GameDB _gameDB;
@@ -167,6 +169,9 @@ namespace OmokGameServer
             _redisDBProcessor.Init(_mainLogger, _redisDB, SendData, Distribute, _serverOption.RedisDBMaxThreadCount, _serverOption.RedisDB);
             _redisDBProcessor.RegistHandlers();
 
+            _matchWorker = new MatchWorker();
+            _matchWorker.Init(_mainLogger, Distribute, _roomManager.GetEmptyRoomIndex, _serverOption.RedisDB, _serverOption.ReqListKey, _serverOption.ResListKey, _serverOption.Port);
+
             _heartBeatTimer = new Timer(CheckHeartBeat, null, 0, HeartBeatInterval);
             _checkRoomTimer = new Timer(CheckRoom, null, 0, CheckRoomInterval);
             _checkSessionTimer = new Timer(CheckSession, null, 0, CheckSessionInterval);
@@ -205,6 +210,9 @@ namespace OmokGameServer
         public void StopServer()
         {
             _packetProcessor.Destroy();
+            _gameDBProcessor.Destroy();
+            _redisDBProcessor.Destroy();
+            _matchWorker.Destroy();
             Stop();
         }
 

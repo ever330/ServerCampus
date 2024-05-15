@@ -1,5 +1,6 @@
 ﻿using MemoryPack;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,7 +13,7 @@ namespace OmokGameServer
     public class RoomManager
     {
         List<Room> _roomList = new List<Room>();
-        Queue<int> _roomIndexQueue = new Queue<int>();
+        ConcurrentQueue<int> _emptyRoomQueue = new ConcurrentQueue<int>();
 
         Func<string, byte[], bool> _sendFunc;
         Action<DBRequestInfo> _reqToGameDB;
@@ -31,55 +32,95 @@ namespace OmokGameServer
             {
                 var room = new Room(i, roomUserMax);
                 _roomList.Add(room);
-                _roomIndexQueue.Enqueue(i);
+                _emptyRoomQueue.Enqueue(i);
             }
             _sendFunc = sendFunc;
             _reqToGameDB = reqToGameDB;
         }
 
-        public bool EnterRoom(User user)
+        public int GetEmptyRoomIndex()
         {
-            var res = new ResEnterRoomPacket();
-            if (_roomIndexQueue.Count == 0)
+            int index = -1;
+            if (!_emptyRoomQueue.IsEmpty)
             {
-                res.RoomNumber = -1;
+                _emptyRoomQueue.TryDequeue(out index);
             }
-            else
-            {
-                int roomNumber = _roomIndexQueue.Peek();
-                var enterRes = ErrorCode.None;
-                var users = _roomList[roomNumber].GetUserList();
-                if (users.Count >= _roomUserMax)
-                {
-                    _roomIndexQueue.Dequeue();
-                    roomNumber = _roomIndexQueue.Peek();
-                    enterRes = _roomList[roomNumber].EnterRoom(user);
-                    res.RoomNumber = roomNumber;
-                }
-                else
-                {
-                    enterRes = _roomList[roomNumber].EnterRoom(user);
-                    res.RoomNumber = roomNumber;
-                }
-
-                for (int i = 0; i < users.Count; i++)
-                {
-                    if (user.UserId != users[i].UserId)
-                    {
-                        res.OtherUserId = users[i].UserId;
-                    }
-                }
-
-                var ntfPacket = new NtfNewUserPacket();
-                ntfPacket.Id = user.UserId;
-                var ntf = MemoryPackSerializer.Serialize(ntfPacket);
-                var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfNewUser, ntf);
-                BroadCast(roomNumber, user.SessionId, ntfData);
-            }
-            var data = MemoryPackSerializer.Serialize(res);
-            var sendData = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, data);
-            return _sendFunc(user.SessionId, sendData);
+            return index;
         }
+
+        public ErrorCode MatchUsers(User userA, User userB, int roomNumber)
+        {
+            var enterResA = _roomList[roomNumber].EnterRoom(userA);
+            var enterResB = _roomList[roomNumber].EnterRoom(userB);
+
+            if (enterResA != ErrorCode.None || enterResB != ErrorCode.None)
+            {
+                return ErrorCode.RoomUserMax;
+            }
+
+            return ErrorCode.None;
+
+            //var resA = new ResEnterRoomPacket();
+            //resA.RoomNumber = roomNumber;
+            //resA.OtherUserId = userB.UserId;
+
+            //var dataA = MemoryPackSerializer.Serialize(resA);
+            //var sendDataA = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, dataA);
+            //_sendFunc(userA.SessionId, sendDataA);
+
+            //var resB = new ResEnterRoomPacket();
+            //resB.RoomNumber = roomNumber;
+            //resB.OtherUserId = userA.UserId;
+
+            //var dataB = MemoryPackSerializer.Serialize(resB);
+            //var sendDataB = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, dataB);
+            //_sendFunc(userB.SessionId, sendDataB);
+        }
+
+        //public bool EnterRoom(User user)
+        //{
+        //    var res = new ResEnterRoomPacket();
+        //    if (_emptyRoomQueue.Count == 0)
+        //    {
+        //        res.RoomNumber = -1;
+        //    }
+        //    else
+        //    {
+        //        int roomNumber = 0;
+        //        // int roomNumber = _emptyRoomQueue.Peek();
+        //        var enterRes = ErrorCode.None;
+        //        var users = _roomList[roomNumber].GetUserList();
+        //        if (users.Count >= _roomUserMax)
+        //        {
+        //            //_emptyRoomQueue.Dequeue();
+        //            //roomNumber = _emptyRoomQueue.Peek();
+        //            enterRes = _roomList[roomNumber].EnterRoom(user);
+        //            res.RoomNumber = roomNumber;
+        //        }
+        //        else
+        //        {
+        //            enterRes = _roomList[roomNumber].EnterRoom(user);
+        //            res.RoomNumber = roomNumber;
+        //        }
+
+        //        for (int i = 0; i < users.Count; i++)
+        //        {
+        //            if (user.UserId != users[i].UserId)
+        //            {
+        //                res.OtherUserId = users[i].UserId;
+        //            }
+        //        }
+
+        //        var ntfPacket = new NtfNewUserPacket();
+        //        ntfPacket.Id = user.UserId;
+        //        var ntf = MemoryPackSerializer.Serialize(ntfPacket);
+        //        var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfNewUser, ntf);
+        //        BroadCast(roomNumber, user.SessionId, ntfData);
+        //    }
+        //    var data = MemoryPackSerializer.Serialize(res);
+        //    var sendData = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, data);
+        //    return _sendFunc(user.SessionId, sendData);
+        //}
 
         public bool LeaveRoom(User user, int roomNumber)
         {
@@ -88,7 +129,7 @@ namespace OmokGameServer
             {
                 user.LeaveRoom();
             }
-            _roomIndexQueue.Enqueue(roomNumber);
+            _emptyRoomQueue.Enqueue(roomNumber);
 
             var res = new ResLeaveRoomPacket();
 

@@ -33,5 +33,7 @@ namespace OmokGameServer
         public string RedisDB { get; set; }
         public int GameDBMaxThreadCount { get; set; } = 0;
         public int RedisDBMaxThreadCount { get; set; } = 0;
+        public string ReqListKey { get; set; }
+        public string ResListKey { get; set; }
     }
 }

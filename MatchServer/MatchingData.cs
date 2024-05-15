@@ -17,11 +17,14 @@ public class ResponseMatchData
     public string UserA { get; set; }
     public string UserB { get; set; }
     public string ServerAddress { get; set; }
+    public int Port { get; set; }
     public int RoomNumber { get; set; }
 }
 
 public class CompleteMatchData
 {
     public string ServerAddress { get; set; }
+    public int Port { get; set; }
     public int RoomNumber { get; set; }
+    public string OtherUserId { get; set; }
 }

@@ -18,5 +18,8 @@
         AttendanceAlready = 1206,
         PostMailError = 1207,
         GetMailError = 1208,
+
+        ReqMatchingError = 2000,
+        WaitMatching = 2001,
     }
 }

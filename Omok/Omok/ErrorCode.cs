@@ -29,6 +29,8 @@ namespace Omok
         PostMailError = 1207,
         GetMailError = 1208,
 
+        ReqMatchingError = 2000,
+        WaitMatching = 2001,
 
         // 게임 서버 접속 관련
         UserCountMax = 3001,

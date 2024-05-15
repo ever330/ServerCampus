@@ -34,4 +34,12 @@ namespace OmokGameServer
     {
         public int CurrentIndex { get; set; }
     }
+
+    [MemoryPackable]
+    public partial class ReqMatchUsersEnterPacket
+    {
+        public string UserA { get; set; }
+        public string UserB { get; set; }
+        public int RoomNumber { get; set; }
+    }
 }
