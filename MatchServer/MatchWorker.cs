@@ -37,6 +37,11 @@ public class MatchWorker : IMatchWorker
         _reqListKey = matchServerConfig.Value.ReqListKey;
         _resListKey = matchServerConfig.Value.ResListKey;
 
+        var conf = new CloudStructures.RedisConfig("Match", _redisAddress);
+        _connection = new CloudStructures.RedisConnection(conf);
+
+        _logger.ZLogInformation($"MatchWorker생성");
+
         _isThreadRunning = true;
 
         _reqThread = new Thread(RunRequestMatching);
@@ -44,11 +49,6 @@ public class MatchWorker : IMatchWorker
 
         _checkThread = new Thread(RunCheckMatching);
         _checkThread.Start();
-
-        var conf = new CloudStructures.RedisConfig("Match", _redisAddress);
-        _connection = new CloudStructures.RedisConnection(conf);
-
-        _logger.ZLogInformation($"MatchWorker생성");
     }
 
     public void Dispose()
@@ -84,6 +84,8 @@ public class MatchWorker : IMatchWorker
 
             try
             {
+                _logger.ZLogInformation($"Redis 매칭 요청");
+
                 var req = new RequestMatchData();
                 _reqUserQueue.TryDequeue(out string result1);
                 req.UserA = result1;
@@ -116,6 +118,8 @@ public class MatchWorker : IMatchWorker
                 var result = redis.LeftPopAsync().Result;
                 if (result.HasValue)
                 {
+                    _logger.ZLogInformation($"Redis 매칭 결과");
+
                     res = result.Value;
 
                     var compA = new CompleteMatchData();

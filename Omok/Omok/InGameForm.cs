@@ -580,7 +580,7 @@ namespace Omok
 
             if (_isMatching)
             {
-                _clientNetwork.NetworkMessageQ.Enqueue("매칭이 진행중 입니다.");
+                MessageBox.Show("매칭이 진행중 입니다.");
                 return;
             }
 
@@ -604,13 +604,9 @@ namespace Omok
                 return;
             }
 
+            reqMatchingBtn.Text = "매칭중";
             _isMatching = true;
             checkMatchingTimer.Start();
-
-            //var req = new ReqEnterRoomPacket();
-            //var body = MemoryPackSerializer.Serialize(req);
-
-            //_sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
         }
 
         byte[] MakeSendData(PacketId packetId, byte[] body)
@@ -939,17 +935,17 @@ namespace Omok
 
             if (res.Result.MatchResult != ErrorCode.None)
             {
-                _clientNetwork.NetworkMessageQ.Enqueue("매칭 대기중");
                 return;
             }
 
-            _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
             roomNumberText.Text = res.Result.RoomNumber.ToString();
             _roomNumber = res.Result.RoomNumber;
             otherUserTextLabel.Text = res.Result.OtherUserId;
             _otherUserId = res.Result.OtherUserId;
             InitializeBoard();
             Connect(res.Result.ServerAddress, res.Result.Port);
+
+            _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
 
             _isMatching = false;
             checkMatchingTimer.Stop();

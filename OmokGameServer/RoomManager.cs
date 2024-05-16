@@ -24,15 +24,15 @@ namespace OmokGameServer
         const int RoomGamingLimitMinite = 60;
         const int TurnLimitSecond = 30;
 
-        public void Init(int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> reqToGameDB)
+        public void Init(int roomMaxCount, int roomUserMax, Func<string, byte[], bool> sendFunc, Action<DBRequestInfo> reqToGameDB, int roomStartNumber)
         {
             _roomMaxCount = roomMaxCount;
             _roomUserMax = roomUserMax;
             for (int i = 0; i < _roomMaxCount; i++)
             {
-                var room = new Room(i, roomUserMax);
+                var room = new Room(roomStartNumber + i, roomUserMax);
                 _roomList.Add(room);
-                _emptyRoomQueue.Enqueue(i);
+                _emptyRoomQueue.Enqueue(roomStartNumber + i);
             }
             _sendFunc = sendFunc;
             _reqToGameDB = reqToGameDB;
@@ -50,8 +50,9 @@ namespace OmokGameServer
 
         public ErrorCode MatchUsers(User userA, User userB, int roomNumber)
         {
-            var enterResA = _roomList[roomNumber].EnterRoom(userA);
-            var enterResB = _roomList[roomNumber].EnterRoom(userB);
+            var curRoom = _roomList.Find(x => x.GetRoomNumber() == roomNumber);
+            var enterResA = curRoom.EnterRoom(userA);
+            var enterResB = curRoom.EnterRoom(userB);
 
             if (enterResA != ErrorCode.None || enterResB != ErrorCode.None)
             {
@@ -59,68 +60,7 @@ namespace OmokGameServer
             }
 
             return ErrorCode.None;
-
-            //var resA = new ResEnterRoomPacket();
-            //resA.RoomNumber = roomNumber;
-            //resA.OtherUserId = userB.UserId;
-
-            //var dataA = MemoryPackSerializer.Serialize(resA);
-            //var sendDataA = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, dataA);
-            //_sendFunc(userA.SessionId, sendDataA);
-
-            //var resB = new ResEnterRoomPacket();
-            //resB.RoomNumber = roomNumber;
-            //resB.OtherUserId = userA.UserId;
-
-            //var dataB = MemoryPackSerializer.Serialize(resB);
-            //var sendDataB = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, dataB);
-            //_sendFunc(userB.SessionId, sendDataB);
         }
-
-        //public bool EnterRoom(User user)
-        //{
-        //    var res = new ResEnterRoomPacket();
-        //    if (_emptyRoomQueue.Count == 0)
-        //    {
-        //        res.RoomNumber = -1;
-        //    }
-        //    else
-        //    {
-        //        int roomNumber = 0;
-        //        // int roomNumber = _emptyRoomQueue.Peek();
-        //        var enterRes = ErrorCode.None;
-        //        var users = _roomList[roomNumber].GetUserList();
-        //        if (users.Count >= _roomUserMax)
-        //        {
-        //            //_emptyRoomQueue.Dequeue();
-        //            //roomNumber = _emptyRoomQueue.Peek();
-        //            enterRes = _roomList[roomNumber].EnterRoom(user);
-        //            res.RoomNumber = roomNumber;
-        //        }
-        //        else
-        //        {
-        //            enterRes = _roomList[roomNumber].EnterRoom(user);
-        //            res.RoomNumber = roomNumber;
-        //        }
-
-        //        for (int i = 0; i < users.Count; i++)
-        //        {
-        //            if (user.UserId != users[i].UserId)
-        //            {
-        //                res.OtherUserId = users[i].UserId;
-        //            }
-        //        }
-
-        //        var ntfPacket = new NtfNewUserPacket();
-        //        ntfPacket.Id = user.UserId;
-        //        var ntf = MemoryPackSerializer.Serialize(ntfPacket);
-        //        var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfNewUser, ntf);
-        //        BroadCast(roomNumber, user.SessionId, ntfData);
-        //    }
-        //    var data = MemoryPackSerializer.Serialize(res);
-        //    var sendData = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, data);
-        //    return _sendFunc(user.SessionId, sendData);
-        //}
 
         public bool LeaveRoom(User user, int roomNumber)
         {

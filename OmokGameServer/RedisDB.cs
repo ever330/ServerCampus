@@ -43,9 +43,9 @@ namespace OmokGameServer
                 var defaultExpiry = TimeSpan.FromDays(1);
                 _redis = new RedisString<RedisUserInfo>(redisConnection, "UID" + id, defaultExpiry);
 
-                var result = _redis.GetAsync();
-                logger.Info($"기존 토큰 {result.Result.Value.AuthToken}, 비교 토큰 {authToken}");
-                if (authToken == result.Result.Value.AuthToken)
+                var result = _redis.GetAsync().Result;
+                logger.Info($"기존 토큰 {result.Value.AuthToken}, 비교 토큰 {authToken}");
+                if (authToken == result.Value.AuthToken)
                 {
                     return ErrorCode.None;
                 }

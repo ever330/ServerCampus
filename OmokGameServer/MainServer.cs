@@ -155,7 +155,7 @@ namespace OmokGameServer
             _userManager.Init(_serverOption.MaxConnectionNumber, SendData, DisconnectUser, ReqToGameDB, ReqToRedisDB);
 
             _roomManager = new RoomManager();
-            _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, ReqToGameDB);
+            _roomManager.Init(_serverOption.RoomMaxCount, _serverOption.RoomMaxUserCount, SendData, ReqToGameDB, _serverOption.RoomStartNumber);
 
             _packetProcessor = new PacketProcessor();
             _packetProcessor.Init(_mainLogger, _userManager, _roomManager, SendData);
