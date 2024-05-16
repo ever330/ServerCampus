@@ -32,7 +32,6 @@ namespace MatchServer.Controllers
                 res.ServerAddress = comp.ServerAddress;
                 res.Port = comp.Port;
                 res.RoomNumber = comp.RoomNumber;
-                res.OtherUserId = comp.OtherUserId;
             }
 
             return res;

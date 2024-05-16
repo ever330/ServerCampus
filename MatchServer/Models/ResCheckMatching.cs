@@ -6,6 +6,5 @@
         public string ServerAddress { get; set; }
         public int Port { get; set; }
         public int RoomNumber { get; set; }
-        public string OtherUserId { get; set; }
     }
 }

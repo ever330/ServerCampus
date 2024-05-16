@@ -60,7 +60,7 @@ namespace OmokGameServer
 
                 if (roomNum == -1)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(1);
                     continue;
                 }
                 try
@@ -80,7 +80,7 @@ namespace OmokGameServer
                     if (result.HasValue)
                     {
                         req = result.Value;
-                        RequestUserSetting(req.UserA, req.UserB, roomNum);
+                        //RequestUserSetting(req.UserA, req.UserB, roomNum);
 
                         var res = new ResponseMatchData();
                         res.UserA = req.UserA;

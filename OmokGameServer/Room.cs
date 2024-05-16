@@ -50,9 +50,26 @@ namespace OmokGameServer
             RoomState = ROOM_STATE.NONE;
         }
 
+        public int GetUserCount()
+        {
+            return _userList.Count;
+        }
+
         public int GetRoomNumber()
         {
             return _roomNumber;
+        }
+
+        public string GetOtherUserId(string userId)
+        {
+            for (int i = 0; i < _userList.Count; i++)
+            {
+                if (_userList[i].UserId != userId)
+                {
+                    return _userList[i].UserId;
+                }
+            }
+            return null;
         }
 
         void BoardClear()
@@ -214,11 +231,6 @@ namespace OmokGameServer
             {
                 CurrentPlayerIndex = 0;
             }
-        }
-
-        public void GameEnd(string winPlayer)
-        {
-
         }
 
         public PUT_RESULT CheckStoneCount(STONE stone, int row, int col)

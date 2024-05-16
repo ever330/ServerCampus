@@ -122,20 +122,13 @@ public class MatchWorker : IMatchWorker
 
                     res = result.Value;
 
-                    var compA = new CompleteMatchData();
-                    compA.ServerAddress = res.ServerAddress;
-                    compA.Port = res.Port;
-                    compA.RoomNumber = res.RoomNumber;
-                    compA.OtherUserId = res.UserB;
+                    var comp = new CompleteMatchData();
+                    comp.ServerAddress = res.ServerAddress;
+                    comp.Port = res.Port;
+                    comp.RoomNumber = res.RoomNumber;
 
-                    var compB = new CompleteMatchData();
-                    compB.ServerAddress = res.ServerAddress;
-                    compB.Port = res.Port;
-                    compB.RoomNumber = res.RoomNumber;
-                    compB.OtherUserId = res.UserA;
-
-                    _completeDic.TryAdd(res.UserA, compA);
-                    _completeDic.TryAdd(res.UserB, compB);
+                    _completeDic.TryAdd(res.UserA, comp);
+                    _completeDic.TryAdd(res.UserB, comp);
                 }
             }
             catch

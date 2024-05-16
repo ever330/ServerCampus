@@ -353,9 +353,6 @@ namespace Omok
                 case PacketId.ResEnterRoom:
                     {
                         var enterRoomPacket = MemoryPackSerializer.Deserialize<ResEnterRoomPacket>(packet.Body);
-                        _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {enterRoomPacket.RoomNumber}");
-                        roomNumberText.Text = enterRoomPacket.RoomNumber.ToString();
-                        _roomNumber = enterRoomPacket.RoomNumber;
                         otherUserTextLabel.Text = enterRoomPacket.OtherUserId;
                         _otherUserId = enterRoomPacket.OtherUserId;
                         InitializeBoard();
@@ -938,14 +935,18 @@ namespace Omok
                 return;
             }
 
-            roomNumberText.Text = res.Result.RoomNumber.ToString();
-            _roomNumber = res.Result.RoomNumber;
-            otherUserTextLabel.Text = res.Result.OtherUserId;
-            _otherUserId = res.Result.OtherUserId;
             InitializeBoard();
             Connect(res.Result.ServerAddress, res.Result.Port);
+            roomNumberText.Text = res.Result.RoomNumber.ToString();
+            _roomNumber = res.Result.RoomNumber;
 
             _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
+
+            var req = new ReqEnterRoomPacket();
+            req.RoomNumber = _roomNumber;
+            var body = MemoryPackSerializer.Serialize(req);
+
+            _sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
 
             _isMatching = false;
             checkMatchingTimer.Stop();

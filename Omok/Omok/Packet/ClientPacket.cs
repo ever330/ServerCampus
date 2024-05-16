@@ -30,13 +30,12 @@ namespace Omok.Packet
     [MemoryPackable]
     public partial class ReqEnterRoomPacket
     {
-
+        public int RoomNumber { get; set; }
     }
 
     [MemoryPackable]
     public partial class ResEnterRoomPacket
     {
-        public int RoomNumber { get; set; }
         public string OtherUserId { get; set; }
     }
 

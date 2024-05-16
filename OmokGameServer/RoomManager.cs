@@ -48,6 +48,36 @@ namespace OmokGameServer
             return index;
         }
 
+        public ErrorCode EnterRoom(User user, int roomNumber)
+        {
+            var curRoom = _roomList.Find(x => x.GetRoomNumber() == roomNumber);
+
+            var enterRes = curRoom.EnterRoom(user);
+
+            if (enterRes != ErrorCode.None)
+            {
+                return ErrorCode.RoomUserMax;
+            }
+
+
+            if (curRoom.GetUserCount() > 1)
+            {
+                var res = new ResEnterRoomPacket();
+                res.OtherUserId = curRoom.GetOtherUserId(user.UserId);
+                var data = MemoryPackSerializer.Serialize(res);
+                var sendData = ClientPacket.MakeClientPacket(PacketId.ResEnterRoom, data);
+                _sendFunc(user.SessionId, sendData);
+
+                var ntf = new NtfNewUserPacket();
+                ntf.Id = user.UserId;
+                var ntfData = MemoryPackSerializer.Serialize(ntf);
+                var ntfSendData = ClientPacket.MakeClientPacket(PacketId.NtfNewUser, ntfData);
+                BroadCast(roomNumber, user.SessionId, ntfSendData);
+            }
+
+            return ErrorCode.None;
+        }
+
         public ErrorCode MatchUsers(User userA, User userB, int roomNumber)
         {
             var curRoom = _roomList.Find(x => x.GetRoomNumber() == roomNumber);
