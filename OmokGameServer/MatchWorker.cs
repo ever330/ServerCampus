@@ -53,6 +53,7 @@ namespace OmokGameServer
         {
             var conf = new RedisConfig("Match", _redisDBConnectionString);
             var connection = new RedisConnection(conf);
+            _mainLogger.Info("매칭 스레드 시작");
 
             while (_isThreadRunning)
             {
@@ -79,6 +80,7 @@ namespace OmokGameServer
                     var result = redisReq.LeftPopAsync().Result;
                     if (result.HasValue)
                     {
+                        _mainLogger.Info("매칭요청 데이터 가져옴");
                         req = result.Value;
                         //RequestUserSetting(req.UserA, req.UserB, roomNum);
 
@@ -100,6 +102,7 @@ namespace OmokGameServer
                         var redisRes = new RedisList<ResponseMatchData>(connection, _resListKey, defaultExpiry);
 
                         redisRes.RightPushAsync(res);
+                        _mainLogger.Info("매칭결과 푸시");
                     }
                 }
                 catch (Exception ex)
