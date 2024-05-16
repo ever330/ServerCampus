@@ -127,9 +127,12 @@ namespace Omok
 
         private void InGame_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _isNetworkRunning = false;
-            _clientNetwork.Close();
-            backGroundTimer.Stop();
+            if (_isNetworkRunning)
+            {
+                _isNetworkRunning = false;
+                _clientNetwork.Close();
+                backGroundTimer.Stop();
+            }
         }
 
         public void SetUserInfo(UserInfo userInfo)

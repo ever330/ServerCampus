@@ -23,19 +23,21 @@ namespace OmokGameServer
 
         Action<OmokBinaryRequestInfo> _sendToPP;
         Func<int> _getEmptyRoomIndex;
+        Func<bool> _checkEmptyRoom;
 
         string _redisDBConnectionString;
         string _reqListKey;
         string _resListKey;
         int _port;
 
-        public void Init(ILog mainLogger, Action<OmokBinaryRequestInfo> sendToPP, Func<int> getEmptyRoomIndex, string redisDBConStr, string reqListKey, string resListKey, int port)
+        public void Init(ILog mainLogger, Action<OmokBinaryRequestInfo> sendToPP, Func<int> getEmptyRoomIndex, Func<bool> checkEmptyRoom, string redisDBConStr, string reqListKey, string resListKey, int port)
         {
             _mainLogger = mainLogger;
             _isThreadRunning = true;
             _redisDBConnectionString = redisDBConStr;
             _sendToPP = sendToPP;
             _getEmptyRoomIndex = getEmptyRoomIndex;
+            _checkEmptyRoom = checkEmptyRoom;
             _reqListKey = reqListKey;
             _resListKey = resListKey;
             _port= port;
@@ -57,9 +59,9 @@ namespace OmokGameServer
 
             while (_isThreadRunning)
             {
-                var roomNum = _getEmptyRoomIndex();
+                var checkResult = _checkEmptyRoom();
 
-                if (roomNum == -1)
+                if (!checkResult)
                 {
                     Thread.Sleep(1);
                     continue;
@@ -71,6 +73,8 @@ namespace OmokGameServer
                         connection = new RedisConnection(conf);
                         _mainLogger.Info("RedisConnection 연결 종료로 인한 재생성");
                     }
+
+                    var roomNum = _getEmptyRoomIndex();
 
                     var req = new RequestMatchData();
 

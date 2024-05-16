@@ -38,6 +38,15 @@ namespace OmokGameServer
             _reqToGameDB = reqToGameDB;
         }
 
+        public bool HasEmptyRoom()
+        {
+            if (!_emptyRoomQueue.IsEmpty)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public int GetEmptyRoomIndex()
         {
             int index = -1;

@@ -170,7 +170,7 @@ namespace OmokGameServer
             _redisDBProcessor.RegistHandlers();
 
             _matchWorker = new MatchWorker();
-            _matchWorker.Init(_mainLogger, Distribute, _roomManager.GetEmptyRoomIndex, _serverOption.RedisDB, _serverOption.ReqListKey, _serverOption.ResListKey, _serverOption.Port);
+            _matchWorker.Init(_mainLogger, Distribute, _roomManager.GetEmptyRoomIndex, _roomManager.HasEmptyRoom, _serverOption.RedisDB, _serverOption.ReqListKey, _serverOption.ResListKey, _serverOption.Port);
 
             _heartBeatTimer = new Timer(CheckHeartBeat, null, 0, HeartBeatInterval);
             _checkRoomTimer = new Timer(CheckRoom, null, 0, CheckRoomInterval);
