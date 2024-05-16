@@ -868,6 +868,12 @@ namespace Omok
 
         private void readyBtn_Click(object sender, EventArgs e)
         {
+            if (!_isNetworkRunning)
+            {
+                _clientNetwork.NetworkMessageQ.Enqueue("서버에 접속되어있지 않습니다.");
+                return;
+            }
+
             if (_state == USER_STATE.NONE)
             {
                 var req = new ReqReadyPacket();
@@ -924,6 +930,8 @@ namespace Omok
             if (!response.Result.IsSuccessStatusCode)
             {
                 MessageBox.Show("매칭 검사 실패. 상태 코드 : " + response.Result.StatusCode);
+                _isMatching = false;
+                checkMatchingTimer.Stop();
                 return;
             }
 
@@ -931,11 +939,11 @@ namespace Omok
 
             if (res.Result.MatchResult != ErrorCode.None)
             {
-                MessageBox.Show("매칭 검사 실패.");
+                _clientNetwork.NetworkMessageQ.Enqueue("매칭 대기중");
                 return;
             }
 
-            _clientNetwork.NetworkMessageQ.Enqueue($"방입장 결과 : {res.Result.RoomNumber}");
+            _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
             roomNumberText.Text = res.Result.RoomNumber.ToString();
             _roomNumber = res.Result.RoomNumber;
             otherUserTextLabel.Text = res.Result.OtherUserId;
