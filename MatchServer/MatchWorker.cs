@@ -91,6 +91,7 @@ public class MatchWorker : IMatchWorker
                 req.UserA = result1;
                 _reqUserQueue.TryDequeue(out string result2);
                 req.UserB = result2;
+                _logger.ZLogInformation($"요청유저 {req.UserA}, {req.UserB}");
 
                 var defaultExpiry = TimeSpan.FromDays(1);
                 var redis = new RedisList<RequestMatchData>(_connection, _reqListKey, defaultExpiry);
@@ -129,6 +130,7 @@ public class MatchWorker : IMatchWorker
 
                     _completeDic.TryAdd(res.UserA, comp);
                     _completeDic.TryAdd(res.UserB, comp);
+                    _logger.ZLogInformation($"매칭완료 딕셔너리 카운트 {_completeDic.Count}");
                 }
             }
             catch

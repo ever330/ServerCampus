@@ -84,11 +84,11 @@ namespace OmokGameServer
                     {
                         _mainLogger.Info("매칭요청 데이터 가져옴");
                         req = result.Value;
-                        //RequestUserSetting(req.UserA, req.UserB, roomNum);
 
                         var res = new ResponseMatchData();
                         res.UserA = req.UserA;
                         res.UserB = res.UserB;
+                        _mainLogger.Info($"매칭유저 {req.UserA}, {req.UserB}");
 
                         var host = Dns.GetHostEntry(Dns.GetHostName());
                         foreach (var ip in host.AddressList)

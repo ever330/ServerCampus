@@ -350,6 +350,12 @@ namespace Omok
                     {
                         var loginPacket = MemoryPackSerializer.Deserialize<ResLoginPacket>(packet.Body);
                         _clientNetwork.NetworkMessageQ.Enqueue($"로그인 결과 : {loginPacket.Result}");
+
+                        var req = new ReqEnterRoomPacket();
+                        req.RoomNumber = _roomNumber;
+                        var body = MemoryPackSerializer.Serialize(req);
+
+                        _sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
                     }
                     break;
 
@@ -371,6 +377,7 @@ namespace Omok
                         _otherUserId = "";
                         otherUserTextLabel.Text = "";
                         omokPanel.Refresh();
+                        reqMatchingBtn.Text = "매칭 요청";
                     }
                     break;
 
@@ -945,14 +952,9 @@ namespace Omok
 
             _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
 
-            var req = new ReqEnterRoomPacket();
-            req.RoomNumber = _roomNumber;
-            var body = MemoryPackSerializer.Serialize(req);
-
-            _sendQueue.Enqueue(MakeSendData(PacketId.ReqEnterRoom, body));
-
             _isMatching = false;
             checkMatchingTimer.Stop();
+            reqMatchingBtn.Text = "매칭 완료";
         }
     }
 }
