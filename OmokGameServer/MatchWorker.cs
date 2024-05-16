@@ -74,14 +74,13 @@ namespace OmokGameServer
                         _mainLogger.Info("RedisConnection 연결 종료로 인한 재생성");
                     }
 
-                    var roomNum = _getEmptyRoomIndex();
-
                     var req = new RequestMatchData();
 
                     var defaultExpiry = TimeSpan.FromDays(1);
                     var redisReq = new RedisList<RequestMatchData>(connection, _reqListKey, defaultExpiry);
 
                     var result = redisReq.LeftPopAsync().Result;
+                    _mainLogger.Info($"매칭요청 데이터 : {result}");
                     if (result.HasValue)
                     {
                         _mainLogger.Info("매칭요청 데이터 가져옴");
@@ -101,7 +100,7 @@ namespace OmokGameServer
                             }
                         }
                         res.Port = _port;
-                        res.RoomNumber = roomNum;
+                        res.RoomNumber = _getEmptyRoomIndex();
 
                         var redisRes = new RedisList<ResponseMatchData>(connection, _resListKey, defaultExpiry);
 
