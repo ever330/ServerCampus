@@ -80,7 +80,6 @@ namespace OmokGameServer
                     var redisReq = new RedisList<RequestMatchData>(connection, _reqListKey, defaultExpiry);
 
                     var result = redisReq.LeftPopAsync().Result;
-                    _mainLogger.Info($"매칭요청 데이터 : {result}");
                     if (result.HasValue)
                     {
                         _mainLogger.Info("매칭요청 데이터 가져옴");
