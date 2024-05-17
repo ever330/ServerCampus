@@ -29,13 +29,13 @@ namespace OmokGameServer
 
     public class Room
     {
-        int _roomNumber;
         List<RoomUser> _userList = new List<RoomUser>();
 
         int _roomUserMaxCount = 0;
 
         OmokData _omokData = new OmokData();
 
+        public int RoomNumber { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime TurnTime { get; set; }
 
@@ -45,7 +45,7 @@ namespace OmokGameServer
 
         public Room(int roomNumber, int roomUserMaxCount)
         {
-            _roomNumber = roomNumber;
+            RoomNumber = roomNumber;
             _roomUserMaxCount = roomUserMaxCount;
             RoomState = ROOM_STATE.NONE;
         }
@@ -53,11 +53,6 @@ namespace OmokGameServer
         public int GetUserCount()
         {
             return _userList.Count;
-        }
-
-        public int GetRoomNumber()
-        {
-            return _roomNumber;
         }
 
         public string GetOtherUserId(string userId)
@@ -90,7 +85,7 @@ namespace OmokGameServer
                 return ErrorCode.RoomUserMax;
             }
 
-            user.EnterRoom(_roomNumber);
+            user.EnterRoom(RoomNumber);
             RoomUser newUser = new RoomUser();
             newUser.SessionId = user.SessionId;
             newUser.UserId = user.UserId;

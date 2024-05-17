@@ -5,4 +5,5 @@ public enum ErrorCode
 
     ReqMatchingError = 2000,
     WaitMatching = 2001,
+    AlreadyMatching = 2002,
 }

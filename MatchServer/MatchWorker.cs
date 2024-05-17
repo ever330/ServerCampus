@@ -9,6 +9,7 @@ public interface IMatchWorker : IDisposable
 {
     public void AddUser(string id);
     public CompleteMatchData GetCompleteMatchData(string id);
+    public ErrorCode CancelMatching(string id);
 }
 
 public class MatchWorker : IMatchWorker
@@ -60,6 +61,7 @@ public class MatchWorker : IMatchWorker
     public void AddUser(string id)
     {
         _reqUserQueue.Enqueue(id);
+        _completeDic.TryAdd(id, null);
     }
 
     public CompleteMatchData GetCompleteMatchData(string id)
@@ -70,6 +72,34 @@ public class MatchWorker : IMatchWorker
             return comp;
         }
         return null;
+    }
+
+    public ErrorCode CancelMatching(string id)
+    {
+        if (_completeDic.ContainsKey(id))
+        {
+            if (_completeDic[id] != null)
+            {
+                return ErrorCode.AlreadyMatching;
+            }
+            _completeDic.TryRemove(id, out CompleteMatchData comp);
+
+            _reqUserQueue = RemoveSpecificValue(_reqUserQueue, id);
+        }
+        return ErrorCode.None;
+    }
+
+    ConcurrentQueue<string> RemoveSpecificValue(ConcurrentQueue<string> queue, string value)
+    {
+        ConcurrentQueue<string> newQueue = new ConcurrentQueue<string>();
+        foreach (var item in queue)
+        {
+            if (!EqualityComparer<string>.Default.Equals(item, value))
+            {
+                newQueue.Enqueue(item);
+            }
+        }
+        return newQueue;
     }
 
     void RunRequestMatching()
@@ -128,8 +158,8 @@ public class MatchWorker : IMatchWorker
                     comp.Port = res.Port;
                     comp.RoomNumber = res.RoomNumber;
 
-                    _completeDic.TryAdd(res.UserA, comp);
-                    _completeDic.TryAdd(res.UserB, comp);
+                    _completeDic.AddOrUpdate(res.UserA, comp, (key, oldValue) => comp);
+                    _completeDic.AddOrUpdate(res.UserB, comp, (key, oldValue) => comp);
                     _logger.ZLogInformation($"매칭완료 딕셔너리 카운트 {_completeDic.Count}");
                 }
             }

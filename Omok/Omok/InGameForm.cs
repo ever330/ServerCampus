@@ -94,7 +94,7 @@ namespace Omok
             SetUserInfo(_userInfo);
 
             checkMatchingTimer.Tick += new EventHandler(CheckMatching);
-            checkMatchingTimer.Interval = 1000;
+            checkMatchingTimer.Interval = 500;
         }
 
         void Connect(string ip, int port)
@@ -170,7 +170,8 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Attendance/attendance", request);
+            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Attendance/attendance", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Attendance/attendance", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -214,7 +215,8 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/GetMail/getMail", request);
+            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/GetMail/getMail", request);
+            var response = await client.PostAsJsonAsync("http://localhost/api/GetMail/getMail", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -585,17 +587,35 @@ namespace Omok
                 return;
             }
 
+            var client = new HttpClient();
             if (_isMatching)
             {
-                MessageBox.Show("매칭이 진행중 입니다.");
+                var requestCancel = new ReqCancelMatching();
+                requestCancel.Id = _userInfo.Id;
+                var responseCancel = await client.PostAsJsonAsync("http://localhost:5292/api/CancelMatching/cancelMatching", requestCancel);
+
+                if (!responseCancel.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("매칭 취소 요청 실패.");
+                }
+
+                ResCancelMatching? resCancel = await responseCancel.Content.ReadFromJsonAsync<ResCancelMatching>();
+
+                if (resCancel.Result == ErrorCode.None)
+                {
+                    reqMatchingBtn.Text = "매칭 요청";
+                    _isMatching = false;
+                    checkMatchingTimer.Stop();
+                }
+                MessageBox.Show("매칭을 취소했습니다.");
                 return;
             }
 
             var request = new ReqMatching();
             request.Id = _userInfo.Id;
 
-            var client = new HttpClient();
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/RequestMatching/matching", request);
+            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/RequestMatching/matching", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/RequestMatching/matching", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -928,7 +948,8 @@ namespace Omok
             request.Id = _userInfo.Id;
 
             var client = new HttpClient();
-            var response = client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
+            //var response = client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
+            var response = client.PostAsJsonAsync("http://localhost:5292/api/CheckMatching/checkMatching", request);
 
             if (!response.Result.IsSuccessStatusCode)
             {

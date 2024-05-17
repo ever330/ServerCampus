@@ -11,9 +11,9 @@ namespace MatchServer.Controllers
     [ApiController]
     public class RequestMatchingController : ControllerBase
     {
-        private readonly ILogger<LoginController> _logger;
+        private readonly ILogger<RequestMatchingController> _logger;
 
-        public RequestMatchingController(ILogger<LoginController> logger)
+        public RequestMatchingController(ILogger<RequestMatchingController> logger)
         {
             _logger = logger;
         }
@@ -24,7 +24,8 @@ namespace MatchServer.Controllers
         {
             var client = new HttpClient();
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5922/api/RequestMatching/matching", request);
+            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5922/api/RequestMatching/matching", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5922/api/RequestMatching/matching", request);
 
             if (!response.IsSuccessStatusCode)
             {

@@ -87,7 +87,7 @@ namespace OmokGameServer
 
                         var res = new ResponseMatchData();
                         res.UserA = req.UserA;
-                        res.UserB = res.UserB;
+                        res.UserB = req.UserB;
                         _mainLogger.Info($"매칭유저 {req.UserA}, {req.UserB}");
 
                         var host = Dns.GetHostEntry(Dns.GetHostName());

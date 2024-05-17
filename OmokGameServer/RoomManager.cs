@@ -59,7 +59,7 @@ namespace OmokGameServer
 
         public ErrorCode EnterRoom(User user, int roomNumber)
         {
-            var curRoom = _roomList.Find(x => x.GetRoomNumber() == roomNumber);
+            var curRoom = _roomList.Find(x => x.RoomNumber == roomNumber);
 
             var enterRes = curRoom.EnterRoom(user);
 
@@ -89,7 +89,7 @@ namespace OmokGameServer
 
         public ErrorCode MatchUsers(User userA, User userB, int roomNumber)
         {
-            var curRoom = _roomList.Find(x => x.GetRoomNumber() == roomNumber);
+            var curRoom = _roomList.Find(x => x.RoomNumber == roomNumber);
             var enterResA = curRoom.EnterRoom(userA);
             var enterResB = curRoom.EnterRoom(userB);
 
@@ -103,7 +103,8 @@ namespace OmokGameServer
 
         public bool LeaveRoom(User user, int roomNumber)
         {
-            var result = _roomList[roomNumber].LeaveRoom(user.UserId);
+            var curRoom = _roomList.Find(x => x.RoomNumber == roomNumber);
+            var result = curRoom.LeaveRoom(user.UserId);
             if (result == ErrorCode.None)
             {
                 user.LeaveRoom();
@@ -134,14 +135,14 @@ namespace OmokGameServer
 
         public void BroadCast(int roomNumber, string excludedSessionId, byte[] sendData)
         {
-            var tempRoom = _roomList[roomNumber];
-            var tempUserList = tempRoom.GetUserList();
+            var curRoom = _roomList.Find(x => x.RoomNumber == roomNumber);
+            var curUserList = curRoom.GetUserList();
 
-            for (int i = 0; i < tempUserList.Count; i++)
+            for (int i = 0; i < curUserList.Count; i++)
             {
-                if (excludedSessionId != tempUserList[i].SessionId)
+                if (excludedSessionId != curUserList[i].SessionId)
                 {
-                    _sendFunc(tempUserList[i].SessionId, sendData);
+                    _sendFunc(curUserList[i].SessionId, sendData);
                 }
             }
         }
@@ -151,13 +152,13 @@ namespace OmokGameServer
             if (packetId == PacketId.ReqReady)
             {
                 var pac = MemoryPackSerializer.Deserialize<ReqReadyPacket>(packet);
-
-                var curUser = _roomList[pac.RoomNumber].GetUserList().Find(x => x.UserId == user.UserId);
+                var curRoom = _roomList.Find(x => x.RoomNumber == pac.RoomNumber);
+                var curUser = curRoom.GetUserList().Find(x => x.UserId == user.UserId);
                 curUser.State = USER_STATE.READY;
 
-                _roomList[pac.RoomNumber].CheckRoomState();
+                curRoom.CheckRoomState();
 
-                if (_roomList[pac.RoomNumber].RoomState == ROOM_STATE.NONE)
+                if (curRoom.RoomState == ROOM_STATE.NONE)
                 {
                     var resPac = new ResReadyPacket();
                     resPac.Result = true;
@@ -176,7 +177,7 @@ namespace OmokGameServer
                 else
                 {
                     var startPac = new NtfGameStartPacket();
-                    startPac.StartPlayer = _roomList[pac.RoomNumber].GameStart();
+                    startPac.StartPlayer = curRoom.GameStart();
 
                     var ntf = MemoryPackSerializer.Serialize(startPac);
                     var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfGameStart, ntf);
@@ -187,8 +188,8 @@ namespace OmokGameServer
             else
             {
                 var pac = MemoryPackSerializer.Deserialize<ReqNotReadyPacket>(packet);
-
-                var curUser = _roomList[pac.RoomNumber].GetUserList().Find(x => x.UserId == user.UserId);
+                var curRoom = _roomList.Find(x => x.RoomNumber == pac.RoomNumber);
+                var curUser = curRoom.GetUserList().Find(x => x.UserId == user.UserId);
                 curUser.State = USER_STATE.NONE;
 
                 var ntfPac = new NtfReadyStatePacket();
@@ -203,7 +204,7 @@ namespace OmokGameServer
 
         public void PutStone(int roomNumber, int posX, int posY)
         {
-            var curRoom = _roomList[roomNumber];
+            var curRoom = _roomList.Find(x => x.RoomNumber == roomNumber);
 
             var curUser = curRoom.GetUserList()[curRoom.CurrentPlayerIndex];
             var curUserStone = curRoom.GetUserList()[curRoom.CurrentPlayerIndex].Stone;
@@ -267,7 +268,7 @@ namespace OmokGameServer
                     var draw = new NtfDrawPacket();
                     var ntf = MemoryPackSerializer.Serialize(draw);
                     var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfDraw, ntf);
-                    BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
+                    BroadCast(_roomList[i].RoomNumber, null, ntfData);
                     continue;
                 }
 
@@ -291,7 +292,7 @@ namespace OmokGameServer
                         }
                         var win = MemoryPackSerializer.Serialize(winPac);
                         var winData = ClientPacket.MakeClientPacket(PacketId.NtfTimeOutWin, win);
-                        BroadCast(_roomList[i].GetRoomNumber(), null, winData);
+                        BroadCast(_roomList[i].RoomNumber, null, winData);
                     }
                     else
                     {
@@ -299,7 +300,7 @@ namespace OmokGameServer
                         timeOut.Stone = (int)users[_roomList[i].CurrentPlayerIndex].Stone;
                         var ntf = MemoryPackSerializer.Serialize(timeOut);
                         var ntfData = ClientPacket.MakeClientPacket(PacketId.NtfTimeOut, ntf);
-                        BroadCast(_roomList[i].GetRoomNumber(), null, ntfData);
+                        BroadCast(_roomList[i].RoomNumber, null, ntfData);
                     }
                 }
             }

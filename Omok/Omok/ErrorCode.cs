@@ -31,6 +31,7 @@ namespace Omok
 
         ReqMatchingError = 2000,
         WaitMatching = 2001,
+        AlreadyMatching = 2002,
 
         // 게임 서버 접속 관련
         UserCountMax = 3001,
