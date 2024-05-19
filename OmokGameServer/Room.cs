@@ -91,6 +91,8 @@ namespace OmokGameServer
             newUser.UserId = user.UserId;
             newUser.State = USER_STATE.NONE;
             newUser.TimeOutCount = 0;
+            newUser.Level = user.Level;
+            newUser.Exp = user.Exp;
             newUser.WinCount = user.WinCount;
             newUser.LoseCount = user.LoseCount;
 
@@ -162,18 +164,30 @@ namespace OmokGameServer
 
         public void EndGame(Action<DBRequestInfo> reqToGameDB, int winPlayerIndex)
         {
-            var winUser = new ReqUpdateWinLose();
+            var winUser = new ReqUpdateUserData();
 
-            var loseUser = new ReqUpdateWinLose();
+            var loseUser = new ReqUpdateUserData();
             if (winPlayerIndex == 0)
             {
                 winUser.UserId = _userList[0].UserId;
                 winUser.WinCount = _userList[0].WinCount + 1;
                 winUser.LoseCount = _userList[0].LoseCount;
+                winUser.Exp = _userList[0].Exp + 10;
+                if (winUser.Exp >= _userList[0].Level * 10)
+                {
+                    winUser.Exp -= _userList[0].Level * 10;
+                    winUser.Level = _userList[0].Level + 1;
+                }
 
                 loseUser.UserId = _userList[1].UserId;
                 loseUser.WinCount = _userList[1].WinCount;
                 loseUser.LoseCount = _userList[1].LoseCount + 1;
+                loseUser.Exp = _userList[1].Exp + 5;
+                if (loseUser.Exp >= _userList[1].Level * 10)
+                {
+                    loseUser.Exp -= _userList[1].Level * 10;
+                    loseUser.Level = _userList[1].Level + 1;
+                }
 
                 reqToGameDB(DBRequest.MakeRequest((short)PacketId.ReqUpdateResult, MemoryPackSerializer.Serialize(winUser)));
 

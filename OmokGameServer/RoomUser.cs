@@ -13,6 +13,8 @@ namespace OmokGameServer
         public STONE Stone { get; set; }
         public USER_STATE State { get; set; }
         public int TimeOutCount { get; set; }
+        public int Level { get; set; }
+        public int Exp { get; set; }
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
     }

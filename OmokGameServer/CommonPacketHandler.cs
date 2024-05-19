@@ -62,7 +62,7 @@ namespace OmokGameServer
                 return;
             }
 
-            _userManager.SetUserData(user.SessionId, resUser.WinCount, resUser.LoseCount);
+            _userManager.SetUserData(user.SessionId, resUser.Level, resUser.Exp, resUser.WinCount, resUser.LoseCount);
         }
 
         public void ReqHeartBeat(OmokBinaryRequestInfo packet)

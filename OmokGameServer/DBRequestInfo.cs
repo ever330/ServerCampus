@@ -53,14 +53,18 @@ namespace OmokGameServer
     {
         public bool Result { get; set; }
         public string UserId { get; set; }
+        public int Level { get; set; }
+        public int Exp { get; set; }
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
     }
 
     [MemoryPackable]
-    public partial class ReqUpdateWinLose
+    public partial class ReqUpdateUserData
     {
         public string UserId { get; set; }
+        public int Level { get; set; }
+        public int Exp { get; set; }
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
     }

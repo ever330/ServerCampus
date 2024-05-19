@@ -30,7 +30,7 @@ namespace OmokGameServer
 
         public void UpdateGameResult(QueryFactory queryFactory, DBRequestInfo req)
         {
-            var gameResult = MemoryPackSerializer.Deserialize<ReqUpdateWinLose>(req.Body);
+            var gameResult = MemoryPackSerializer.Deserialize<ReqUpdateUserData>(req.Body);
 
             var updateResult = _gameDB.UpdateGameResult(queryFactory, gameResult.UserId, gameResult.WinCount, gameResult.LoseCount);
 
@@ -54,6 +54,8 @@ namespace OmokGameServer
             else
             {
                 res.Result = true;
+                res.Level = userData.Item2.Level;
+                res.Exp = userData.Item2.Exp;
                 res.WinCount = userData.Item2.WinCount;
                 res.LoseCount = userData.Item2.LoseCount;
             }

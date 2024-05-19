@@ -170,8 +170,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Attendance/attendance", request);
-            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Attendance/attendance", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Attendance/attendance", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -215,8 +214,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/GetMail/getMail", request);
-            var response = await client.PostAsJsonAsync("http://localhost/api/GetMail/getMail", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/GetMail/getMail", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -590,36 +588,45 @@ namespace Omok
             var client = new HttpClient();
             if (_isMatching)
             {
-                var requestCancel = new ReqCancelMatching();
-                requestCancel.Id = _userInfo.Id;
-                var responseCancel = await client.PostAsJsonAsync("http://localhost:5292/api/CancelMatching/cancelMatching", requestCancel);
-
-                if (!responseCancel.IsSuccessStatusCode)
+                if (MessageBox.Show("매칭을 취소하시겠습니까?", "매칭 취소", MessageBoxButtons.YesNo) == DialogResult.Yes)
                 {
-                    MessageBox.Show("매칭 취소 요청 실패.");
+                    var requestCancel = new ReqCancelMatching();
+                    requestCancel.Id = _userInfo.Id;
+                    var responseCancel = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/CancelMatching/cancelMatching", requestCancel);
+
+                    if (!responseCancel.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show("매칭 취소 요청 실패.");
+                    }
+
+                    ResCancelMatching? resCancel = await responseCancel.Content.ReadFromJsonAsync<ResCancelMatching>();
+
+                    if (resCancel.Result == ErrorCode.None)
+                    {
+                        reqMatchingBtn.Text = "매칭 요청";
+                        _isMatching = false;
+                        checkMatchingTimer.Stop();
+                    }
+                    MessageBox.Show("매칭을 취소했습니다.");
+                    return;
                 }
-
-                ResCancelMatching? resCancel = await responseCancel.Content.ReadFromJsonAsync<ResCancelMatching>();
-
-                if (resCancel.Result == ErrorCode.None)
+                else
                 {
-                    reqMatchingBtn.Text = "매칭 요청";
-                    _isMatching = false;
-                    checkMatchingTimer.Stop();
+                    return;
                 }
-                MessageBox.Show("매칭을 취소했습니다.");
-                return;
             }
+
+            reqMatchingBtn.Text = "매칭중";
 
             var request = new ReqMatching();
             request.Id = _userInfo.Id;
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/RequestMatching/matching", request);
-            var response = await client.PostAsJsonAsync("http://localhost:5292/api/RequestMatching/matching", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/RequestMatching/matching", request);
 
             if (!response.IsSuccessStatusCode)
             {
                 MessageBox.Show("매칭 요청 실패. 상태 코드 : " + response.StatusCode);
+                reqMatchingBtn.Text = "매칭 요청";
                 return;
             }
 
@@ -628,10 +635,10 @@ namespace Omok
             if (res.Result != ErrorCode.None)
             {
                 MessageBox.Show("매칭 요청 실패.");
+                reqMatchingBtn.Text = "매칭 요청";
                 return;
             }
 
-            reqMatchingBtn.Text = "매칭중";
             _isMatching = true;
             checkMatchingTimer.Start();
         }
@@ -944,34 +951,38 @@ namespace Omok
                 return;
             }
 
+            RequestCheckMatching();
+        }
+
+        async Task RequestCheckMatching()
+        {
             var request = new ReqCheckMatching();
             request.Id = _userInfo.Id;
 
             var client = new HttpClient();
-            //var response = client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
-            var response = client.PostAsJsonAsync("http://localhost:5292/api/CheckMatching/checkMatching", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
 
-            if (!response.Result.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                MessageBox.Show("매칭 검사 실패. 상태 코드 : " + response.Result.StatusCode);
+                MessageBox.Show("매칭 검사 실패. 상태 코드 : " + response.StatusCode);
                 _isMatching = false;
                 checkMatchingTimer.Stop();
                 return;
             }
 
-            var res = response.Result.Content.ReadFromJsonAsync<ResCheckMatching>();
+            var res = await response.Content.ReadFromJsonAsync<ResCheckMatching>();
 
-            if (res.Result.MatchResult != ErrorCode.None)
+            if (res.MatchResult != ErrorCode.None)
             {
                 return;
             }
 
             InitializeBoard();
-            Connect(res.Result.ServerAddress, res.Result.Port);
-            roomNumberText.Text = res.Result.RoomNumber.ToString();
-            _roomNumber = res.Result.RoomNumber;
+            Connect(res.ServerAddress, res.Port);
+            roomNumberText.Text = res.RoomNumber.ToString();
+            _roomNumber = res.RoomNumber;
 
-            _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.Result.RoomNumber}");
+            _clientNetwork.NetworkMessageQ.Enqueue($"매칭 결과 방번호 : {res.RoomNumber}");
 
             _isMatching = false;
             checkMatchingTimer.Stop();

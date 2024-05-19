@@ -61,7 +61,6 @@ public class MatchWorker : IMatchWorker
     public void AddUser(string id)
     {
         _reqUserQueue.Enqueue(id);
-        _completeDic.TryAdd(id, null);
     }
 
     public CompleteMatchData GetCompleteMatchData(string id)
@@ -83,9 +82,8 @@ public class MatchWorker : IMatchWorker
                 return ErrorCode.AlreadyMatching;
             }
             _completeDic.TryRemove(id, out CompleteMatchData comp);
-
-            _reqUserQueue = RemoveSpecificValue(_reqUserQueue, id);
         }
+        _reqUserQueue = RemoveSpecificValue(_reqUserQueue, id);
         return ErrorCode.None;
     }
 

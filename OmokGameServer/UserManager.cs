@@ -86,7 +86,7 @@ namespace OmokGameServer
             return ErrorCode.None;
         }
 
-        public ErrorCode SetUserData(string sessionId, int winCount, int loseCount)
+        public ErrorCode SetUserData(string sessionId, int level, int exp, int winCount, int loseCount)
         {
             User? user = _userList.Find(x => x.SessionId == sessionId);
             if (user == null)
@@ -94,7 +94,7 @@ namespace OmokGameServer
                 return ErrorCode.UserNotExist;
             }
 
-            user.SetData(winCount, loseCount);
+            user.SetData(level, exp, winCount, loseCount);
 
             var res = new ResLoginPacket();
             res.Result = true;

@@ -20,7 +20,6 @@ builder.Services.AddLogging();
 builder.Logging.ClearProviders();
 builder.Logging.AddZLoggerConsole();
 
-builder.Logging.AddZLoggerFile("APIServerLog.log");
 builder.Logging.AddZLoggerRollingFile(options =>
 {
     options.FilePathSelector = (timestamp, sequenceNumber) => $"logs/{timestamp.ToLocalTime():yyyy-MM-dd}_{sequenceNumber:000}.log";

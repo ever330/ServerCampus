@@ -17,6 +17,8 @@ namespace OmokGameServer
         public int RoomNumber { get; private set; }
         public DateTime ConnectTime { get; set; }
         public DateTime HeartBeatTime { get; set; }
+        public int Level { get; set; }
+        public int Exp { get; set; }
         public int WinCount { get; set; }
         public int LoseCount { get; set; }
 
@@ -35,8 +37,10 @@ namespace OmokGameServer
             HeartBeatTime = DateTime.Now;
         }
 
-        public void SetData(int winCount, int loseCount)
+        public void SetData(int level, int exp, int winCount, int loseCount)
         {
+            Level = level;
+            Exp = exp;
             WinCount = winCount;
             LoseCount = loseCount;
         }
@@ -46,6 +50,8 @@ namespace OmokGameServer
             SessionId = "";
             UserId = "";
             RoomNumber = -1;
+            Level = 0;
+            Exp = 0;
             WinCount = 0;
             LoseCount = 0;
         }

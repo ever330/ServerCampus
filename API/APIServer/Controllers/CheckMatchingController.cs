@@ -23,8 +23,7 @@ namespace MatchServer.Controllers
         {
             var client = new HttpClient();
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5922/api/CheckMatching/checkMatching", request);
-            var response = await client.PostAsJsonAsync("http://localhost:5922/api/CheckMatching/checkMatching", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5922/api/CheckMatching/checkMatching", request);
 
             if (!response.IsSuccessStatusCode)
             {

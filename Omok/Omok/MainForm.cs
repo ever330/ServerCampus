@@ -81,8 +81,7 @@ namespace Omok
                 Password = encryptPassword
             };
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5229/api/Login/login", request);
-            var response = await client.PostAsJsonAsync("http://localhost:5229/api/Login/login", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5229/api/Login/login", request);
 
             if (response.IsSuccessStatusCode)
             {
@@ -131,8 +130,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            //var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Login/login", request);
-            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Login/login", request);
+            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Login/login", request);
 
             if (response.IsSuccessStatusCode)
             {
