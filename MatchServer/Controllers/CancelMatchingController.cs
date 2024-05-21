@@ -20,8 +20,8 @@ namespace MatchServer.Controllers
         public ResCancelMatching CancelMatching([FromBody] ReqCancelMatching request)
         {
             var res = new ResCancelMatching();
-            res.Result = _matchWorker.CancelMatching(request.Id);
-
+            _matchWorker.CancelMatching(request.Id);
+            res.Result = ErrorCode.None;
             return res;
         }
     }

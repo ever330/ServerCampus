@@ -9,13 +9,15 @@ public interface IMatchWorker : IDisposable
 {
     public void AddUser(string id);
     public CompleteMatchData GetCompleteMatchData(string id);
-    public ErrorCode CancelMatching(string id);
+    public void CancelMatching(string id);
 }
 
 public class MatchWorker : IMatchWorker
 {
     ConcurrentQueue<string> _reqUserQueue = new ConcurrentQueue<string>();
     ConcurrentDictionary<string, CompleteMatchData> _completeDic = new ConcurrentDictionary<string, CompleteMatchData>();
+    List<string> _cancelUsers = new List<string>();
+    object _lock = new object();
 
     Thread _reqThread;
     Thread _checkThread;
@@ -60,7 +62,10 @@ public class MatchWorker : IMatchWorker
 
     public void AddUser(string id)
     {
-        _reqUserQueue.Enqueue(id);
+        if (_completeDic.TryAdd(id, null))
+        {
+            _reqUserQueue.Enqueue(id);
+        }
     }
 
     public CompleteMatchData GetCompleteMatchData(string id)
@@ -73,32 +78,17 @@ public class MatchWorker : IMatchWorker
         return null;
     }
 
-    public ErrorCode CancelMatching(string id)
+    public void CancelMatching(string id)
     {
-        if (_completeDic.ContainsKey(id))
+        lock (_lock)
         {
-            if (_completeDic[id] != null)
+            if (!_cancelUsers.Contains(id))
             {
-                return ErrorCode.AlreadyMatching;
+                _cancelUsers.Add(id);
             }
-            _completeDic.TryRemove(id, out CompleteMatchData comp);
         }
-        _reqUserQueue = RemoveSpecificValue(_reqUserQueue, id);
-        return ErrorCode.None;
     }
 
-    ConcurrentQueue<string> RemoveSpecificValue(ConcurrentQueue<string> queue, string value)
-    {
-        ConcurrentQueue<string> newQueue = new ConcurrentQueue<string>();
-        foreach (var item in queue)
-        {
-            if (!EqualityComparer<string>.Default.Equals(item, value))
-            {
-                newQueue.Enqueue(item);
-            }
-        }
-        return newQueue;
-    }
 
     void RunRequestMatching()
     {
@@ -115,10 +105,8 @@ public class MatchWorker : IMatchWorker
                 _logger.ZLogInformation($"Redis 매칭 요청");
 
                 var req = new RequestMatchData();
-                _reqUserQueue.TryDequeue(out string result1);
-                req.UserA = result1;
-                _reqUserQueue.TryDequeue(out string result2);
-                req.UserB = result2;
+                req.UserA = GetMatchUser();
+                req.UserB = GetMatchUser();
                 _logger.ZLogInformation($"요청유저 {req.UserA}, {req.UserB}");
 
                 var defaultExpiry = TimeSpan.FromDays(1);
@@ -131,6 +119,22 @@ public class MatchWorker : IMatchWorker
                 _logger.ZLogError($"Redis 매칭 요청 List Push 문제 발생");
             }
         }
+    }
+
+    string GetMatchUser()
+    {
+        string result;
+        _reqUserQueue.TryDequeue(out result);
+        while (_cancelUsers.Contains(result))
+        {
+            lock (_lock)
+            {
+                _cancelUsers.Remove(result);
+            }
+            _reqUserQueue.TryDequeue(out result);
+        }
+
+        return result;
     }
 
     void RunCheckMatching()
