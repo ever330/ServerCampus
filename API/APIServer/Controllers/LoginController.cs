@@ -80,7 +80,7 @@ namespace APIServer.Controllers
 
             var client = new HttpClient();
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5229/api/VerifyToken/verify", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5229/api/VerifyToken/verify", request);
 
             if (!response.IsSuccessStatusCode)
             {

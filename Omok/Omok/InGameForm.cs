@@ -170,7 +170,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/Attendance/attendance", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/Attendance/attendance", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -214,7 +214,7 @@ namespace Omok
                 AuthToken = _userInfo.AuthToken
             };
 
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/GetMail/getMail", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/GetMail/getMail", request);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -592,7 +592,7 @@ namespace Omok
                 {
                     var requestCancel = new ReqCancelMatching();
                     requestCancel.Id = _userInfo.Id;
-                    var responseCancel = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/CancelMatching/cancelMatching", requestCancel);
+                    var responseCancel = await client.PostAsJsonAsync("http://localhost:5292/api/CancelMatching/cancelMatching", requestCancel);
 
                     if (!responseCancel.IsSuccessStatusCode)
                     {
@@ -960,7 +960,7 @@ namespace Omok
             request.Id = _userInfo.Id;
 
             var client = new HttpClient();
-            var response = await client.PostAsJsonAsync("http://10.192.8.223:5292/api/CheckMatching/checkMatching", request);
+            var response = await client.PostAsJsonAsync("http://localhost:5292/api/CheckMatching/checkMatching", request);
 
             if (!response.IsSuccessStatusCode)
             {

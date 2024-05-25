@@ -30,6 +30,8 @@ namespace OmokGameServer
         string _resListKey;
         int _port;
 
+        string _address;
+
         public void Init(ILog mainLogger, Action<OmokBinaryRequestInfo> sendToPP, Func<int> getEmptyRoomIndex, Func<bool> checkEmptyRoom, string redisDBConStr, string reqListKey, string resListKey, int port)
         {
             _mainLogger = mainLogger;
@@ -42,8 +44,18 @@ namespace OmokGameServer
             _resListKey = resListKey;
             _port= port;
 
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    _address = ip.ToString();
+                }
+            }
+
             _matchThread = new Thread(Process);
             _matchThread.Start();
+
         }
 
         public void Destroy()
@@ -63,7 +75,7 @@ namespace OmokGameServer
 
                 if (!checkResult)
                 {
-                    Thread.Sleep(1);
+                    Thread.Sleep(1000);
                     continue;
                 }
                 try
@@ -90,14 +102,7 @@ namespace OmokGameServer
                         res.UserB = req.UserB;
                         _mainLogger.Info($"매칭유저 {req.UserA}, {req.UserB}");
 
-                        var host = Dns.GetHostEntry(Dns.GetHostName());
-                        foreach (var ip in host.AddressList)
-                        {
-                            if (ip.AddressFamily == AddressFamily.InterNetwork)
-                            {
-                                res.ServerAddress = ip.ToString();
-                            }
-                        }
+                        res.ServerAddress = _address;
                         res.Port = _port;
                         res.RoomNumber = _getEmptyRoomIndex();
 
@@ -112,17 +117,6 @@ namespace OmokGameServer
                     _mainLogger.Error($"MatchWorker Error : {ex.ToString()}");
                 }
             }
-        }
-
-        void RequestUserSetting(string userA, string userB, int roomNum)
-        {
-            var pac = new ReqMatchUsersEnterPacket();
-            pac.UserA = userA;
-            pac.UserB = userB;
-            pac.RoomNumber = roomNum;
-            var pacData = MemoryPackSerializer.Serialize(pac);
-            var binaryData = new OmokBinaryRequestInfo((short)(pacData.Length + OmokBinaryRequestInfo.HEADER_SIZE), (short)PacketId.ReqMatchUsersEnter, pacData);
-            _sendToPP(binaryData);
         }
     }
 }
